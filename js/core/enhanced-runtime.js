@@ -134,6 +134,18 @@ render = function () {
       if (value) value.value = target.dataset.id || "";
       if (batch) batch.value = target.dataset.batch || "—";
       target.blur();
+      if (prefix === "fx-withdraw-product" && state.modalData?.withdrawalMode === "segments") {
+        state.modalData.withdrawalProductId = Number(target.dataset.id) || null;
+        const product = products.find(item => item.id === state.modalData.withdrawalProductId);
+        const currentField = document.querySelector(".withdrawal-segment-field");
+        if (currentField) {
+          const template = document.createElement("template");
+          template.innerHTML = fxWithdrawalSegmentPicker(product);
+          const replacement = template.content.firstElementChild;
+          if (replacement) currentField.replaceWith(replacement);
+        }
+        return;
+      }
       return;
     }
     if (action === "fx-select-activation-order") {
@@ -147,6 +159,7 @@ render = function () {
       if (value) value.value = orderNo;
       if (amount) { amount.max = String(availableAmount); amount.value = String(availableAmount); }
       if (available) available.textContent = `可用码量：${formatNumber(availableAmount)} 枚`;
+      fxSyncActivationRangePreview();
       target.blur();
       return;
     }
@@ -508,7 +521,7 @@ render = function () {
       const otherPendingAmount = Math.max(0, fxOrderPendingAmount(order) - amount);
       const approvableAmount = Math.max(0, Number(order.total || 0) - Number(order.active || 0) - otherPendingAmount);
       if (amount < 1 || amount > approvableAmount) return showToast("申请数量已超出订单可用码量");
-      const range = fxActivationRange(order, amount);
+      const range = request.range || fxActivationRange(order, amount, null, request.id);
       if (!range) return showToast("当前订单没有足够的连续可用码段");
       order.active += amount;
       order.activations.unshift({ batch: product.batch, amount, range, time: fxNow(), product: product.name, operator: fxCurrentOperator().name, status: "有效", bindRequestNo: request.no });
@@ -574,7 +587,9 @@ render = function () {
       if (!requestOrder || !requestProduct || requestProduct.company !== fxCurrentCustomer().name || requestProduct.status !== "已激活") return showToast("请选择当前账号下的已激活产品");
       if (requestAmount < 1 || requestAmount > fxOrderAvailableAmount(requestOrder)) return showToast("申请数量必须在订单可用码量内");
       if (fxPendingBindRequest(requestOrder.no, requestProduct.id, requestProduct.batch)) return showToast("该产品已有待审批的绑定申请");
-      bindRequests.unshift({ id: Date.now(), no: fxNextBindRequestNo(), orderNo: requestOrder.no, customer: requestOrder.customer, productId: requestProduct.id, product: requestProduct.name, batch: requestProduct.batch, amount: requestAmount, status: "待审批", time: fxNow(), decidedAt: "", rejectReason: "" });
+      const requestRange = fxActivationRange(requestOrder, requestAmount);
+      if (!requestRange) return showToast("当前订单没有足够的连续可用码段");
+      bindRequests.unshift({ id: Date.now(), no: fxNextBindRequestNo(), orderNo: requestOrder.no, customer: requestOrder.customer, productId: requestProduct.id, product: requestProduct.name, batch: requestProduct.batch, range: requestRange, amount: requestAmount, status: "待审批", time: fxNow(), decidedAt: "", rejectReason: "" });
       fxSaveBusiness();
       state.modal = null;
       render();
@@ -589,11 +604,10 @@ render = function () {
     if (action === "fx-confirm-activation") {
       const product = products.find(item => item.id === state.drawerProductId);
       const combined = product?.applicationType === "新建产品并绑定";
-      const order = orders.find(item => item.no === (combined ? product?.requestedOrderNo : fxRead("fx-activation-order")));
-      const amount = Number(combined ? product?.requestedAmount : fxRead("fx-activation-amount"));
+      const order = orders.find(item => item.no === fxRead("fx-activation-order"));
+      const amount = Number(fxRead("fx-activation-amount"));
       if (!product || !order || order.customer !== product.company || !Number.isSafeInteger(amount) || amount < 1 || amount > fxOrderAvailableAmount(order, combined ? product.id : null)) return showToast("激活数量必须在该客户订单可用余额内");
-      const range = combined ? product.requestedRange : fxActivationRange(order, amount);
-      if (combined && !fxRequestedRangeIsAvailable(order, product.requestedSourceRange, range, amount, product.id)) return showToast("客户申请的码段已被占用，请驳回后由客户重新提交");
+      const range = fxReviewActivationRange(order, amount, product);
       if (!range) return showToast("当前订单没有足够的连续可用码段");
       order.active += amount;
       order.activations.unshift({ batch: product.batch, amount, range, time: fxNow(), product: product.name, operator: fxCurrentOperator().name, status: "有效" });
@@ -608,11 +622,34 @@ render = function () {
       const item = withdrawals[state.selectedWithdrawalIndex]; const reject = state.modalData?.decision === "reject"; item.decidedAt = fxNow();
       if (reject) { const reason = fxRead("fx-withdraw-reject-reason"); if (!reason) return showToast("请填写驳回原因"); item.status = "已驳回"; item.rejectReason = reason; }
       else {
-        item.status = "已通过"; const product = products.find(row => row.name === item.product && row.company === item.customer && (!item.batch || row.batch === item.batch)); let rollbackAmount = 0; const resetRanges = [];
-        if (product) { orders.forEach(order => { const matched = order.activations.filter(row => row.status !== "已重置" && row.product === product.name && (!row.batch || row.batch === product.batch || fxParseCode(row.batch))); const amount = matched.reduce((sum, row) => sum + Number(row.amount || 0), 0); if (amount) { rollbackAmount += amount; resetRanges.push(...matched.map(row => row.range).filter(Boolean)); order.active = Math.max(0, order.active - amount); matched.forEach(row => Object.assign(row, { status: "已重置", resetTime: item.decidedAt, withdrawalNo: item.no, withdrawalReason: item.reason, resetOperator: fxCurrentOperator().name })); } }); const customer = customers.find(row => row.name === product.company); if (customer) customer.active = Math.max(0, customer.active - rollbackAmount); product.amount = 0; product.status = "草稿"; product.submitted = ""; }
-        item.rollbackAmount = rollbackAmount; item.resetRanges = resetRanges; item.rejectReason = `关联码已重置为空白状态，共回滚 ${formatNumber(rollbackAmount)} 枚`;
+        const product = products.find(row => row.name === item.product && row.company === item.customer && (!item.batch || row.batch === item.batch));
+        const requestedSegments = Array.isArray(item.segments) && item.segments.length ? item.segments : null;
+        let rollbackAmount = 0; const resetRanges = [];
+        if (product) {
+          orders.forEach(order => {
+            const requestedForOrder = requestedSegments?.filter(segment => segment.orderNo === order.no) || null;
+            const matched = (order.activations || []).filter(activation => {
+              if (!fxProductMatchesActivation(product, activation)) return false;
+              if (!requestedSegments) return true;
+              return requestedForOrder.some(segment => segment.key === fxWithdrawalSegmentKey(order, activation) || (segment.range === activation.range && (!segment.time || segment.time === activation.time)));
+            });
+            const amount = matched.reduce((sum, activation) => sum + Number(activation.amount || 0), 0);
+            if (!amount) return;
+            rollbackAmount += amount;
+            resetRanges.push(...matched.map(activation => activation.range).filter(Boolean));
+            order.active = Math.max(0, order.active - amount);
+            matched.forEach(activation => Object.assign(activation, { status: "已重置", resetTime: item.decidedAt, withdrawalNo: item.no, withdrawalReason: item.reason, resetOperator: fxCurrentOperator().name }));
+          });
+          const customer = customers.find(row => row.name === product.company);
+          if (customer) customer.active = Math.max(0, customer.active - rollbackAmount);
+          const remainingAmount = orders.reduce((sum, order) => sum + (order.activations || []).filter(activation => fxProductMatchesActivation(product, activation)).reduce((subtotal, activation) => subtotal + Number(activation.amount || 0), 0), 0);
+          product.amount = remainingAmount;
+          if (!remainingAmount) { product.status = "草稿"; product.submitted = ""; }
+        }
+        if (!rollbackAmount) return showToast("申请中的码段已不可撤回，请重新核对");
+        item.status = "已通过"; item.rollbackAmount = rollbackAmount; item.resetRanges = resetRanges; item.rejectReason = `已选码段已重置为空白状态，共回滚 ${formatNumber(rollbackAmount)} 枚`;
       }
-      fxAddMessage({ type: reject ? "产品撤回驳回" : "产品撤回通过", title: `${item.product}撤回申请${reject ? "已驳回" : "已通过"}`, detail: reject ? item.rejectReason : `${item.rejectReason}${item.resetRanges?.length ? `；重置码段 ${item.resetRanges.join("、")}` : ""}`, recipient: item.customer, customer: item.customer }); state.modal = null; render(); return showToast(`撤回申请已${reject ? "驳回" : "通过"}`);
+      fxAddMessage({ type: reject ? "产品撤回驳回" : "产品撤回通过", title: `${item.product}${item.scope === "segments" ? "码段" : "产品"}撤回申请${reject ? "已驳回" : "已通过"}`, detail: reject ? item.rejectReason : `${item.rejectReason}${item.resetRanges?.length ? `；重置码段 ${item.resetRanges.join("、")}` : ""}`, recipient: item.customer, customer: item.customer }); state.modal = null; render(); return showToast(`撤回申请已${reject ? "驳回" : "通过"}`);
     }
     if (action === "fx-view-withdrawal") { state.selectedWithdrawalIndex = Number(target.dataset.index); state.modal = "fx-withdrawal-detail"; return render(); }
     if (action === "fx-mark-read") { if (state.portal !== "customer") return; messages.filter(item => item.recipient === fxCurrentCustomer().name).forEach(item => item.unread = false); render(); return showToast("全部消息已标记为已读"); }
@@ -655,8 +692,19 @@ render = function () {
     if (action === "fx-remove-standard-file") { state.editorDraft.fieldMedia?.[target.dataset.mediaKey]?.splice(Number(target.dataset.fileIndex), 1); return render(); }
     if (action === "fx-preview-custom-file") { const file = state.editorDraft.custom[target.dataset.module][Number(target.dataset.index)]?.files?.[Number(target.dataset.fileIndex)]; if (!file) return; state.modalData = { name: fxFileName(file), type: fxFileType(file), src: fxFileSrc(file, /\.(png|jpe?g|webp)$/i.test(fxFileName(file)) ? "assets/tea-field.jpg" : "") }; state.modal = "fx-file"; return render(); }
     if (action === "fx-remove-custom-file") { state.editorDraft.custom[target.dataset.module][Number(target.dataset.index)]?.files?.splice(Number(target.dataset.fileIndex), 1); return render(); }
-    if (action === "fx-open-withdraw" || action === "fx-customer-withdraw") { state.editorProductId = Number(target.dataset.id) || null; state.modal = "fx-customer-withdraw"; return render(); }
-    if (action === "fx-confirm-customer-withdraw") { const product = products.find(item => item.id === Number(fxRead("fx-withdraw-product"))); const reason = fxRead("fx-withdraw-reason"); if (!product || !reason) return showToast("请选择产品并填写撤回原因"); withdrawals.unshift({ id: Date.now(), no: `WD-202607-${String(withdrawals.length + 9).padStart(3, "0")}`, product: product.name, batch: product.batch, customer: product.company, reason, status: "待审批", time: fxNow(), rejectReason: "" }); state.modal = null; state.customerPage = "withdrawals"; render(); return showToast("全量撤回申请已提交"); }
+    if (action === "fx-open-withdraw" || action === "fx-customer-withdraw") { const productId = Number(target.dataset.id) || null; state.editorProductId = productId; state.modalData = { withdrawalMode: action === "fx-open-withdraw" ? "segments" : "product", withdrawalProductId: productId }; state.modal = "fx-customer-withdraw"; return render(); }
+    if (action === "fx-confirm-customer-withdraw") {
+      const product = products.find(item => item.id === Number(fxRead("fx-withdraw-product")));
+      const reason = fxRead("fx-withdraw-reason");
+      const segmentMode = state.modalData?.withdrawalMode === "segments";
+      if (!product || !reason) return showToast("请选择产品并填写撤回原因");
+      const availableSegments = fxProductActiveSegments(product);
+      const selectedKeys = segmentMode ? new Set([...document.querySelectorAll("[data-withdraw-segment]:checked")].map(input => input.value)) : new Set(availableSegments.map(segment => segment.key));
+      const segments = availableSegments.filter(segment => selectedKeys.has(segment.key));
+      if (!segments.length) return showToast(segmentMode ? "请至少选择一个已绑码段" : "该产品暂无可撤回的已绑码段");
+      withdrawals.unshift({ id: Date.now(), no: `WD-202607-${String(withdrawals.length + 9).padStart(3, "0")}`, product: product.name, batch: product.batch, customer: product.company, scope: segmentMode ? "segments" : "product", segments, requestedAmount: segments.reduce((sum, segment) => sum + Number(segment.amount || 0), 0), reason, status: "待审批", time: fxNow(), rejectReason: "" });
+      state.modal = null; state.customerPage = "withdrawals"; render(); return showToast(segmentMode ? "码段撤回申请已提交" : "全量撤回申请已提交");
+    }
     if (action === "fx-scan-image") { state.modalData = { name: target.querySelector("img")?.alt || "产品图片", src: target.dataset.src || target.closest("[data-src]")?.dataset.src }; state.modal = "fx-scan-image"; return render(); }
     if (action === "fx-lightbox-content") return;
     if (action === "fx-scan-pdf") { state.modalData = { name: target.dataset.name || "附件.pdf", type: "application/pdf", src: target.dataset.src || "" }; state.modal = "fx-file"; return render(); }
@@ -692,7 +740,7 @@ render = function () {
     const picker = target.closest(".bind-product-picker");
     const order = orders.find(item => item.no === state.selectedOrderNo);
     const activated = prefix === "fx-withdraw-product"
-      ? products.filter(item => item.company === fxCurrentCustomer().name && item.status === "已激活")
+      ? products.filter(item => item.company === fxCurrentCustomer().name && item.status === "已激活" && fxProductActiveSegments(item).length && (state.modalData?.withdrawalMode === "segments" || !withdrawals.some(withdrawal => withdrawal.status === "待审批" && withdrawal.customer === item.company && withdrawal.product === item.name && (!withdrawal.batch || withdrawal.batch === item.batch))))
       : order ? products.filter(item => item.company === order.customer && item.status === "已激活") : [];
     const value = document.getElementById(prefix);
     const batch = document.getElementById(`${prefix}-batch`);
@@ -763,6 +811,9 @@ render = function () {
     if (target.id === "fx-customer-bind-amount") {
       fxSyncCustomerBindRangePreview();
     }
+    if (target.id === "fx-activation-amount") {
+      fxSyncActivationRangePreview();
+    }
   });
   document.addEventListener("focusin", event => {
     if (event.target.classList.contains("customer-picker-search") || event.target.classList.contains("bind-product-search")) event.target.setAttribute("aria-expanded", "true");
@@ -799,6 +850,15 @@ render = function () {
   });
   document.addEventListener("change", async event => {
     const target = event.target;
+    if (target.id === "fx-withdraw-select-all") {
+      document.querySelectorAll("[data-withdraw-segment]").forEach(input => { input.checked = target.checked; });
+      fxSyncWithdrawalSegmentSelection();
+      return;
+    }
+    if (target.matches("[data-withdraw-segment]")) {
+      fxSyncWithdrawalSegmentSelection();
+      return;
+    }
     if (target.classList.contains("file-input-hidden") && target.files?.[0]) {
       const row = target.previousElementSibling;
       const name = row?.querySelector(".attachment-existing-name");
@@ -849,20 +909,30 @@ render = function () {
     if (target.dataset.fxField && state.editorDraft) state.editorDraft[target.dataset.fxField] = target.value;
     if (target.dataset.fxStandardUpload && target.files?.length) {
       const mediaKey = target.dataset.fxStandardUpload; const selected = [...target.files]; const acceptsPdf = target.dataset.fxStandardTypes?.includes("pdf");
-      const invalid = selected.find(file => !(file.type.startsWith("image/") || /\.(png|jpe?g|webp|gif)$/i.test(file.name) || (acceptsPdf && (file.type === "application/pdf" || /\.pdf$/i.test(file.name))))); if (invalid) return showToast(`${acceptsPdf ? "该字段仅支持图片或 PDF" : "该字段仅支持图片"}：${invalid.name}`);
-      const oversized = selected.find(file => file.size > 2 * 1024 * 1024); if (oversized) return showToast(`文件超过 2 MB：${oversized.name}`);
+      const limit = fxStandardMediaLimit(mediaKey); const limitMessage = limit === 1 ? "该字段最多上传 1 个文件" : `该字段图片与 PDF 合计最多上传 ${limit} 个`;
+      const invalid = selected.find(file => !(file.type.startsWith("image/") || /\.(png|jpe?g|webp|gif)$/i.test(file.name) || (acceptsPdf && (file.type === "application/pdf" || /\.pdf$/i.test(file.name))))); if (invalid) { target.value = ""; return showToast(`${acceptsPdf ? "该字段仅支持图片或 PDF" : "该字段仅支持图片"}：${invalid.name}`); }
+      const oversized = selected.find(file => file.size > 2 * 1024 * 1024); if (oversized) { target.value = ""; return showToast(`文件超过 2 MB：${oversized.name}`); }
       try {
         const saved = []; for (const file of selected) saved.push({ name: file.name, type: file.type || fxFileType(file.name), size: file.size, src: await fxReadFileData(file) });
-        state.editorDraft.fieldMedia ||= {}; state.editorDraft.fieldMedia[mediaKey] = fxUniqueFiles([...(state.editorDraft.fieldMedia[mediaKey] || []), ...saved]); render(); showToast(`字段文件已保存 ${saved.length} 项`);
-      } catch (_) { showToast("文件读取失败，请重新选择"); }
+        state.editorDraft.fieldMedia ||= {}; const merged = fxUniqueFiles([...(state.editorDraft.fieldMedia[mediaKey] || []), ...saved]);
+        if (merged.length > limit) { target.value = ""; return showToast(limitMessage); }
+        const addedCount = merged.length - (state.editorDraft.fieldMedia[mediaKey] || []).length;
+        state.editorDraft.fieldMedia[mediaKey] = merged; render(); showToast(addedCount ? `字段文件已保存 ${addedCount} 项` : "所选文件已存在");
+      } catch (_) { target.value = ""; showToast("文件读取失败，请重新选择"); }
       return;
     }
     if (target.dataset.fxCustomUpload && target.files?.length) {
       const [module, indexText] = target.dataset.fxCustomUpload.split(":"); const row = state.editorDraft.custom[module]?.[Number(indexText)]; const selected = [...target.files];
       if (!String(row?.name || "").trim()) { target.value = ""; return showToast("请先填写字段名称"); }
-      const invalid = selected.find(file => !(file.type.startsWith("image/") || file.type === "application/pdf" || /\.pdf$/i.test(file.name))); if (invalid) return showToast(`不支持文件：${invalid.name}`);
-      const oversized = selected.find(file => file.size > 2 * 1024 * 1024); if (oversized) return showToast(`文件超过 2 MB：${oversized.name}`);
-      try { const saved = []; for (const file of selected) saved.push({ name: file.name, type: file.type || fxFileType(file.name), size: file.size, src: await fxReadFileData(file) }); row.files.push(...saved); render(); showToast(`字段附件已保存 ${saved.length} 项`); } catch (_) { showToast("附件读取失败，请重新选择"); }
+      const invalid = selected.find(file => !(file.type.startsWith("image/") || file.type === "application/pdf" || /\.pdf$/i.test(file.name))); if (invalid) { target.value = ""; return showToast(`不支持文件：${invalid.name}`); }
+      const oversized = selected.find(file => file.size > 2 * 1024 * 1024); if (oversized) { target.value = ""; return showToast(`文件超过 2 MB：${oversized.name}`); }
+      try {
+        const saved = []; for (const file of selected) saved.push({ name: file.name, type: file.type || fxFileType(file.name), size: file.size, src: await fxReadFileData(file) });
+        const merged = fxUniqueFiles([...(row.files || []), ...saved]);
+        if (merged.length > fxCustomMediaLimit) { target.value = ""; return showToast(`该字段图片与 PDF 合计最多上传 ${fxCustomMediaLimit} 个`); }
+        const addedCount = merged.length - (row.files || []).length;
+        row.files = merged; render(); showToast(addedCount ? `字段附件已保存 ${addedCount} 项` : "所选文件已存在");
+      } catch (_) { target.value = ""; showToast("附件读取失败，请重新选择"); }
       return;
     }
   });

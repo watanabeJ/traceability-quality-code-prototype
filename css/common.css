@@ -728,6 +728,20 @@ input.immutable-input { width: 100%; color: var(--text); background: var(--surfa
 .bind-product-option.create-option { color: var(--primary); }
 .bind-product-caption { padding: 6px 10px 4px; color: var(--text-muted); font-size: 11px; }
 .bind-product-empty { padding: 12px 10px; color: var(--text-muted); font-size: 12px; text-align: center; }
+.withdrawal-segment-field { gap: 8px; }
+.withdrawal-segment-head { display: flex; align-items: center; justify-content: space-between; gap: 12px; }
+.withdrawal-select-all { display: inline-flex; align-items: center; gap: 6px; color: var(--primary) !important; cursor: pointer; }
+.withdrawal-select-all input,
+.withdrawal-segment-option input { width: 16px; height: 16px; min-height: 16px; margin: 0; padding: 0; accent-color: var(--primary); }
+.withdrawal-segment-list { max-height: 224px; display: grid; overflow-y: auto; border: 1px solid var(--border); border-radius: var(--r-sm); background: var(--surface); }
+.withdrawal-segment-option { min-height: 58px; display: grid; grid-template-columns: 16px minmax(0, 1fr); align-items: center; gap: 10px; padding: 9px 12px; border-bottom: 1px solid var(--border-light); cursor: pointer; }
+.withdrawal-segment-option:last-child { border-bottom: 0; }
+.withdrawal-segment-option:hover { background: var(--surface-muted); }
+.withdrawal-segment-option:has(input:checked) { background: var(--primary-soft); }
+.withdrawal-segment-copy { min-width: 0; display: grid; gap: 2px; }
+.withdrawal-segment-copy strong { overflow-wrap: anywhere; color: var(--text-strong); font-weight: 500; }
+.withdrawal-segment-copy small { color: var(--text-muted); font-size: 11px; }
+.withdrawal-segment-empty { min-height: 58px; display: grid; place-items: center; padding: 12px; border: 1px dashed var(--border); border-radius: var(--r-sm); color: var(--text-muted); background: var(--surface-muted); font-size: 12px; }
 .customer-picker-control { position: relative; }
 .customer-picker-search { width: 100%; appearance: none; }
 .customer-picker-options {

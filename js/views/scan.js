@@ -61,7 +61,7 @@ const fxScanParams = new URLSearchParams(location.search);
   function fxScanMediaItem(file, module) {
     const name = fxFileName(file); const type = fxFileType(file); const image = type.startsWith("image/") || /\.(png|jpe?g|webp)$/i.test(name); const fallback = module === "product" || module === "quality" ? "assets/tea-product.jpg" : "assets/tea-field.jpg"; const src = fxFileSrc(file, image ? fallback : "");
     if (image) return `<button type="button" class="scan-inline-image" data-action="fx-scan-image" data-src="${fxEscape(src)}" aria-label="查看${fxEscape(name)}"><img src="${fxEscape(src)}" alt="${fxEscape(name)}"></button>`;
-    return src ? `<iframe class="scan-inline-pdf-frame" src="${fxEscape(src)}" title="${fxEscape(name)}" loading="lazy"></iframe>` : `<button type="button" class="scan-inline-document" data-action="fx-scan-pdf" data-name="${fxEscape(name)}"><span>${icon("file-text", "□", "icon-lg")}</span><strong>${fxEscape(name)}</strong></button>`;
+    return src ? `<iframe class="scan-inline-pdf-frame" src="${fxEscape(fxPdfDisplaySrc(src))}" title="${fxEscape(name)}" loading="lazy"></iframe>` : `<button type="button" class="scan-inline-document" data-action="fx-scan-pdf" data-name="${fxEscape(name)}"><span>${icon("file-text", "□", "icon-lg")}</span><strong>${fxEscape(name)}</strong></button>`;
   }
   function fxScanMediaGroup(title, files, module) {
     if (!files.length) return "";

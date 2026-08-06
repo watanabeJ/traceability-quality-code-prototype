@@ -65,6 +65,9 @@ const fxToday = "2026-07-27";
     ],
     trace: [],
   };
+  const fxSingleMediaKeys = new Set(["brand", "trademark", "productImages", "businessLicense", "productInspectionReport"]);
+  const fxCustomMediaLimit = 10;
+  function fxStandardMediaLimit(mediaKey) { return fxSingleMediaKeys.has(mediaKey) ? 1 : 10; }
 
   customers.forEach((item, index) => Object.assign(item, {
     id: item.id || index + 1,
@@ -538,11 +541,14 @@ const fxToday = "2026-07-27";
     const value = fxParseCode(code); const [startCode, endCode] = String(range).split("–"); const start = fxParseCode(startCode); const end = fxParseCode(endCode);
     return Boolean(value && start && end && value.prefix === start.prefix && value.prefix === end.prefix && value.number >= start.number && value.number <= end.number);
   }
-  function fxActivationRange(order, amount) {
+  function fxActivationRange(order, amount, excludeProductId = null, excludeBindRequestId = null) {
     const [startCode, endCode] = String(order.range || "").split("–");
     const start = fxParseCode(startCode); const end = fxParseCode(endCode); const needed = Number(amount || 0);
     if (!start || !end || needed < 1 || start.prefix !== end.prefix) return "";
-    const reservedRows = fxCombinedPendingProducts(order.no).map(product => ({ range: product.requestedRange, status: "有效" }));
+    const reservedRows = [
+      ...fxCombinedPendingProducts(order.no, excludeProductId).map(product => ({ range: product.requestedRange, status: "有效" })),
+      ...bindRequests.filter(request => request.orderNo === order.no && request.status === "待审批" && request.range && Number(request.id) !== Number(excludeBindRequestId)).map(request => ({ range: request.range, status: "有效" })),
+    ];
     const occupied = [...(order.activations || []), ...reservedRows].filter(row => row.status !== "已重置" && row.range).map(row => {
       const [rowStartCode, rowEndCode] = String(row.range).split("–");
       const rowStart = fxParseCode(rowStartCode); const rowEnd = fxParseCode(rowEndCode);
@@ -561,7 +567,10 @@ const fxToday = "2026-07-27";
     const [startCode, endCode] = String(order?.range || "").split("–");
     const start = fxParseCode(startCode); const end = fxParseCode(endCode);
     if (!start || !end || start.prefix !== end.prefix) return [];
-    const reservedRows = fxCombinedPendingProducts(order.no, excludeProductId).map(product => ({ range: product.requestedRange, status: "有效" }));
+    const reservedRows = [
+      ...fxCombinedPendingProducts(order.no, excludeProductId).map(product => ({ range: product.requestedRange, status: "有效" })),
+      ...bindRequests.filter(request => request.orderNo === order.no && request.status === "待审批" && request.range).map(request => ({ range: request.range, status: "有效" })),
+    ];
     const occupied = [...(order.activations || []), ...reservedRows].filter(row => row.status !== "已重置" && row.range).map(row => {
       const [rowStartCode, rowEndCode] = String(row.range).split("–");
       const rowStart = fxParseCode(rowStartCode); const rowEnd = fxParseCode(rowEndCode);
@@ -604,9 +613,21 @@ const fxToday = "2026-07-27";
     const source = fxOrderFreeRanges(order, excludeProductId).find(item => item.range === sourceRange);
     return Boolean(source && Number(amount) <= source.amount && fxRequestedRange(source.range, Number(amount)) === requestedRange);
   }
+  function fxReviewActivationRange(order, amount, product = null) {
+    const combined = product?.applicationType === "新建产品并绑定";
+    if (combined && order?.no === product.requestedOrderNo) {
+      const requestedRange = fxRequestedRange(product.requestedSourceRange, amount);
+      if (fxRequestedRangeIsAvailable(order, product.requestedSourceRange, requestedRange, amount, product.id)) return requestedRange;
+    }
+    return fxActivationRange(order, amount, combined ? product.id : null);
+  }
   function fxFileName(file) { return typeof file === "string" ? file : file?.name || "附件"; }
   function fxFileType(file) { return typeof file === "string" ? (/\.pdf$/i.test(file) ? "application/pdf" : "image/*") : file?.type || (/\.pdf$/i.test(file?.name || "") ? "application/pdf" : "image/*"); }
   function fxFileSrc(file, fallback = "") { return typeof file === "object" && file?.src ? file.src : fallback; }
+  function fxPdfDisplaySrc(src) {
+    const value = String(src || "");
+    return value ? `${value}${value.includes("#") ? "&" : "#"}toolbar=0&navpanes=0&view=FitH` : "";
+  }
   function fxNormalizeStoredFile(file) { return typeof file === "string" ? { name: file, type: fxFileType(file), src: "" } : { name: fxFileName(file), type: fxFileType(file), size: Number(file.size || 0), src: file.src || "" }; }
   function fxIsImageFile(file) { return fxFileType(file).startsWith("image/") || /\.(png|jpe?g|webp)$/i.test(fxFileName(file)); }
   function fxUniqueFiles(files) {

@@ -215,7 +215,7 @@ function modalMarkup() {
   } else if (state.modal === "submit-product") {
     title = "提交产品审核";
     subtitle = "提交后资料将变为只读，审核结果通过站内信通知。";
-    body = `<div class="confirm-list"><div class="confirm-row"><span>产品</span><strong>云岭高山绿茶</strong></div><div class="confirm-row"><span>资料模块</span><strong>5 / 5 已填写</strong></div><div class="confirm-row"><span>附件</span><strong>5 个文件</strong></div><div class="confirm-row"><span>完整度</span><strong>87%</strong></div></div>`;
+    body = `<div class="confirm-list"><div class="confirm-row"><span>产品</span><strong>云岭高山绿茶</strong></div><div class="confirm-row"><span>资料模块</span><strong>5 / 5 已填写</strong></div><div class="confirm-row"><span>完整度</span><strong>87%</strong></div></div>`;
     foot = `<button class="button" data-action="close-modal">返回检查</button><button class="button primary" data-action="confirm-submit-product">确认提交</button>`;
   } else if (state.modal === "withdraw") {
     title = "发起全量撤回申请";

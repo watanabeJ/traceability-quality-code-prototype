@@ -206,11 +206,19 @@ function fxLoginPage(portal) {
   function opsBindRequests() {
     const term = state.bindRequestFilter.trim().toLowerCase();
     const rows = fxNewestRows(bindRequests.filter(item =>
-      (!term || `${item.orderNo} ${item.customer} ${item.product} ${item.batch}`.toLowerCase().includes(term)) &&
+      (!term || `${item.orderNo} ${item.customer} ${item.product} ${item.batch} ${item.range || ""}`.toLowerCase().includes(term)) &&
       (state.bindRequestStatus === "全部状态" || item.status === state.bindRequestStatus) &&
       fxMatchesCustomerDate(item.time, "bindRequest")
     ), item => item.time);
-    return `<div class="page">${pageHeader("绑定审核", "审核客户提交的产品与订单码段绑定申请")}<div class="toolbar"><div class="filters">${fxFilterInput("fx-bind-request-search", state.bindRequestFilter, "客户、订单或产品", "bind-requests")}</div></div><div class="table-shell"><div class="table-scroll"><table><thead><tr><th>产品名称</th><th>产品批次</th><th>客户名称</th><th>订单号</th><th>申请数量</th><th>${fxCustomerDateHeader("申请时间", "bindRequest")}</th><th>${fxTableSelectHeader("状态", "bindRequestStatus", ["全部状态", "待审批", "已通过", "已驳回"], state.bindRequestStatus)}</th><th>操作</th></tr></thead><tbody>${rows.length ? rows.map(request => `<tr><td>${fxEscape(request.product)}</td><td class="mono">${fxEscape(request.batch || "—")}</td><td>${fxEscape(request.customer)}</td><td><button class="text-action mono" data-action="fx-order-detail" data-no="${fxEscape(request.orderNo)}">${fxEscape(request.orderNo)}</button></td><td>${formatNumber(request.amount)}</td><td>${fxEscape(request.time || "—")}</td><td>${status(request.status)}</td><td class="action-column"><div class="table-actions">${request.status === "待审批" ? `<button class="text-action success-text" data-action="fx-approve-bind-request" data-id="${request.id}">通过</button><button class="text-action danger-text" data-action="fx-reject-bind-request" data-id="${request.id}">驳回</button>` : `<button class="text-action" data-action="fx-view-bind-request" data-id="${request.id}">查看</button>`}</div></td></tr>`).join("") : fxEmpty(8, "未找到绑定申请")}</tbody></table></div>${pagination(rows.length)}</div></div>`;
+    const body = rows.length
+      ? rows.map(request => {
+        const order = orders.find(item => item.no === request.orderNo);
+        const activation = order?.activations?.find(item => item.bindRequestNo === request.no);
+        const range = request.range || activation?.range || (order ? fxActivationRange(order, request.amount, null, request.id) : "");
+        return `<tr><td>${fxEscape(request.product)}</td><td class="mono">${fxEscape(request.batch || "—")}</td><td>${fxEscape(request.customer)}</td><td><button class="text-action mono" data-action="fx-order-detail" data-no="${fxEscape(request.orderNo)}">${fxEscape(request.orderNo)}</button></td><td class="mono">${fxEscape(range || "—")}</td><td>${formatNumber(request.amount)}</td><td>${fxEscape(request.time || "—")}</td><td>${status(request.status)}</td><td class="action-column"><div class="table-actions">${request.status === "待审批" ? `<button class="text-action success-text" data-action="fx-approve-bind-request" data-id="${request.id}">通过</button><button class="text-action danger-text" data-action="fx-reject-bind-request" data-id="${request.id}">驳回</button>` : `<button class="text-action" data-action="fx-view-bind-request" data-id="${request.id}">查看</button>`}</div></td></tr>`;
+      }).join("")
+      : fxEmpty(9, "未找到绑定申请");
+    return `<div class="page">${pageHeader("绑定审核", "审核客户提交的产品与订单码段绑定申请")}<div class="toolbar"><div class="filters">${fxFilterInput("fx-bind-request-search", state.bindRequestFilter, "客户、订单、产品或码段", "bind-requests")}</div></div><div class="table-shell"><div class="table-scroll"><table><thead><tr><th>产品名称</th><th>产品批次</th><th>客户名称</th><th>订单号</th><th>申请码段</th><th>申请数量</th><th>${fxCustomerDateHeader("申请时间", "bindRequest")}</th><th>${fxTableSelectHeader("状态", "bindRequestStatus", ["全部状态", "待审批", "已通过", "已驳回"], state.bindRequestStatus)}</th><th>操作</th></tr></thead><tbody>${body}</tbody></table></div>${pagination(rows.length)}</div></div>`;
   }
 
   function fxFilteredReviews() {
@@ -229,6 +237,61 @@ function fxLoginPage(portal) {
     const createOption = allowCreate ? `<button type="button" class="bind-product-option create-option" role="option" data-action="fx-customer-new-product-for-order"><span>＋ 新建产品并绑定</span></button>` : "";
     return `${caption}${options}${createOption}`;
   }
+  function fxWithdrawalSegmentKey(order, activation) {
+    return `${order?.no || ""}::${activation?.range || ""}::${activation?.time || ""}`;
+  }
+  function fxProductMatchesActivation(product, activation) {
+    return Boolean(product && activation && activation.status !== "已重置" && activation.product === product.name && (!activation.batch || activation.batch === product.batch || fxParseCode(activation.batch)));
+  }
+  function fxProductHasPendingFullWithdrawal(product) {
+    return withdrawals.some(item => item.status === "待审批" && item.customer === product.company && item.product === product.name && (!item.batch || item.batch === product.batch) && (!Array.isArray(item.segments) || !item.segments.length));
+  }
+  function fxProductActiveSegments(product, includePending = false) {
+    if (!product || (!includePending && fxProductHasPendingFullWithdrawal(product))) return [];
+    const pendingKeys = includePending ? new Set() : new Set(withdrawals
+      .filter(item => item.status === "待审批" && item.customer === product.company && item.product === product.name && (!item.batch || item.batch === product.batch))
+      .flatMap(item => Array.isArray(item.segments) ? item.segments : [])
+      .map(item => item.key || `${item.orderNo || ""}::${item.range || ""}::${item.time || ""}`));
+    return orders.flatMap(order => (order.activations || [])
+      .filter(activation => fxProductMatchesActivation(product, activation))
+      .map(activation => ({
+        key: fxWithdrawalSegmentKey(order, activation),
+        orderNo: order.no,
+        range: activation.range || "—",
+        amount: Number(activation.amount || 0),
+        time: activation.time || "",
+      })))
+      .filter(segment => includePending || !pendingKeys.has(segment.key));
+  }
+  function fxWithdrawalSegments(item) {
+    if (Array.isArray(item?.segments) && item.segments.length) return item.segments;
+    if (Array.isArray(item?.resetRanges) && item.resetRanges.length) return item.resetRanges.map(range => ({ range }));
+    return [];
+  }
+  function fxWithdrawalRangeSummary(item) {
+    const segments = fxWithdrawalSegments(item);
+    if (!segments.length) return "全部已绑码段";
+    const ranges = segments.map(segment => segment.range).filter(Boolean);
+    return ranges.length > 1 ? `${ranges[0]} 等 ${ranges.length} 个码段` : ranges[0] || "—";
+  }
+  function fxWithdrawalSegmentPicker(product) {
+    if (!product) return `<div class="field full withdrawal-segment-field"><label class="required">已绑码段</label><div class="withdrawal-segment-empty">请先选择产品</div></div>`;
+    const segments = fxProductActiveSegments(product);
+    if (!segments.length) return `<div class="field full withdrawal-segment-field"><label class="required">已绑码段</label><div class="withdrawal-segment-empty">该产品暂无可撤回的已绑码段</div></div>`;
+    const rows = segments.map(segment => `<label class="withdrawal-segment-option"><input type="checkbox" data-withdraw-segment data-amount="${segment.amount}" value="${fxEscape(segment.key)}"><span class="withdrawal-segment-copy"><strong class="mono">${fxEscape(segment.range)}</strong><small>订单 ${fxEscape(segment.orderNo)} · ${formatNumber(segment.amount)} 枚</small></span></label>`).join("");
+    return `<div class="field full withdrawal-segment-field"><div class="withdrawal-segment-head"><label class="required">已绑码段</label><label class="withdrawal-select-all"><input id="fx-withdraw-select-all" type="checkbox">全选</label></div><div class="withdrawal-segment-list">${rows}</div><span id="fx-withdraw-selection-summary" class="field-help">已选择 0 个码段</span></div>`;
+  }
+  function fxSyncWithdrawalSegmentSelection() {
+    const boxes = [...document.querySelectorAll("[data-withdraw-segment]")];
+    const selected = boxes.filter(box => box.checked);
+    const selectAll = document.getElementById("fx-withdraw-select-all");
+    if (selectAll) {
+      selectAll.checked = boxes.length > 0 && selected.length === boxes.length;
+      selectAll.indeterminate = selected.length > 0 && selected.length < boxes.length;
+    }
+    const summary = document.getElementById("fx-withdraw-selection-summary");
+    if (summary) summary.textContent = `已选择 ${selected.length} 个码段，共 ${formatNumber(selected.reduce((sum, box) => sum + Number(box.dataset.amount || 0), 0))} 枚`;
+  }
   opsReviews = function () {
     const rows = fxFilteredReviews();
     return `<div class="page">${pageHeader("产品审核", "审核客户已提交的产品资料，并维护已激活产品内容")}<div class="toolbar"><div class="filters">${fxFilterInput("fx-review-search", state.filter, "产品、客户或批次")}</div><button class="button" data-action="fx-export-products">${icon("download", "↓")}导出</button></div><div class="table-shell"><div class="table-scroll"><table><thead><tr><th>产品名称</th><th>产品批次</th><th>${fxTableSelectHeader("产品大类", "productCategory", ["全部大类", "农产品", "养殖品", "加工食品", "工业品", "医疗卫生用品"], state.productCategory)}</th><th>客户名称</th><th>${fxCustomerDateHeader("产品提交时间", "review")}</th><th>${fxTableSelectHeader("状态", "reviewStatus", ["全部状态", "待审核", "已激活", "已驳回"], state.reviewStatus)}</th><th>操作</th></tr></thead><tbody>${rows.length ? rows.map(item => { const reviewAction = `<button class="text-action" data-action="open-review" data-id="${item.id}">${item.status === "待审核" ? "审核" : "查看"}</button>`; const editAction = ["待审核", "已激活"].includes(item.status) ? `<button class="text-action" data-action="fx-ops-edit-product" data-id="${item.id}">编辑</button>` : ""; return `<tr><td><div class="cell-main">${fxEscape(item.name)}</div></td><td class="mono">${item.batch}</td><td>${item.category}</td><td>${fxEscape(item.company)}</td><td>${fxEscape(item.submitted || "—")}</td><td>${status(item.status)}</td><td class="action-column"><div class="table-actions">${reviewAction}${editAction}</div></td></tr>`; }).join("") : fxEmpty(7, "未找到产品")}</tbody></table></div>${pagination(rows.length)}</div></div>`;
@@ -237,7 +300,7 @@ function fxLoginPage(portal) {
   opsWithdrawals = function () {
     const term = state.withdrawalFilter.trim().toLowerCase();
     const rows = fxNewestRows(withdrawals.map((item, index) => ({ ...item, index })).filter(item => (!term || `${item.no} ${item.product} ${item.customer}`.toLowerCase().includes(term)) && (state.withdrawalStatus === "全部状态" || item.status === state.withdrawalStatus) && fxMatchesCustomerDate(item.time, "opsWithdrawal")), item => item.time);
-    return `<div class="page">${pageHeader("撤回审核", "审批已激活产品的全量撤回，处理结果自动通知客户")}<div class="toolbar"><div class="filters">${fxFilterInput("fx-withdrawal-search", state.withdrawalFilter, "申请编号、产品或客户")}</div></div><div class="table-shell"><div class="table-scroll"><table><thead><tr><th>申请编号</th><th>产品名称</th><th>产品批次</th><th>客户名称</th><th>撤回原因</th><th>${fxCustomerDateHeader("申请时间", "opsWithdrawal")}</th><th>${fxTableSelectHeader("状态", "withdrawalStatus", ["全部状态", "待审批", "已通过", "已驳回"], state.withdrawalStatus)}</th><th>操作</th></tr></thead><tbody>${rows.length ? rows.map(item => { const product = products.find(row => row.name === item.product && row.company === item.customer && (!item.batch || row.batch === item.batch)); return `<tr><td class="mono">${item.no}</td><td>${fxEscape(item.product)}</td><td class="mono">${fxEscape(item.batch || product?.batch || "—")}</td><td>${fxEscape(item.customer)}</td><td>${fxEscape(item.reason)}</td><td>${fxEscape(item.time || "—")}</td><td>${status(item.status)}</td><td>${item.status === "待审批" ? `<button class="text-action success-text" data-action="fx-approve-withdrawal" data-index="${item.index}">通过</button><button class="text-action danger-text" data-action="fx-reject-withdrawal" data-index="${item.index}">驳回</button>` : `<button class="text-action" data-action="fx-view-withdrawal" data-index="${item.index}">查看</button>`}</td></tr>`; }).join("") : fxEmpty(8, "未找到撤回申请")}</tbody></table></div>${pagination(rows.length)}</div></div>`;
+    return `<div class="page">${pageHeader("撤回审核", "审批已激活产品的码段撤回或整产品撤回，处理结果自动通知客户")}<div class="toolbar"><div class="filters">${fxFilterInput("fx-withdrawal-search", state.withdrawalFilter, "申请编号、产品或客户")}</div></div><div class="table-shell"><div class="table-scroll"><table><thead><tr><th>申请编号</th><th>产品名称</th><th>产品批次</th><th>撤回码段</th><th>客户名称</th><th>撤回原因</th><th>${fxCustomerDateHeader("申请时间", "opsWithdrawal")}</th><th>${fxTableSelectHeader("状态", "withdrawalStatus", ["全部状态", "待审批", "已通过", "已驳回"], state.withdrawalStatus)}</th><th>操作</th></tr></thead><tbody>${rows.length ? rows.map(item => { const product = products.find(row => row.name === item.product && row.company === item.customer && (!item.batch || row.batch === item.batch)); const rangeSummary = fxWithdrawalRangeSummary(item); return `<tr><td class="mono">${item.no}</td><td>${fxEscape(item.product)}</td><td class="mono">${fxEscape(item.batch || product?.batch || "—")}</td><td><div class="cell-main mono" title="${fxEscape(fxWithdrawalSegments(item).map(segment => segment.range).filter(Boolean).join("、") || rangeSummary)}">${fxEscape(rangeSummary)}</div></td><td>${fxEscape(item.customer)}</td><td>${fxEscape(item.reason)}</td><td>${fxEscape(item.time || "—")}</td><td>${status(item.status)}</td><td>${item.status === "待审批" ? `<button class="text-action success-text" data-action="fx-approve-withdrawal" data-index="${item.index}">通过</button><button class="text-action danger-text" data-action="fx-reject-withdrawal" data-index="${item.index}">驳回</button>` : `<button class="text-action" data-action="fx-view-withdrawal" data-index="${item.index}">查看</button>`}</td></tr>`; }).join("") : fxEmpty(9, "未找到撤回申请")}</tbody></table></div>${pagination(rows.length)}</div></div>`;
   };
 
   function fxMessageHeader(label, filter, customerScope = false) {

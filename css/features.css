@@ -76,6 +76,7 @@
 .custom-field-upload.is-disabled,
 .editor-inline-media-add.is-disabled { cursor: not-allowed; opacity: .55; pointer-events: none; }
 .custom-field-file-empty { margin-top: 7px; color: var(--text-subtle); font-size: 11px; }
+.custom-field-file-limit { margin-top: 6px; }
 .editor-inline-media-list { margin-top: 0; }
 .editor-inline-media-item { position: relative; min-width: 0; }
 .editor-inline-media-item[draggable="true"],
