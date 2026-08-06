@@ -133,12 +133,24 @@ const fxToday = "2026-07-27";
     fxNormalizeDetails(product.details);
     if (product.status === "草稿") product.submitted = "";
   });
-  withdrawals.forEach((item, index) => Object.assign(item, { id: item.id || index + 1, rejectReason: item.rejectReason || (item.status === "已驳回" ? "资料可由运营方直接修改，无需重置码段" : "") }));
+  const fxLegacyWithdrawalSegments = {
+    "WD-202607-008": [{ orderNo: "ORD-202607-028", range: "BC00150001–BC00170000", amount: 20000 }],
+    "WD-202607-006": [{ orderNo: "ORD-202607-031", range: "YL00880001–YL00892000", amount: 12000 }],
+    "WD-202607-003": [{ orderNo: "ORD-202607-021", range: "SY00030001–SY00042000", amount: 12000 }],
+  };
+  withdrawals.forEach((item, index) => {
+    const legacySegments = fxLegacyWithdrawalSegments[item.no] || [];
+    if ((!Array.isArray(item.segments) || !item.segments.length) && !item.resetRanges?.length && legacySegments.length) {
+      item.segments = legacySegments.map(segment => ({ ...segment, key: `${segment.orderNo}::${segment.range}::` }));
+      item.requestedAmount ||= legacySegments.reduce((sum, segment) => sum + Number(segment.amount || 0), 0);
+    }
+    Object.assign(item, { id: item.id || index + 1, rejectReason: item.rejectReason || (item.status === "已驳回" ? "资料可由运营方直接修改，无需重置码段" : "") });
+  });
   messages.splice(0, messages.length,
     { id: 1, type: "产品审核申请", title: "云岭高山绿茶等待审核", detail: "客户已提交五个资料模块，请及时处理。", time: "2026-07-27 10:32", unread: true, recipient: "运营方", customer: "云岭生态农业有限公司" },
     { id: 2, type: "产品撤回申请", title: "有机稻花香米发起全量撤回", detail: "涉及 20,000 枚已激活码，等待运营方审批。", time: "2026-07-27 09:18", unread: true, recipient: "运营方", customer: "北辰农产有限公司" },
-    { id: 3, type: "产品审核通过", title: "云岭春芽红茶已通过并激活", detail: "审核通过，已激活 18,000 枚溯源质控码。", time: "2026-07-24 15:18", unread: false, recipient: "云岭生态农业有限公司", customer: "云岭生态农业有限公司" },
-    { id: 4, type: "产品撤回驳回", title: "古树晒青毛茶撤回申请已驳回", detail: "处理说明：请联系运营方直接修改产品信息。", time: "2026-06-18 13:06", unread: true, recipient: "云岭生态农业有限公司", customer: "云岭生态农业有限公司" }
+    { id: 3, type: "绑定审核结果", title: "云岭春芽红茶（批次：YL20260724）绑定审核已通过", detail: "关联订单：ORD-202607-024；绑定数量：18,000 枚；绑定码段：YL00060001–YL00078000。", time: "2026-07-24 15:18", unread: false, recipient: "云岭生态农业有限公司", customer: "云岭生态农业有限公司" },
+    { id: 4, type: "撤回审核结果", title: "古树晒青毛茶（批次：YL20260618）产品撤回审核已驳回", detail: "申请码段：YL00893001–YL00909000；驳回原因：请联系运营方直接修改产品信息。", time: "2026-06-18 13:06", unread: true, recipient: "云岭生态农业有限公司", customer: "云岭生态农业有限公司" }
   );
 
   const fxBusinessStorage = {
@@ -199,7 +211,14 @@ const fxToday = "2026-07-27";
     let allocated = 0; const start = fxParseCode(String(order.range || "").split("–")[0]);
     order.activations = (order.activations || []).map(row => { const amount = Number(row.amount || 0); const range = row.range || (start && amount ? fxCodeAt(start, start.number + allocated) + "–" + fxCodeAt(start, start.number + allocated + amount - 1) : ""); allocated += amount; return { ...row, amount, range, status: row.status || "有效" }; });
   });
-  withdrawals.forEach((item, index) => Object.assign(item, { id: item.id || index + 1, rejectReason: item.rejectReason || "" }));
+  withdrawals.forEach((item, index) => {
+    const legacySegments = fxLegacyWithdrawalSegments[item.no] || [];
+    if ((!Array.isArray(item.segments) || !item.segments.length) && !item.resetRanges?.length && legacySegments.length) {
+      item.segments = legacySegments.map(segment => ({ ...segment, key: `${segment.orderNo}::${segment.range}::` }));
+      item.requestedAmount ||= legacySegments.reduce((sum, segment) => sum + Number(segment.amount || 0), 0);
+    }
+    Object.assign(item, { id: item.id || index + 1, rejectReason: item.rejectReason || "" });
+  });
   bindRequests.forEach((item, index) => Object.assign(item, {
     id: item.id || `BR-${Date.now()}-${index}`,
     no: item.no || `BR-202608-${String(index + 1).padStart(3, "0")}`,
@@ -213,17 +232,86 @@ const fxToday = "2026-07-27";
     审核与激活: "产品审核通过",
     审核驳回: "产品审核驳回",
   };
-  function fxReviewMessageCopy(product, approved, rawExplanation = "") {
-    const batch = product?.batch || "—";
-    const explanation = String(rawExplanation || "")
+  function fxMessageProductSubject(productName, batch) {
+    const name = String(productName || "未命名产品").trim();
+    const batchValue = String(batch || "").trim();
+    return batchValue && batchValue !== "—" ? `${name}（批次：${batchValue}）` : name;
+  }
+  function fxMessageReason(rawValue) {
+    let value = String(rawValue || "").trim();
+    const reasonIndex = value.lastIndexOf("驳回原因：");
+    if (reasonIndex >= 0) value = value.slice(reasonIndex + "驳回原因：".length);
+    return value
       .replace(/^产品批次：[^；;]+[；;]\s*/, "")
       .replace(/^处理说明：\s*/, "")
-      .replace(/^审核通过[，,]\s*/, "")
-      .trim() || (approved ? "审核通过并已完成码段激活。" : "请根据审核意见修改后重新提交。");
+      .replace(/[。；;]+$/, "")
+      .trim();
+  }
+  function fxMessageDetailValue(detail, label) {
+    const match = String(detail || "").match(new RegExp(`${label}：([^；;。]+)`));
+    return match?.[1]?.trim() || "";
+  }
+  function fxMessageDetail(parts) {
+    const detail = parts.filter(Boolean).map(part => String(part).replace(/[。；;]+$/, "")).join("；");
+    return detail ? `${detail}。` : "暂无补充信息。";
+  }
+  function fxBindingResultMessage(data, approved) {
+    const amount = Number(data.amount || 0);
+    const range = String(data.range || "").trim();
+    const orderNo = String(data.orderNo || "").trim();
+    const reason = fxMessageReason(data.reason);
     return {
-      type: approved ? "产品审核通过" : "产品审核驳回",
-      title: `您申请的产品${product?.name || "—"}批次${batch}${approved ? "审核通过" : "审核未通过"}`,
-      detail: `处理说明：${explanation}`,
+      type: "绑定审核结果",
+      title: `${fxMessageProductSubject(data.product, data.batch)}绑定审核${approved ? "已通过" : "已驳回"}`,
+      detail: fxMessageDetail([
+        orderNo ? `关联订单：${orderNo}` : "",
+        amount ? `${approved ? "绑定数量" : "申请数量"}：${formatNumber(amount)} 枚` : "",
+        range ? `${approved ? "绑定码段" : "申请码段"}：${range}` : "",
+        !approved ? `驳回原因：${reason || "请根据审核意见修改后重新提交"}` : "",
+      ]),
+      productId: data.productId || null,
+      orderNo,
+      batch: data.batch || "",
+      bindRequestNo: data.bindRequestNo || "",
+    };
+  }
+  function fxReviewMessageCopy(product, approved, rawOptions = {}) {
+    const options = typeof rawOptions === "string" ? { reason: rawOptions } : rawOptions || {};
+    const activationRows = orders.flatMap(order => (order.activations || []).filter(row => row.product === product?.name).map(row => ({ order, row })));
+    const activation = activationRows.find(entry => entry.row.time === product?.decidedAt)
+      || activationRows.find(entry => !entry.row.batch || entry.row.batch === product?.batch)
+      || activationRows.sort((left, right) => String(right.row.time || "").localeCompare(String(left.row.time || "")))[0];
+    return fxBindingResultMessage({
+      productId: product?.id,
+      product: product?.name,
+      batch: product?.batch,
+      orderNo: options.orderNo || product?.requestedOrderNo || activation?.order.no,
+      amount: options.amount || product?.requestedAmount || activation?.row.amount,
+      range: options.range || product?.requestedRange || activation?.row.range,
+      reason: options.reason,
+    }, approved);
+  }
+  function fxWithdrawalResultMessage(withdrawal, approved) {
+    const product = products.find(item => item.name === withdrawal?.product && item.company === withdrawal?.customer && (!withdrawal?.batch || item.batch === withdrawal.batch));
+    const segments = Array.isArray(withdrawal?.segments) && withdrawal.segments.length
+      ? withdrawal.segments
+      : Array.isArray(withdrawal?.resetRanges) ? withdrawal.resetRanges.map(range => ({ range })) : [];
+    const ranges = (withdrawal?.resetRanges?.length ? withdrawal.resetRanges : segments.map(segment => segment.range)).filter(Boolean);
+    const amount = Number(withdrawal?.rollbackAmount || segments.reduce((sum, segment) => sum + Number(segment.amount || 0), 0));
+    const rangeText = ranges.length ? ranges.join("、") : "未记录具体码段";
+    const segmentMode = withdrawal?.scope === "segments" || ranges.length > 0;
+    const reason = fxMessageReason(withdrawal?.rejectReason);
+    return {
+      type: "撤回审核结果",
+      title: `${fxMessageProductSubject(withdrawal?.product, withdrawal?.batch || product?.batch)}${segmentMode ? "码段撤回" : "产品撤回"}审核${approved ? "已通过" : "已驳回"}`,
+      detail: fxMessageDetail([
+        amount ? `${approved ? "撤回数量" : "申请数量"}：${formatNumber(amount)} 枚` : "",
+        `${approved ? "撤回码段" : "申请码段"}：${rangeText}`,
+        approved ? `处理说明：${segmentMode ? "所选码段已重置" : "产品关联码段已重置"}` : `驳回原因：${reason || "请根据审核意见处理"}`,
+      ]),
+      productId: product?.id || null,
+      withdrawalNo: withdrawal?.no || "",
+      batch: withdrawal?.batch || product?.batch || "",
     };
   }
   messages.forEach(item => {
@@ -233,23 +321,53 @@ const fxToday = "2026-07-27";
       const product = [...products].sort((left, right) => right.name.length - left.name.length).find(row =>
         String(item.title).includes(row.name) && (row.company === item.recipient || row.company === item.customer)
       );
-      if (!product?.batch) return;
-      Object.assign(item, fxReviewMessageCopy(product, item.type === "产品审核通过", item.detail));
+      const legacyProduct = String(item.title).includes("云岭春芽红茶")
+        ? { name: "云岭春芽红茶", batch: "YL20260724", requestedOrderNo: "ORD-202607-024", requestedAmount: 18000, requestedRange: "YL00060001–YL00078000" }
+        : null;
+      if (!product?.batch && !legacyProduct) return;
+      Object.assign(item, fxReviewMessageCopy(product || legacyProduct, item.type === "产品审核通过", { reason: item.detail }));
       return;
     }
-    if (item.type !== "绑定申请结果") return;
-    const rejected = String(item.title).includes("驳回");
-    const matchingRequests = bindRequests.filter(request =>
-      String(item.title).includes(request.product) &&
-      request.customer === item.recipient &&
-      request.status === (rejected ? "已驳回" : "已通过")
-    );
-    const request = matchingRequests.find(row => row.decidedAt === item.time) || matchingRequests.find(row => String(item.detail).includes(row.orderNo)) || matchingRequests[0];
-    if (!request?.batch || String(item.title).includes(`（${request.batch}）`)) return;
-    item.title = `${request.product}（${request.batch}）绑定申请${rejected ? "已驳回" : "已通过"}`;
-    item.detail = `产品批次：${request.batch}；${item.detail}`;
+    if (["绑定申请结果", "绑定审核结果"].includes(item.type)) {
+      const rejected = String(item.title).includes("驳回");
+      const matchingRequests = bindRequests.filter(request =>
+        (item.bindRequestNo ? request.no === item.bindRequestNo : String(item.title).includes(request.product)) &&
+        request.customer === (item.recipient || item.customer) &&
+        request.status === (rejected ? "已驳回" : "已通过")
+      );
+      const request = matchingRequests.find(row => row.decidedAt === item.time) || matchingRequests.find(row => String(item.detail).includes(row.orderNo)) || matchingRequests[0];
+      if (request) {
+        const order = orders.find(row => row.no === request.orderNo);
+        const activation = order?.activations?.find(row => row.bindRequestNo === request.no) || order?.activations?.find(row => row.product === request.product && Number(row.amount || 0) === Number(request.amount || 0));
+        Object.assign(item, fxBindingResultMessage({ productId: request.productId, product: request.product, batch: request.batch, orderNo: request.orderNo, amount: request.amount || activation?.amount, range: request.range || activation?.range, reason: request.rejectReason || item.detail, bindRequestNo: request.no }, !rejected));
+      }
+      else {
+        const product = products.find(row => Number(row.id) === Number(item.productId)) || [...products].sort((left, right) => right.name.length - left.name.length).find(row => String(item.title).includes(row.name) && (row.company === item.recipient || row.company === item.customer));
+        const legacyOptions = String(item.title).includes("云岭高山绿茶") && String(item.time) === "2026-07-27 15:57"
+          ? { orderNo: "ORD-202607-031", amount: 10000, range: "YL00010001–YL00020000" }
+          : {};
+        if (product) Object.assign(item, fxReviewMessageCopy(product, !rejected, {
+          ...legacyOptions,
+          orderNo: item.orderNo || fxMessageDetailValue(item.detail, "关联订单") || legacyOptions.orderNo,
+          amount: Number(String(fxMessageDetailValue(item.detail, rejected ? "申请数量" : "绑定数量")).replace(/[^\d]/g, "")) || legacyOptions.amount,
+          range: fxMessageDetailValue(item.detail, rejected ? "申请码段" : "绑定码段") || legacyOptions.range,
+          reason: item.detail,
+        }));
+      }
+      return;
+    }
+    if (["产品撤回通过", "产品撤回驳回", "撤回审核结果"].includes(item.type)) {
+      const rejected = String(item.title).includes("驳回");
+      const matching = withdrawals.filter(withdrawal =>
+        (item.withdrawalNo ? withdrawal.no === item.withdrawalNo : String(item.title).includes(withdrawal.product)) &&
+        withdrawal.customer === (item.recipient || item.customer)
+      );
+      const withdrawal = matching.find(row => row.decidedAt === item.time) || matching[0];
+      if (withdrawal) Object.assign(item, fxWithdrawalResultMessage(withdrawal, !rejected));
+      else if (String(item.title).includes("古树晒青毛茶")) Object.assign(item, fxWithdrawalResultMessage({ product: "古树晒青毛茶", batch: "YL20260618", customer: item.recipient || item.customer, scope: "product", segments: [{ range: "YL00893001–YL00909000", amount: 16000 }], rejectReason: item.detail }, !rejected));
+    }
   });
-  const fxDemoCaseVersion = 7;
+  const fxDemoCaseVersion = 8;
   function fxCompleteDemoDetails() {
     return fxNormalizeDetails({
       productName: "云岭高山有机绿茶",
@@ -352,11 +470,11 @@ const fxToday = "2026-07-27";
       if (product) Object.assign(product, productData); else { product = productData; products.unshift(product); }
       const orderData = { id: 1001, demoCase: "complete-tea", no: "ORD-202607-088", customer: "云岭生态农业有限公司", range: "YL00880001–YL00910000", total: 30000, active: 12000, created: "2026-07-26", createdAt: "2026-07-26 10:18", style: "标准方形 · 黑白", size: "30 × 30 mm", note: "完整案例：春季特级有机绿茶首批包装赋码", activations: [{ batch: "YL20260726", range: "YL00880001–YL00892000", amount: 12000, time: "2026-07-26 10:32", product: "云岭高山有机绿茶", operator: "平台管理员", status: "有效" }] };
       if (order) Object.assign(order, orderData); else { order = orderData; orders.unshift(order); }
-      const withdrawalData = { id: 1001, demoCase: "complete-tea", no: "WD-202607-018", product: "云岭高山有机绿茶", customer: "云岭生态农业有限公司", reason: "演示撤回审批流程并核对附件版本", status: "已驳回", time: "2026-07-27 09:06", decidedAt: "2026-07-27 09:28", rejectReason: "当前产品资料和质检附件均为最新版本，无需撤回或重置关联码" };
+      const withdrawalData = { id: 1001, demoCase: "complete-tea", no: "WD-202607-018", product: "云岭高山有机绿茶", batch: "YL20260726", customer: "云岭生态农业有限公司", scope: "segments", segments: [{ key: "ORD-202607-088::YL00880001–YL00892000::2026-07-26 10:32", orderNo: "ORD-202607-088", range: "YL00880001–YL00892000", amount: 12000, time: "2026-07-26 10:32" }], requestedAmount: 12000, reason: "演示撤回审批流程并核对附件版本", status: "已驳回", time: "2026-07-27 09:06", decidedAt: "2026-07-27 09:28", rejectReason: "当前产品资料和质检附件均为最新版本，无需撤回或重置关联码" };
       if (withdrawal) Object.assign(withdrawal, withdrawalData); else { withdrawal = withdrawalData; withdrawals.unshift(withdrawal); }
       const demoMessages = [
-        { id: 1001, demoCase: "complete-tea-approval", type: "产品审核通过", title: "您申请的产品云岭高山有机绿茶批次YL20260726审核通过", detail: "处理说明：已关联订单 ORD-202607-088，激活 12,000 枚，码段 YL00880001–YL00892000。", time: "2026-07-26 10:32", unread: false, recipient: "云岭生态农业有限公司", customer: "云岭生态农业有限公司" },
-        { id: 1002, demoCase: "complete-tea-withdrawal", type: "产品撤回驳回", title: "云岭高山有机绿茶撤回申请已驳回", detail: "当前产品资料和质检附件均为最新版本，无需撤回或重置关联码。", time: "2026-07-27 09:28", unread: true, recipient: "云岭生态农业有限公司", customer: "云岭生态农业有限公司" },
+        { id: 1001, demoCase: "complete-tea-approval", ...fxBindingResultMessage({ productId: product.id, product: product.name, batch: product.batch, orderNo: order.no, amount: 12000, range: "YL00880001–YL00892000" }, true), time: "2026-07-26 10:32", unread: false, recipient: "云岭生态农业有限公司", customer: "云岭生态农业有限公司" },
+        { id: 1002, demoCase: "complete-tea-withdrawal", ...fxWithdrawalResultMessage(withdrawalData, false), time: "2026-07-27 09:28", unread: true, recipient: "云岭生态农业有限公司", customer: "云岭生态农业有限公司" },
       ];
       demoMessages.reverse().forEach(message => { const existing = messages.find(item => item.demoCase === message.demoCase); if (existing) Object.assign(existing, message); else messages.unshift(message); });
       const customer = customers.find(item => item.name === "云岭生态农业有限公司");
@@ -365,6 +483,15 @@ const fxToday = "2026-07-27";
     }
   }
   fxEnsureCompleteDemoCase();
+  const fxDemoWithdrawal = withdrawals.find(item => item.demoCase === "complete-tea" || item.no === "WD-202607-018");
+  if (fxDemoWithdrawal && (!Array.isArray(fxDemoWithdrawal.segments) || !fxDemoWithdrawal.segments.length)) {
+    Object.assign(fxDemoWithdrawal, {
+      batch: fxDemoWithdrawal.batch || "YL20260726",
+      scope: "segments",
+      segments: [{ key: "ORD-202607-088::YL00880001–YL00892000::2026-07-26 10:32", orderNo: "ORD-202607-088", range: "YL00880001–YL00892000", amount: 12000, time: "2026-07-26 10:32" }],
+      requestedAmount: Number(fxDemoWithdrawal.requestedAmount || 12000),
+    });
+  }
   function fxSaveBusiness() {
     fxStore.set(fxBusinessStorage.customers, customers);
     fxStore.set(fxBusinessStorage.orders, orders);
@@ -401,13 +528,13 @@ const fxToday = "2026-07-27";
   nav.ops.splice(0, nav.ops.length,
     ["customers", "building-2", "客户列表"],
     ["orders", "receipt-text", "订单台账"],
-    ["reviews", "clipboard-check", "产品审核"],
-    ["bind-requests", "link-2", "绑定审核"],
+    ["bind-requests", "clipboard-check", "绑定审核"],
     ["withdrawals", "rotate-ccw", "撤回审核"],
     ["operators", "users-round", "运营账号管理"],
     ["messages", "mail", "站内信"],
     ["settings", "settings", "个人设置"]
   );
+  nav.customer.splice(0, nav.customer.length, ...nav.customer.filter(item => item[0] !== "products"));
   if (!nav.customer.some(item => item[0] === "orders")) nav.customer.splice(1, 0, ["orders", "receipt-text", "订单台账"]);
   const fxCustomerOrderNav = nav.customer.find(item => item[0] === "orders");
   if (fxCustomerOrderNav) fxCustomerOrderNav[2] = "订单台账";
@@ -421,7 +548,8 @@ const fxToday = "2026-07-27";
     orderFilter: "", orderFrom: "", orderTo: "", orderSortKey: "", orderSortDirection: "asc",
     orderDateDraftFrom: "", orderDateDraftTo: "", orderCalendarOpen: false,
     orderCalendarLeftMonth: "2026-06-01", orderCalendarRightMonth: "2026-07-01",
-    bindRequestFilter: "", bindRequestStatus: "全部状态",
+    bindRequestFilter: "", bindRequestStatus: "全部状态", bindRequestCategory: "全部大类",
+    bindRequestSortKey: "", bindRequestSortDirection: "asc",
     bindRequestDateFrom: "", bindRequestDateTo: "", bindRequestDateDraftFrom: "", bindRequestDateDraftTo: "",
     productCategory: "全部大类",
     reviewDateFrom: "", reviewDateTo: "", reviewDateDraftFrom: "", reviewDateDraftTo: "",
@@ -442,7 +570,7 @@ const fxToday = "2026-07-27";
     selectedMessageIds: [],
     selectedOperatorId: null, selectedCustomerId: null, selectedOrderNo: null, highlightOrderNo: null,
     selectedWithdrawalIndex: null, selectedMessageId: null, selectedBindRequestId: null,
-    editorProductId: null, editorDraft: null, editorReadonly: false, editorOwner: "customer", editorTargetOrderNo: null,
+    editorProductId: null, editorDraft: null, editorReadonly: false, editorOwner: "customer", editorTargetOrderNo: null, editorBindRequestId: null,
     editorRequestedSourceRange: "", editorRequestedRange: "", editorRequestedAmount: 0, reviewEditing: false,
     qrDraft: { customerId: null, style: "标准方形 · 黑白", size: "25 × 25 mm", amount: 500, note: "" },
     generatedOrderNo: null, previewVersion: 1,

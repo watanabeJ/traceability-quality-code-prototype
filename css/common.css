@@ -742,6 +742,10 @@ input.immutable-input { width: 100%; color: var(--text); background: var(--surfa
 .withdrawal-segment-copy strong { overflow-wrap: anywhere; color: var(--text-strong); font-weight: 500; }
 .withdrawal-segment-copy small { color: var(--text-muted); font-size: 11px; }
 .withdrawal-segment-empty { min-height: 58px; display: grid; place-items: center; padding: 12px; border: 1px dashed var(--border); border-radius: var(--r-sm); color: var(--text-muted); background: var(--surface-muted); font-size: 12px; }
+.withdrawal-range-list { min-width: 0; display: grid; gap: 4px; align-content: center; }
+.withdrawal-range-list span { display: block; overflow-wrap: anywhere; color: var(--text-strong); font-size: 12px; line-height: 1.45; }
+.immutable-range-panel { min-height: 42px; padding: 9px 11px; border: 1px solid var(--border); border-radius: var(--r-sm); background: var(--surface-muted); }
+.confirm-row .withdrawal-range-list { padding: 3px 0; }
 .customer-picker-control { position: relative; }
 .customer-picker-search { width: 100%; appearance: none; }
 .customer-picker-options {
@@ -790,11 +794,6 @@ input.immutable-input { width: 100%; color: var(--text); background: var(--surfa
 .step.active .step-number { color: var(--on-primary); background: var(--primary); border-color: var(--primary); }
 .step.done .step-number { color: var(--success); background: var(--success-bg); border-color: var(--primary-border); }
 
-.editor-order-context { min-height: 48px; display: grid; grid-template-columns: auto minmax(0, 1fr) auto; align-items: center; gap: 10px; margin-bottom: 14px; padding: 10px 12px; color: var(--primary); background: var(--primary-soft); border: 1px solid var(--primary-border); border-radius: var(--r-md); }
-.editor-order-context > .icon { width: 18px; height: 18px; }
-.editor-order-context strong, .editor-order-context span { display: block; }
-.editor-order-context strong { color: var(--text-strong); font-size: 12px; }
-.editor-order-context span { margin-top: 2px; color: var(--text-muted); font-size: 11px; }
 .bind-choice-grid { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 14px; }
 .bind-choice-card { display: grid; grid-template-columns: auto minmax(0, 1fr); gap: 5px 10px; align-items: center; min-height: 118px; padding: 16px; text-align: left; color: var(--text); background: var(--surface); border: 1px solid var(--border-light); border-radius: var(--r-md); cursor: pointer; transition: border-color .16s ease, background .16s ease, box-shadow .16s ease; }
 .bind-choice-card:hover, .bind-choice-card:focus-visible { border-color: var(--primary); background: var(--primary-soft); box-shadow: 0 0 0 3px var(--primary-soft); outline: 0; }

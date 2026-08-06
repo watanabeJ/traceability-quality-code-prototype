@@ -40,9 +40,9 @@ js/pages/customer/messages.js
 js/pages/customer/order-detail.js
 js/pages/customer/orders.js
 js/pages/customer/overview.js
-js/pages/customer/products.js
 js/pages/customer/settings.js
 js/pages/customer/withdrawals.js
+js/pages/ops/bind-request-detail.js
 js/pages/ops/bind-requests.js
 js/pages/ops/create-order.js
 js/pages/ops/customer-detail.js
@@ -51,8 +51,6 @@ js/pages/ops/messages.js
 js/pages/ops/operators.js
 js/pages/ops/order-detail.js
 js/pages/ops/orders.js
-js/pages/ops/review-detail.js
-js/pages/ops/reviews.js
 js/pages/ops/settings.js
 js/pages/ops/withdrawals.js
 js/pages/scan/active.js
@@ -67,9 +65,9 @@ pages/customer/messages.html
 pages/customer/order-detail.html
 pages/customer/orders.html
 pages/customer/overview.html
-pages/customer/products.html
 pages/customer/settings.html
 pages/customer/withdrawals.html
+pages/ops/bind-request-detail.html
 pages/ops/bind-requests.html
 pages/ops/create-order.html
 pages/ops/customer-detail.html
@@ -78,8 +76,6 @@ pages/ops/messages.html
 pages/ops/operators.html
 pages/ops/order-detail.html
 pages/ops/orders.html
-pages/ops/review-detail.html
-pages/ops/reviews.html
 pages/ops/settings.html
 pages/ops/withdrawals.html
 pages/scan/active.html
@@ -119,9 +115,9 @@ vendor/qrcode-generator.min.js
 - `js/pages/customer/order-detail.js`
 - `js/pages/customer/orders.js`
 - `js/pages/customer/overview.js`
-- `js/pages/customer/products.js`
 - `js/pages/customer/settings.js`
 - `js/pages/customer/withdrawals.js`
+- `js/pages/ops/bind-request-detail.js`
 - `js/pages/ops/bind-requests.js`
 - `js/pages/ops/create-order.js`
 - `js/pages/ops/customer-detail.js`
@@ -130,8 +126,6 @@ vendor/qrcode-generator.min.js
 - `js/pages/ops/operators.js`
 - `js/pages/ops/order-detail.js`
 - `js/pages/ops/orders.js`
-- `js/pages/ops/review-detail.js`
-- `js/pages/ops/reviews.js`
 - `js/pages/ops/settings.js`
 - `js/pages/ops/withdrawals.js`
 - `js/pages/scan/active.js`
@@ -146,9 +140,9 @@ vendor/qrcode-generator.min.js
 - `pages/customer/order-detail.html`
 - `pages/customer/orders.html`
 - `pages/customer/overview.html`
-- `pages/customer/products.html`
 - `pages/customer/settings.html`
 - `pages/customer/withdrawals.html`
+- `pages/ops/bind-request-detail.html`
 - `pages/ops/bind-requests.html`
 - `pages/ops/create-order.html`
 - `pages/ops/customer-detail.html`
@@ -157,8 +151,6 @@ vendor/qrcode-generator.min.js
 - `pages/ops/operators.html`
 - `pages/ops/order-detail.html`
 - `pages/ops/orders.html`
-- `pages/ops/review-detail.html`
-- `pages/ops/reviews.html`
 - `pages/ops/settings.html`
 - `pages/ops/withdrawals.html`
 - `pages/scan/active.html`

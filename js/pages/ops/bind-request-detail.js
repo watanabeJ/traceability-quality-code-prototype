@@ -2,7 +2,7 @@ import { bootstrapPage } from "../../bootstrap.js?v=mshqijug";
 
 bootstrapPage({
   "portal": "ops",
-  "page": "messages",
-  "title": "站内信",
-  "pageKey": "P12"
+  "page": "review-detail",
+  "title": "绑定审核详情",
+  "pageKey": "P08"
 });

@@ -2533,15 +2533,15 @@
           "elementId": "P26-E004",
           "selector": ".modal",
           "strategy": "css",
-          "fallbackText": "全量撤回申请",
+          "fallbackText": "发起码段撤回申请",
           "annotationType": "R",
           "kind": "interaction",
           "dimension": "Surface overview",
           "priority": "high",
-          "reason": "全量撤回申请是当前页面需要评审或验收的功能点。",
+          "reason": "码段撤回申请是当前页面需要评审或验收的功能点。",
           "evidence": [
             "稳定锚点：.modal",
-            "可见文本：全量撤回申请"
+            "可见文本：发起码段撤回申请"
           ],
           "selected": true,
           "skipReason": null,
@@ -2553,15 +2553,15 @@
           "elementId": "P26-E005",
           "selector": "#fx-withdraw-product-search",
           "strategy": "id",
-          "fallbackText": "选择撤回产品",
+          "fallbackText": "产品名称",
           "annotationType": "C",
           "kind": "interaction",
           "dimension": "Surface field",
           "priority": "high",
-          "reason": "选择撤回产品是当前页面需要评审或验收的功能点。",
+          "reason": "选择产品是当前页面需要评审或验收的功能点。",
           "evidence": [
             "稳定锚点：#fx-withdraw-product-search",
-            "可见文本：选择撤回产品"
+            "可见文本：产品名称"
           ],
           "selected": true,
           "skipReason": null,

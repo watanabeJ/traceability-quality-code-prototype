@@ -39,8 +39,7 @@ prototype-multipage/
 |       |   |-- create-order.js
 |       |   |-- orders.js
 |       |   |-- order-detail.js
-|       |   |-- reviews.js
-|       |   |-- review-detail.js
+|       |   |-- bind-request-detail.js
 |       |   |-- bind-requests.js
 |       |   |-- withdrawals.js
 |       |   |-- operators.js
@@ -50,7 +49,6 @@ prototype-multipage/
 |       |   |-- overview.js
 |       |   |-- orders.js
 |       |   |-- order-detail.js
-|       |   |-- products.js
 |       |   |-- editor.js
 |       |   |-- withdrawals.js
 |       |   |-- messages.js
@@ -67,8 +65,7 @@ prototype-multipage/
 |   |   |-- create-order.html
 |   |   |-- orders.html
 |   |   |-- order-detail.html
-|   |   |-- reviews.html
-|   |   |-- review-detail.html
+|   |   |-- bind-request-detail.html
 |   |   |-- bind-requests.html
 |   |   |-- withdrawals.html
 |   |   |-- operators.html
@@ -78,7 +75,6 @@ prototype-multipage/
 |   |   |-- overview.html
 |   |   |-- orders.html
 |   |   |-- order-detail.html
-|   |   |-- products.html
 |   |   |-- editor.html
 |   |   |-- withdrawals.html
 |   |   |-- messages.html
@@ -102,8 +98,7 @@ prototype-multipage/
 | ops | 创建订单 | `pages/ops/create-order.html` | `js/pages/ops/create-order.js` |
 | ops | 订单台账 | `pages/ops/orders.html` | `js/pages/ops/orders.js` |
 | ops | 订单详情 | `pages/ops/order-detail.html` | `js/pages/ops/order-detail.js` |
-| ops | 产品审核 | `pages/ops/reviews.html` | `js/pages/ops/reviews.js` |
-| ops | 产品审核详情 | `pages/ops/review-detail.html` | `js/pages/ops/review-detail.js` |
+| ops | 绑定审核详情 | `pages/ops/bind-request-detail.html` | `js/pages/ops/bind-request-detail.js` |
 | ops | 绑定审核 | `pages/ops/bind-requests.html` | `js/pages/ops/bind-requests.js` |
 | ops | 撤回审核 | `pages/ops/withdrawals.html` | `js/pages/ops/withdrawals.js` |
 | ops | 运营账号管理 | `pages/ops/operators.html` | `js/pages/ops/operators.js` |
@@ -112,7 +107,6 @@ prototype-multipage/
 | customer | 数据概览 | `pages/customer/overview.html` | `js/pages/customer/overview.js` |
 | customer | 订单台账 | `pages/customer/orders.html` | `js/pages/customer/orders.js` |
 | customer | 订单详情 | `pages/customer/order-detail.html` | `js/pages/customer/order-detail.js` |
-| customer | 产品信息 | `pages/customer/products.html` | `js/pages/customer/products.js` |
 | customer | 产品编辑与查看 | `pages/customer/editor.html` | `js/pages/customer/editor.js` |
 | customer | 撤回申请 | `pages/customer/withdrawals.html` | `js/pages/customer/withdrawals.js` |
 | customer | 站内信 | `pages/customer/messages.html` | `js/pages/customer/messages.js` |

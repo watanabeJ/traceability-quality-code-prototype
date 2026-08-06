@@ -97,6 +97,10 @@ function syncCurrentRoute() {
   if (page === "review-detail" && state.drawerProductId) target.searchParams.set("product", state.drawerProductId);
   if (page === "editor" && state.editorProductId) target.searchParams.set("product", state.editorProductId);
   if (page === "editor" && state.editorTargetOrderNo) target.searchParams.set("order", state.editorTargetOrderNo);
+  if (page === "editor" && state.editorBindRequestId) target.searchParams.set("request", state.editorBindRequestId);
+  if (page === "editor" && state.editorTargetOrderNo && state.editorRequestedRange) target.searchParams.set("range", state.editorRequestedRange);
+  if (page === "editor" && state.editorTargetOrderNo && Number(state.editorRequestedAmount) > 0) target.searchParams.set("amount", state.editorRequestedAmount);
+  if (page === "editor" && state.editorReadonly) target.searchParams.set("readonly", "1");
   if (["review-detail", "editor"].includes(page) && Number(state.productStep) > 0) target.searchParams.set("step", state.productStep);
   document.title = pageTitles[`${state.portal}:${page}`] || document.title;
   const routeState = { portal: state.portal, page };
@@ -223,10 +227,10 @@ document.addEventListener("click", (event) => {
   if (action === "refresh") return showToast("数据已刷新");
   if (action === "export") return showToast("导出任务已创建");
   if (action === "download") return showToast("下载已开始");
-  if (action === "go-reviews") return setNav("reviews");
+  if (action === "go-reviews") return setNav("bind-requests");
   if (action === "go-codes") return setNav("codes");
   if (action === "go-orders") return setNav("orders");
-  if (action === "customer-products") return setNav("products");
+  if (action === "customer-products") return setNav("orders");
   if (action === "new-customer") { state.modal = "new-customer"; return render(); }
   if (action === "edit-customer") return showToast("客户编辑抽屉已就绪");
   if (action === "confirm-new-customer") {
@@ -276,8 +280,6 @@ document.addEventListener("click", (event) => {
   if (action === "regenerate-preview") return showToast("预览码已重新生成");
   if (action === "submit-product") { state.modal = "submit-product"; return render(); }
   if (action === "confirm-submit-product") { products[0].status = "待审核"; state.modal = null; state.customerPage = "products"; render(); return showToast("产品资料已提交审核"); }
-  if (action === "customer-withdraw") { state.modal = "withdraw"; return render(); }
-  if (action === "confirm-withdraw") { state.modal = null; render(); return showToast("全量撤回申请已提交"); }
   if (action === "close-modal") { state.modal = null; return render(); }
   if (action === "scan-status") { state.scanStatus = target.dataset.status; return render(); }
   if (action === "scan-tab") { state.scanTab = target.dataset.tab; return render(); }
@@ -358,16 +360,21 @@ function restoreFromLocation() {
     const productId = Number(params.get("product"));
     const product = typeof products !== "undefined" ? products.find(item => item.id === productId) : null;
     const targetOrderNo = params.get("order");
+    const bindRequestId = Number(params.get("request")) || null;
+    const routeRange = params.get("range") || "";
+    const routeAmount = Number(params.get("amount")) || 0;
     state.editorProductId = productId;
     state.editorOwner = "customer";
     state.editorTargetOrderNo = targetOrderNo || null;
-    state.editorRequestedSourceRange = targetOrderNo ? product?.requestedSourceRange || "" : "";
-    state.editorRequestedRange = targetOrderNo ? product?.requestedRange || "" : "";
-    state.editorRequestedAmount = targetOrderNo ? Number(product?.requestedAmount || 0) : 0;
+    state.selectedOrderNo = targetOrderNo || state.selectedOrderNo;
+    state.editorBindRequestId = bindRequestId;
+    state.editorRequestedSourceRange = routeRange || (targetOrderNo ? product?.requestedSourceRange || "" : "");
+    state.editorRequestedRange = routeRange || (targetOrderNo ? product?.requestedRange || "" : "");
+    state.editorRequestedAmount = routeAmount || (targetOrderNo ? Number(product?.requestedAmount || 0) : 0);
     if (product) {
       state.editorDraft = fxNormalizeDetails(fxClone(product.details || fxDefaultDetails(product)));
-      state.editorReadonly = !targetOrderNo && ["待审核", "已激活"].includes(product.status);
-      if (typeof fxInitializeEditorBinding === "function") fxInitializeEditorBinding(product);
+      state.editorReadonly = params.get("readonly") === "1" || (!targetOrderNo && ["待审核", "已激活"].includes(product.status));
+      if (!state.editorReadonly && !routeRange && typeof fxInitializeEditorBinding === "function") fxInitializeEditorBinding(product);
     }
   }
   if (page === "editor" && params.get("order") && !params.get("product")) state.editorTargetOrderNo = params.get("order");

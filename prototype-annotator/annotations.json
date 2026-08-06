@@ -381,16 +381,16 @@
     {
       "id": "surface-P26-customer-withdraw",
       "type": "modal",
-      "name": "发起全量撤回申请弹窗",
+      "name": "发起码段撤回申请弹窗",
       "pageKey": "P26",
       "triggerSelector": "[data-action=\"fx-open-withdraw\"]",
       "openSelector": ".modal-backdrop .modal",
       "containerSelector": ".modal-body",
       "titleText": [
-        "发起全量撤回申请"
+        "发起码段撤回申请"
       ],
       "visibility": "on-trigger",
-      "description": "选择产品并说明撤回原因。"
+      "description": "选择产品和已绑码段，并说明撤回原因。"
     }
   ],
   "annotations": [
@@ -3617,7 +3617,7 @@
         "strategy": "css"
       },
       "title": "撤回审核页面说明",
-      "contentMarkdown": "### 页面功能介绍\n\n审批客户针对已激活产品发起的全量撤回申请。\n\n### 核心内容\n\n列表展示申请编号、产品、批次、客户、原因、申请时间、状态和操作。\n\n### 业务流程\n\n筛选待审批申请，核对影响范围后通过并重置全部关联码，或填写原因驳回。\n\n### 主要操作\n\n搜索、重置、日期与状态筛选、通过、驳回和查看详情。\n\n### 待确认\n\n当前原型已明确页面操作与状态；后续如接入真实接口，应保持字段口径和状态名称一致。",
+      "contentMarkdown": "### 页面功能介绍\n\n审批客户针对已激活产品发起的码段或整产品撤回申请。\n\n### 核心内容\n\n列表展示申请编号、产品、批次、撤回码段、客户、原因、申请时间、状态和操作。\n\n### 业务流程\n\n筛选待审批申请，核对客户选定的码段或整产品撤回范围后通过并重置对应码段，或填写原因驳回。\n\n### 主要操作\n\n搜索、重置、日期与状态筛选、通过、驳回和查看详情。\n\n### 待确认\n\n当前原型已明确页面操作与状态；后续如接入真实接口，应保持字段口径和状态名称一致。",
       "maintenancePolicy": "annotation-owned",
       "kind": "note",
       "dimension": "Page overview",
@@ -5301,7 +5301,7 @@
         "strategy": "css"
       },
       "title": "产品信息页面说明",
-      "contentMarkdown": "### 页面功能介绍\n\n客户维护产品资料、预览扫码效果、提交审核并跟踪状态。\n\n### 核心内容\n\n列表展示产品名称、大类、批次、状态、提交时间和状态相关操作。\n\n### 业务流程\n\n新建或编辑产品后保存草稿；草稿提交审核，待审核可撤回修改，已激活可申请全量撤回。\n\n### 主要操作\n\n搜索、分类与状态筛选、日期筛选、新建、编辑查看、预览码、提交审核、撤回审核或撤回产品。\n\n### 待确认\n\n当前原型已明确页面操作与状态；后续如接入真实接口，应保持字段口径和状态名称一致。",
+      "contentMarkdown": "### 页面功能介绍\n\n客户维护产品资料、预览扫码效果、提交审核并跟踪状态。\n\n### 核心内容\n\n列表展示产品名称、大类、批次、状态、提交时间和状态相关操作。\n\n### 业务流程\n\n新建或编辑产品后保存草稿；草稿提交审核，待审核可撤回修改。已激活产品如需撤回码段，应在撤回申请页面操作。\n\n### 主要操作\n\n搜索、分类与状态筛选、日期筛选、新建、编辑查看、预览码、提交审核或撤回待审核申请。\n\n### 待确认\n\n当前原型已明确页面操作与状态；后续如接入真实接口，应保持字段口径和状态名称一致。",
       "maintenancePolicy": "annotation-owned",
       "kind": "note",
       "dimension": "Page overview",
@@ -5441,7 +5441,7 @@
         }
       },
       "title": "产品行操作组",
-      "contentMarkdown": "### 业务含义\n\n根据产品状态提供编辑查看、预览、提交或撤回操作。\n\n### 交互规则\n\n草稿可编辑和提交；待审核只读并可撤回申请；已激活可查看并撤回产品；已退回可继续编辑。\n\n### 状态与异常\n\n不符合状态的操作不显示。\n\n### 页面流转\n\n进入编辑内页或打开预览、提交、撤回确认。",
+      "contentMarkdown": "### 业务含义\n\n根据产品状态提供编辑查看、预览或提交操作。\n\n### 交互规则\n\n草稿可编辑和提交；待审核只读并可撤回申请；已激活可查看；已退回可继续编辑。\n\n### 状态与异常\n\n不符合状态的操作不显示。\n\n### 页面流转\n\n进入编辑内页或打开预览、提交确认。",
       "maintenancePolicy": "annotation-owned",
       "kind": "state",
       "dimension": "Primary action",
@@ -6051,7 +6051,7 @@
         "strategy": "css"
       },
       "title": "撤回申请页面说明",
-      "contentMarkdown": "### 页面功能介绍\n\n客户对已激活产品发起全量撤回并跟踪处理结果。\n\n### 核心内容\n\n列表展示申请编号、产品、批次、原因、申请时间、状态和处理说明。\n\n### 业务流程\n\n选择已激活产品并填写原因提交，运营端审核后更新为已通过或已驳回。\n\n### 主要操作\n\n发起申请、日期和状态筛选、查看处理说明。\n\n### 待确认\n\n当前原型已明确页面操作与状态；后续如接入真实接口，应保持字段口径和状态名称一致。",
+      "contentMarkdown": "### 页面功能介绍\n\n客户对已激活产品的一个或多个已绑码段发起撤回申请，并跟踪处理结果。\n\n### 核心内容\n\n列表展示申请编号、产品、批次、撤回码段、原因、申请时间、状态和处理说明。\n\n### 业务流程\n\n选择已激活产品和需要撤回的已绑码段，填写原因后提交；运营端审核后更新为已通过或已驳回。\n\n### 主要操作\n\n发起申请、日期和状态筛选、查看处理说明。\n\n### 待确认\n\n当前原型已明确页面操作与状态；后续如接入真实接口，应保持字段口径和状态名称一致。",
       "maintenancePolicy": "annotation-owned",
       "kind": "note",
       "dimension": "Page overview",
@@ -6097,7 +6097,7 @@
         }
       },
       "title": "发起撤回申请",
-      "contentMarkdown": "### 业务含义\n\n对已激活产品申请解除全部关联码。\n\n### 交互规则\n\n点击后打开产品选择与原因表单。\n\n### 状态与异常\n\n没有可撤回产品时显示空状态。\n\n### 页面流转\n\n打开全量撤回申请弹窗。\n\n### 风险提示\n\n撤回通过后全部关联码会变为已重置。",
+      "contentMarkdown": "### 业务含义\n\n对已激活产品的一个或多个已绑码段发起撤回申请。\n\n### 交互规则\n\n点击后打开产品、已绑码段和撤回原因表单。\n\n### 状态与异常\n\n没有可撤回码段时显示空状态。\n\n### 页面流转\n\n打开码段撤回申请弹窗。\n\n### 风险提示\n\n审批通过后仅重置本次选中的码段。",
       "maintenancePolicy": "annotation-owned",
       "kind": "interaction",
       "dimension": "Primary action",
@@ -6184,11 +6184,11 @@
       "annotationType": "R",
       "target": {
         "selector": ".modal",
-        "fallbackText": "全量撤回申请",
+        "fallbackText": "发起码段撤回申请",
         "strategy": "css"
       },
-      "title": "全量撤回申请",
-      "contentMarkdown": "### 业务含义\n\n申请撤回某一已激活产品的全部关联码。\n\n### 交互规则\n\n搜索选择产品，自动带出批次，填写原因后提交。\n\n### 状态与异常\n\n提交后进入待审批，原码段在通过前继续有效。\n\n### 风险提示\n\n不支持部分码段撤回；通过后原产品资料不再由相关码展示。",
+      "title": "码段撤回申请",
+      "contentMarkdown": "### 业务含义\n\n申请撤回某一已激活产品的一个或多个已绑码段。\n\n### 交互规则\n\n搜索选择产品，自动带出批次，再单选、多选或全选已绑码段，填写原因后提交。\n\n### 状态与异常\n\n未选择产品、码段或未填写原因时不允许提交；提交后进入待审批。\n\n### 风险提示\n\n审批通过后仅重置本次选中的码段。",
       "maintenancePolicy": "annotation-owned",
       "kind": "interaction",
       "dimension": "Surface overview",
@@ -6207,7 +6207,7 @@
       "candidateId": "CAND-P26-004",
       "evidence": [
         "稳定锚点：.modal",
-        "可见文本：全量撤回申请"
+        "可见文本：发起码段撤回申请"
       ],
       "nextActions": [],
       "dependencies": [],
@@ -6232,14 +6232,14 @@
       "annotationType": "C",
       "target": {
         "selector": "#fx-withdraw-product-search",
-        "fallbackText": "选择撤回产品",
+        "fallbackText": "产品名称",
         "strategy": "id",
         "boundsHint": {
           "tag": "input",
-          "text": "选择撤回产品"
+          "text": "产品名称"
         }
       },
-      "title": "选择撤回产品",
+      "title": "选择产品",
       "contentMarkdown": "### 业务含义\n\n限定为当前客户的已激活产品。\n\n### 字段规则\n\n可按产品名称或批次搜索，选择后自动显示批次。\n\n### 状态与异常\n\n无可选产品时不允许提交。",
       "maintenancePolicy": "annotation-owned",
       "kind": "interaction",
@@ -6258,7 +6258,7 @@
       "candidateId": "CAND-P26-005",
       "evidence": [
         "稳定锚点：#fx-withdraw-product-search",
-        "可见文本：选择撤回产品"
+        "可见文本：产品名称"
       ],
       "nextActions": [],
       "dependencies": [],
@@ -6289,7 +6289,7 @@
         }
       },
       "title": "撤回原因",
-      "contentMarkdown": "### 业务含义\n\n向运营端说明需要全量撤回的业务原因。\n\n### 字段规则\n\n必填，建议描述资料变更或业务处理依据。\n\n### 状态与异常\n\n为空时不允许提交。",
+      "contentMarkdown": "### 业务含义\n\n向运营端说明本次码段撤回的业务原因。\n\n### 字段规则\n\n必填，建议描述资料变更或业务处理依据。\n\n### 状态与异常\n\n为空时不允许提交。",
       "maintenancePolicy": "annotation-owned",
       "kind": "interaction",
       "dimension": "Surface field",

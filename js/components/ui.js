@@ -60,11 +60,10 @@ function sidebar(portal) {
     <aside class="sidebar ${state.sidebarCollapsed ? "is-collapsed" : ""}" aria-label="${portalLabels[portal]}导航">
       <div class="sidebar-head"><div class="nav-label">工作台</div><button type="button" class="sidebar-toggle" data-action="toggle-sidebar" aria-label="${state.sidebarCollapsed ? "展开侧边栏" : "收起侧边栏"}" title="${state.sidebarCollapsed ? "展开侧边栏" : "收起侧边栏"}">${icon(state.sidebarCollapsed ? "panel-left-open" : "panel-left-close", state.sidebarCollapsed ? "›" : "‹")}</button></div>
       <nav class="nav-list">
-        ${nav[portal].map(([key, iconName, label, count]) => `
+        ${nav[portal].map(([key, iconName, label]) => `
           <button type="button" class="nav-item ${pageKey === key ? "active" : ""}" data-nav="${key}" title="${label}">
             ${icon(iconName, "·")}
             <span>${label}</span>
-            ${count ? `<span class="nav-count">${count}</span>` : ""}
           </button>`).join("")}
       </nav>
       <div class="sidebar-foot"><strong>${portal === "ops" ? "平台运营中心" : "云岭生态农业"}</strong>${portal === "ops" ? "全量运营权限" : "客户编号 C-0186"}</div>

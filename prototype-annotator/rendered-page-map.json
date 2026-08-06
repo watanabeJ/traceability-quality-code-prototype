@@ -148,16 +148,16 @@
     {
       "id": "surface-P26-customer-withdraw",
       "type": "modal",
-      "name": "发起全量撤回申请弹窗",
+      "name": "发起码段撤回申请弹窗",
       "pageKey": "P26",
       "triggerSelector": "[data-action=\"fx-open-withdraw\"]",
       "openSelector": ".modal-backdrop .modal",
       "containerSelector": ".modal-body",
       "titleText": [
-        "发起全量撤回申请"
+        "发起码段撤回申请"
       ],
       "visibility": "on-trigger",
-      "description": "选择产品并说明撤回原因。"
+      "description": "选择产品和已绑码段，并说明撤回原因。"
     }
   ],
   "pages": [
@@ -1388,7 +1388,7 @@
           "selector": ".modal",
           "tag": "section",
           "type": "interaction",
-          "text": "全量撤回申请",
+          "text": "发起码段撤回申请",
           "visible": false,
           "surfaceId": "surface-P26-customer-withdraw"
         },
@@ -1397,7 +1397,7 @@
           "selector": "#fx-withdraw-product-search",
           "tag": "input",
           "type": "interaction",
-          "text": "选择撤回产品",
+          "text": "产品名称",
           "visible": false,
           "surfaceId": "surface-P26-customer-withdraw"
         },

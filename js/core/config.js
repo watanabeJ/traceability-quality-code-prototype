@@ -7,11 +7,11 @@ const portalEntries = {
 };
 
 const pageFiles = {
-  ops: { customers: "pages/ops/customers.html", "customer-detail": "pages/ops/customer-detail.html", codes: "pages/ops/create-order.html", orders: "pages/ops/orders.html", "order-detail": "pages/ops/order-detail.html", reviews: "pages/ops/reviews.html", "review-detail": "pages/ops/review-detail.html", "bind-requests": "pages/ops/bind-requests.html", withdrawals: "pages/ops/withdrawals.html", operators: "pages/ops/operators.html", messages: "pages/ops/messages.html", settings: "pages/ops/settings.html" },
-  customer: { overview: "pages/customer/overview.html", orders: "pages/customer/orders.html", "order-detail": "pages/customer/order-detail.html", products: "pages/customer/products.html", editor: "pages/customer/editor.html", withdrawals: "pages/customer/withdrawals.html", messages: "pages/customer/messages.html", settings: "pages/customer/settings.html" },
+  ops: { customers: "pages/ops/customers.html", "customer-detail": "pages/ops/customer-detail.html", codes: "pages/ops/create-order.html", orders: "pages/ops/orders.html", "order-detail": "pages/ops/order-detail.html", "review-detail": "pages/ops/bind-request-detail.html", "bind-requests": "pages/ops/bind-requests.html", withdrawals: "pages/ops/withdrawals.html", operators: "pages/ops/operators.html", messages: "pages/ops/messages.html", settings: "pages/ops/settings.html" },
+  customer: { overview: "pages/customer/overview.html", orders: "pages/customer/orders.html", "order-detail": "pages/customer/order-detail.html", editor: "pages/customer/editor.html", withdrawals: "pages/customer/withdrawals.html", messages: "pages/customer/messages.html", settings: "pages/customer/settings.html" },
 };
 
-const pageTitles = Object.fromEntries([["ops:customers","溯源质控码平台 · 客户列表"],["ops:customer-detail","溯源质控码平台 · 客户详情"],["ops:codes","溯源质控码平台 · 创建订单"],["ops:orders","溯源质控码平台 · 订单台账"],["ops:order-detail","溯源质控码平台 · 订单详情"],["ops:reviews","溯源质控码平台 · 产品审核"],["ops:review-detail","溯源质控码平台 · 产品审核详情"],["ops:bind-requests","溯源质控码平台 · 绑定审核"],["ops:withdrawals","溯源质控码平台 · 撤回审核"],["ops:operators","溯源质控码平台 · 运营账号管理"],["ops:messages","溯源质控码平台 · 站内信"],["ops:settings","溯源质控码平台 · 个人设置"],["customer:overview","溯源质控码平台 · 数据概览"],["customer:orders","溯源质控码平台 · 订单台账"],["customer:order-detail","溯源质控码平台 · 订单详情"],["customer:products","溯源质控码平台 · 产品信息"],["customer:editor","溯源质控码平台 · 产品编辑与查看"],["customer:withdrawals","溯源质控码平台 · 撤回申请"],["customer:messages","溯源质控码平台 · 站内信"],["customer:settings","溯源质控码平台 · 个人设置"]]);
+const pageTitles = Object.fromEntries([["ops:customers","溯源质控码平台 · 客户列表"],["ops:customer-detail","溯源质控码平台 · 客户详情"],["ops:codes","溯源质控码平台 · 创建订单"],["ops:orders","溯源质控码平台 · 订单台账"],["ops:order-detail","溯源质控码平台 · 订单详情"],["ops:review-detail","溯源质控码平台 · 绑定审核详情"],["ops:bind-requests","溯源质控码平台 · 绑定审核"],["ops:withdrawals","溯源质控码平台 · 撤回审核"],["ops:operators","溯源质控码平台 · 运营账号管理"],["ops:messages","溯源质控码平台 · 站内信"],["ops:settings","溯源质控码平台 · 个人设置"],["customer:overview","溯源质控码平台 · 数据概览"],["customer:orders","溯源质控码平台 · 订单台账"],["customer:order-detail","溯源质控码平台 · 订单详情"],["customer:editor","溯源质控码平台 · 产品编辑与查看"],["customer:withdrawals","溯源质控码平台 · 撤回申请"],["customer:messages","溯源质控码平台 · 站内信"],["customer:settings","溯源质控码平台 · 个人设置"]]);
 
 const entryPortal = portalEntries[document.body.dataset.entryPortal] ? document.body.dataset.entryPortal : "ops";
 const initialPage = document.body.dataset.initialPage || (entryPortal === "customer" ? "overview" : "orders");
@@ -73,19 +73,17 @@ const nav = {
   ops: [
     ["customers", "building-2", "客户列表"],
     ["orders", "receipt-text", "订单台账"],
-    ["reviews", "clipboard-check", "产品审核", "3"],
-    ["bind-requests", "link-2", "绑定审核"],
-    ["withdrawals", "rotate-ccw", "撤回审核", "1"],
+    ["bind-requests", "clipboard-check", "绑定审核"],
+    ["withdrawals", "rotate-ccw", "撤回审核"],
     ["operators", "users-round", "运营账号管理"],
-    ["messages", "mail", "站内信", "2"],
+    ["messages", "mail", "站内信"],
     ["settings", "settings", "个人设置"],
   ],
   customer: [
     ["overview", "layout-dashboard", "数据概览"],
     ["orders", "receipt-text", "订单台账"],
-    ["products", "package-search", "产品信息"],
     ["withdrawals", "rotate-ccw", "撤回申请"],
-    ["messages", "mail", "站内信", "2"],
+    ["messages", "mail", "站内信"],
     ["settings", "settings", "个人设置"],
   ],
 };

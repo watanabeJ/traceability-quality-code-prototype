@@ -73,7 +73,7 @@ function opsReviews() {
 
 function opsWithdrawals() {
   return `<div class="page">
-    ${pageHeader("撤回审核", "审批已激活产品的全量撤回申请")}
+    ${pageHeader("撤回审核", "审批已激活产品的码段或整产品撤回申请")}
     <div class="toolbar"><div class="filters"><div class="search-field">${icon("search", "⌕")}<input placeholder="申请编号、产品或客户"></div><select><option>全部状态</option><option>待审批</option><option>已通过</option><option>已驳回</option></select></div></div>
     <div class="table-shell"><div class="table-scroll"><table><colgroup><col style="width:15%"><col style="width:20%"><col style="width:21%"><col style="width:20%"><col style="width:10%"><col style="width:14%"></colgroup><thead><tr><th>申请编号</th><th>产品名称</th><th>客户</th><th>撤回原因</th><th>状态</th><th>操作</th></tr></thead><tbody>${withdrawals.map((w, idx) => `<tr><td class="mono">${w.no}</td><td>${w.product}</td><td>${w.customer}</td><td><div class="cell-main" title="${w.reason}">${w.reason}</div></td><td>${status(w.status)}</td><td>${w.status === "待审批" ? `<button class="text-action success-text" data-action="approve-withdrawal" data-index="${idx}">通过</button><button class="text-action danger-text" data-action="reject-withdrawal" data-index="${idx}">驳回</button>` : `<button class="text-action">查看</button>`}</td></tr>`).join("")}</tbody></table></div>${pagination(withdrawals.length)}</div>
   </div>`;
@@ -98,7 +98,7 @@ function customerOverview() {
 
 function customerProducts() {
   const customerProductsData = products.filter(p => p.company.includes("云岭") || p.id === 3);
-  return `<div class="page">${pageHeader("产品信息", "维护产品资料、预览扫码效果并提交审核", `<button class="button primary" data-action="customer-new-product">${icon("plus", "+")}新建产品</button>`)}<div class="toolbar"><div class="filters"><div class="search-field">${icon("search", "⌕")}<input placeholder="搜索产品名称或批次"></div><select><option>全部状态</option><option>草稿</option><option>待审核</option><option>已激活</option></select></div></div><div class="table-shell"><div class="table-scroll"><table><thead><tr><th>产品名称</th><th>产品大类</th><th>批次</th><th>状态</th><th>已激活码量</th><th>操作</th></tr></thead><tbody>${customerProductsData.map(p => `<tr><td><div class="cell-main">${p.name}</div></td><td>${p.category}</td><td class="mono">${p.batch}</td><td>${status(p.status)}</td><td>${formatNumber(p.amount)}</td><td><div class="table-actions">${p.status === "已激活" ? `<button class="text-action" data-action="customer-preview">查看</button><button class="text-action" data-action="customer-withdraw">申请撤回</button>` : `<button class="text-action" data-action="customer-edit-product">编辑</button><button class="text-action" data-action="customer-preview">预览码</button>`}</div></td></tr>`).join("")}</tbody></table></div>${pagination(customerProductsData.length)}</div></div>`;
+  return `<div class="page">${pageHeader("产品信息", "维护产品资料、预览扫码效果并提交审核", `<button class="button primary" data-action="customer-new-product">${icon("plus", "+")}新建产品</button>`)}<div class="toolbar"><div class="filters"><div class="search-field">${icon("search", "⌕")}<input placeholder="搜索产品名称或批次"></div><select><option>全部状态</option><option>草稿</option><option>待审核</option><option>已激活</option></select></div></div><div class="table-shell"><div class="table-scroll"><table><thead><tr><th>产品名称</th><th>产品大类</th><th>批次</th><th>状态</th><th>已激活码量</th><th>操作</th></tr></thead><tbody>${customerProductsData.map(p => `<tr><td><div class="cell-main">${p.name}</div></td><td>${p.category}</td><td class="mono">${p.batch}</td><td>${status(p.status)}</td><td>${formatNumber(p.amount)}</td><td><div class="table-actions">${p.status === "已激活" ? `<button class="text-action" data-action="customer-preview">查看</button>` : `<button class="text-action" data-action="customer-edit-product">编辑</button><button class="text-action" data-action="customer-preview">预览码</button>`}</div></td></tr>`).join("")}</tbody></table></div>${pagination(customerProductsData.length)}</div></div>`;
 }
 
 const productSteps = ["产品信息", "企业信息", "生产单位", "质量信息", "生产追溯"];
@@ -120,7 +120,7 @@ function customerEditor() {
 }
 
 function customerWithdrawals() {
-  return `<div class="page">${pageHeader("撤回申请", "仅支持对已激活产品发起全量撤回", `<button class="button primary" data-action="customer-withdraw">${icon("plus", "+")}发起申请</button>`)}<div class="table-shell"><div class="table-scroll"><table><thead><tr><th>申请编号</th><th>产品名称</th><th>撤回原因</th><th>申请时间</th><th>状态</th><th>处理说明</th></tr></thead><tbody><tr><td class="mono">WD-202607-006</td><td>云岭春芽红茶</td><td>批次质检资料更新</td><td>2026-07-24 15:06</td><td>${status("已通过")}</td><td>关联码已重置</td></tr><tr><td class="mono">WD-202606-011</td><td>古树晒青毛茶</td><td>生产单位信息更正</td><td>2026-06-18 11:30</td><td>${status("已驳回")}</td><td>请联系运营方直接修改</td></tr></tbody></table></div>${pagination(2)}</div></div>`;
+  return `<div class="page">${pageHeader("撤回申请", "选择产品的一个或多个已绑码段发起撤回申请", `<button class="button primary" data-action="fx-open-withdraw">${icon("plus", "+")}发起申请</button>`)}<div class="table-shell"><div class="table-scroll"><table><thead><tr><th>申请编号</th><th>产品名称</th><th>撤回码段</th><th>撤回原因</th><th>申请时间</th><th>状态</th><th>处理说明</th></tr></thead><tbody><tr><td class="mono">WD-202607-006</td><td>云岭春芽红茶</td><td class="mono">YL00880001–YL00892000</td><td>批次质检资料更新</td><td>2026-07-24 15:06</td><td>${status("已通过")}</td><td>选定码段已重置</td></tr><tr><td class="mono">WD-202606-011</td><td>古树晒青毛茶</td><td class="mono">YL00893001–YL00909000</td><td>生产单位信息更正</td><td>2026-06-18 11:30</td><td>${status("已驳回")}</td><td>请联系运营方直接修改</td></tr></tbody></table></div>${pagination(2)}</div></div>`;
 }
 
 function renderCustomer() {
@@ -215,16 +215,11 @@ function modalMarkup() {
   } else if (state.modal === "submit-product") {
     title = "提交产品审核";
     subtitle = "提交后资料将变为只读，审核结果通过站内信通知。";
-    body = `<div class="confirm-list"><div class="confirm-row"><span>产品</span><strong>云岭高山绿茶</strong></div><div class="confirm-row"><span>资料模块</span><strong>5 / 5 已填写</strong></div><div class="confirm-row"><span>完整度</span><strong>87%</strong></div></div>`;
+    body = `<div class="confirm-list"><div class="confirm-row"><span>产品</span><strong>云岭高山绿茶</strong></div><div class="confirm-row"><span>完整度</span><strong>87%</strong></div></div>`;
     foot = `<button class="button" data-action="close-modal">返回检查</button><button class="button primary" data-action="confirm-submit-product">确认提交</button>`;
-  } else if (state.modal === "withdraw") {
-    title = "发起全量撤回申请";
-    subtitle = "审批通过后，该产品全部已激活码将解除关联。";
-    body = `<div class="form-grid"><div class="field full"><label class="required">关联产品</label><select><option>云岭春芽红茶 · 已激活 18,000 枚</option><option>古树晒青毛茶 · 已激活 10,000 枚</option></select></div><div class="field full"><label class="required">撤回原因</label><textarea placeholder="说明需要全量撤回的原因"></textarea></div></div>`;
-    foot = `<button class="button" data-action="close-modal">取消</button><button class="button danger" data-action="confirm-withdraw">提交撤回申请</button>`;
   } else if (state.modal === "withdraw-approve") {
     title = "确认通过撤回申请";
-    subtitle = "此操作将重置相关产品全部已激活码。";
+    subtitle = "此操作将重置申请中选定的已绑码段。";
     body = `<div class="confirm-list"><div class="confirm-row"><span>产品</span><strong>有机稻花香米</strong></div><div class="confirm-row"><span>影响码量</span><strong>20,000 枚</strong></div><div class="confirm-row"><span>结果</span><strong>扫码端显示“信息已更新”</strong></div></div>`;
     foot = `<button class="button" data-action="close-modal">取消</button><button class="button danger" data-action="confirm-withdraw-approve">确认通过并重置</button>`;
   } else if (state.modal === "message") {
