@@ -32,19 +32,10 @@
     ]
   },
   "productContext": {
-    "summary": "溯源质控码平台包含运营后台、客户后台和消费者扫码展示端，围绕客户、订单码段、产品审核、绑定审核、撤回审核和结果通知形成闭环。",
+    "summary": "溯源质控码平台包含运营后台、客户后台和消费者扫码展示端，围绕客户、订单码段、统一产品绑定审核、指定码段撤回审核和结果通知形成闭环。",
     "source": "实际原型页面、已实现交互和当前产品说明"
   },
   "pages": [
-    {
-      "pageKey": "P01",
-      "title": "运营概览",
-      "path": "index.html",
-      "route": "#overview",
-      "role": [
-        "运营人员"
-      ]
-    },
     {
       "pageKey": "P02",
       "title": "客户列表",
@@ -91,17 +82,8 @@
       ]
     },
     {
-      "pageKey": "P07",
-      "title": "产品审核",
-      "path": "index.html",
-      "route": "#reviews",
-      "role": [
-        "运营人员"
-      ]
-    },
-    {
       "pageKey": "P08",
-      "title": "产品审核详情",
+      "title": "绑定审核详情",
       "path": "index.html",
       "route": "#review-detail",
       "role": [
@@ -181,15 +163,6 @@
       ]
     },
     {
-      "pageKey": "P24",
-      "title": "产品信息",
-      "path": "customer.html",
-      "route": "#products",
-      "role": [
-        "客户人员"
-      ]
-    },
-    {
       "pageKey": "P25",
       "title": "产品编辑与查看",
       "path": "customer.html",
@@ -242,13 +215,13 @@
       "name": "新建客户弹窗",
       "pageKey": "P02",
       "triggerSelector": "[data-action=\"fx-new-customer\"]",
-      "openSelector": ".modal-backdrop .modal",
-      "containerSelector": ".modal-body",
       "titleText": [
         "新建客户账号"
       ],
-      "visibility": "on-trigger",
-      "description": "录入客户基本资料、登录凭据与证件附件。"
+      "description": "录入客户基本资料、登录凭据与证件附件。",
+      "openSelector": ".modal-backdrop .modal",
+      "containerSelector": ".modal-body",
+      "visibility": "on-trigger"
     },
     {
       "id": "surface-P02-edit-customer",
@@ -256,13 +229,13 @@
       "name": "编辑客户弹窗",
       "pageKey": "P02",
       "triggerSelector": "[data-action=\"fx-edit-customer\"]",
-      "openSelector": ".modal-backdrop .modal",
-      "containerSelector": ".modal-body",
       "titleText": [
         "编辑客户账号"
       ],
-      "visibility": "on-trigger",
-      "description": "维护客户资料、附件和密码。"
+      "description": "维护客户资料、附件和密码。",
+      "openSelector": ".modal-backdrop .modal",
+      "containerSelector": ".modal-body",
+      "visibility": "on-trigger"
     },
     {
       "id": "surface-P05-bind-product",
@@ -270,14 +243,14 @@
       "name": "运营绑定产品弹窗",
       "pageKey": "P05",
       "triggerSelector": "[data-action=\"fx-ops-bind-order\"]",
-      "openSelector": ".modal-backdrop .modal",
-      "containerSelector": ".modal-body",
       "titleText": [
         "绑定产品",
         "绑定已激活产品"
       ],
-      "visibility": "on-trigger",
-      "description": "为订单剩余码量直接绑定已激活产品。"
+      "description": "为订单剩余码量直接绑定已激活产品。",
+      "openSelector": ".modal-backdrop .modal",
+      "containerSelector": ".modal-body",
+      "visibility": "on-trigger"
     },
     {
       "id": "surface-P08-approve-activation",
@@ -285,56 +258,28 @@
       "name": "审核通过并激活弹窗",
       "pageKey": "P08",
       "triggerSelector": "[data-action=\"fx-open-activation\"]",
-      "openSelector": ".modal-backdrop .modal",
-      "containerSelector": ".modal-body",
       "titleText": [
         "审核通过并激活"
       ],
-      "visibility": "on-trigger",
-      "description": "选择订单并分配首次激活码段。"
-    },
-    {
-      "id": "surface-P08-reject-product",
-      "type": "modal",
-      "name": "驳回产品资料弹窗",
-      "pageKey": "P08",
-      "triggerSelector": "[data-action=\"fx-open-reject\"]",
+      "description": "核对或调整客户预填的订单、数量和码段。",
       "openSelector": ".modal-backdrop .modal",
       "containerSelector": ".modal-body",
-      "titleText": [
-        "驳回产品资料"
-      ],
-      "visibility": "on-trigger",
-      "description": "填写明确原因并退回客户修改。"
-    },
-    {
-      "id": "surface-P09-reject-bind-request",
-      "type": "modal",
-      "name": "驳回绑定申请弹窗",
-      "pageKey": "P09",
-      "triggerSelector": "[data-action=\"fx-reject-bind-request\"]",
-      "openSelector": ".modal-backdrop .modal",
-      "containerSelector": ".modal-body",
-      "titleText": [
-        "驳回绑定申请"
-      ],
-      "visibility": "on-trigger",
-      "description": "填写处理原因并退回申请。"
+      "visibility": "on-trigger"
     },
     {
       "id": "surface-P10-withdraw-decision",
       "type": "modal",
       "name": "撤回审核决策弹窗",
       "pageKey": "P10",
-      "triggerSelector": "[data-action=\"fx-approve-withdrawal\"]",
-      "openSelector": ".modal-backdrop .modal",
-      "containerSelector": ".modal-body",
+      "triggerSelector": "[data-action=\"fx-approve-withdrawal\"], [data-action=\"fx-reject-withdrawal\"]",
       "titleText": [
-        "通过撤回申请",
+        "确认通过撤回申请",
         "驳回撤回申请"
       ],
-      "visibility": "on-trigger",
-      "description": "确认全量重置或填写驳回原因。"
+      "description": "核对具体撤回码段并确认通过，或填写驳回原因。",
+      "openSelector": ".modal-backdrop .modal",
+      "containerSelector": ".modal-body",
+      "visibility": "on-trigger"
     },
     {
       "id": "surface-P11-new-operator",
@@ -342,41 +287,56 @@
       "name": "新建运营账号弹窗",
       "pageKey": "P11",
       "triggerSelector": "[data-action=\"fx-new-operator\"]",
-      "openSelector": ".modal-backdrop .modal",
-      "containerSelector": ".modal-body",
       "titleText": [
         "新建运营账号"
       ],
-      "visibility": "on-trigger",
-      "description": "创建内部运营登录账号。"
-    },
-    {
-      "id": "surface-P22-request-bind",
-      "type": "modal",
-      "name": "申请绑定产品弹窗",
-      "pageKey": "P22",
-      "triggerSelector": "[data-action=\"fx-customer-bind-order\"]",
+      "description": "创建内部运营登录账号。",
       "openSelector": ".modal-backdrop .modal",
       "containerSelector": ".modal-body",
+      "visibility": "on-trigger"
+    },
+    {
+      "id": "surface-P22-bind-choice",
+      "type": "modal",
+      "name": "产品绑定方式选择",
+      "pageKey": "P22",
+      "triggerSelector": "[data-action=\"fx-customer-bind-order\"]",
       "titleText": [
         "申请绑定产品"
       ],
-      "visibility": "on-trigger",
-      "description": "客户选择已激活产品并申请追加码量。"
-    },
-    {
-      "id": "surface-P25-submit-product",
-      "type": "confirm",
-      "name": "提交产品审核确认",
-      "pageKey": "P25",
-      "triggerSelector": "[data-action=\"fx-open-submit\"]",
+      "description": "先选择绑定已有产品或新建产品并绑定。",
       "openSelector": ".modal-backdrop .modal",
       "containerSelector": ".modal-body",
+      "visibility": "on-trigger"
+    },
+    {
+      "id": "surface-P22-existing-bind",
+      "type": "modal",
+      "name": "已有产品绑定申请",
+      "pageKey": "P22",
+      "triggerSelector": "[data-action=\"fx-customer-select-existing-binding\"]",
       "titleText": [
-        "提交产品审核"
+        "选择已有产品绑定"
       ],
-      "visibility": "on-trigger",
-      "description": "确认产品、批次、资料模块和附件后提交。"
+      "description": "选择已有产品、填写数量并预览申请码段。",
+      "openSelector": ".modal-backdrop .modal",
+      "containerSelector": ".modal-body",
+      "visibility": "on-trigger"
+    },
+    {
+      "id": "surface-P25-submit-binding",
+      "type": "confirm",
+      "name": "提交产品与绑定申请确认",
+      "pageKey": "P25",
+      "triggerSelector": "[data-action=\"fx-open-submit\"]",
+      "titleText": [
+        "提交产品与绑定申请",
+        "提交绑定申请"
+      ],
+      "description": "最终核对产品、订单、数量和申请码段。",
+      "openSelector": ".modal-backdrop .modal",
+      "containerSelector": ".modal-body",
+      "visibility": "on-trigger"
     },
     {
       "id": "surface-P26-customer-withdraw",
@@ -384,246 +344,16 @@
       "name": "发起码段撤回申请弹窗",
       "pageKey": "P26",
       "triggerSelector": "[data-action=\"fx-open-withdraw\"]",
-      "openSelector": ".modal-backdrop .modal",
-      "containerSelector": ".modal-body",
       "titleText": [
         "发起码段撤回申请"
       ],
-      "visibility": "on-trigger",
-      "description": "选择产品和已绑码段，并说明撤回原因。"
+      "description": "选择产品和具体已绑码段，并说明撤回原因。",
+      "openSelector": ".modal-backdrop .modal",
+      "containerSelector": ".modal-body",
+      "visibility": "on-trigger"
     }
   ],
   "annotations": [
-    {
-      "id": "ANN-P01-001",
-      "pageKey": "P01",
-      "annotationType": "P",
-      "target": {
-        "selector": ".page-header h1",
-        "fallbackText": "运营概览",
-        "strategy": "css"
-      },
-      "title": "运营概览页面说明",
-      "contentMarkdown": "### 页面功能介绍\n\n运营人员查看平台订单、码段与待审核业务的汇总入口。\n\n### 核心内容\n\n顶部指标展示订单总量、码段总量、已激活和未激活；下方展示最近订单与待办事项。\n\n### 业务流程\n\n从汇总指标或待办进入订单台账、产品审核或撤回审核，处理后返回概览继续查看。\n\n### 主要操作\n\n处理待审核、点击指标下钻、查看最近订单、进入客户列表和刷新业务信息。\n\n### 待确认\n\n当前原型已明确页面操作与状态；后续如接入真实接口，应保持字段口径和状态名称一致。",
-      "maintenancePolicy": "annotation-owned",
-      "kind": "note",
-      "dimension": "Page overview",
-      "topics": [
-        "overview",
-        "business",
-        "flow"
-      ],
-      "priority": "medium",
-      "visible": true,
-      "source": {
-        "type": "mixed",
-        "ref": "CAND-P01-001"
-      },
-      "candidateId": "CAND-P01-001",
-      "evidence": [
-        "稳定锚点：.page-header h1",
-        "可见文本：运营概览"
-      ],
-      "nextActions": [],
-      "dependencies": [],
-      "risks": [],
-      "openQuestions": [],
-      "review": {
-        "required": true,
-        "status": "completed"
-      },
-      "createdBy": "ai",
-      "updatedAt": "2026-08-05T09:00:00Z",
-      "order": 1
-    },
-    {
-      "id": "ANN-P01-002",
-      "pageKey": "P01",
-      "annotationType": "J",
-      "target": {
-        "selector": "[data-action=\"go-reviews\"]",
-        "fallbackText": "处理待审核",
-        "strategy": "data",
-        "boundsHint": {
-          "tag": "button",
-          "text": "处理待审核"
-        }
-      },
-      "title": "处理待审核",
-      "contentMarkdown": "### 业务含义\n\n进入产品审核列表处理待审核资料。\n\n### 交互规则\n\n点击后切换到产品审核模块；待审核数量来自当前产品状态。\n\n### 状态与异常\n\n无待审核记录时仍可进入列表，页面展示空结果。\n\n### 页面流转\n\n进入产品审核列表。",
-      "maintenancePolicy": "annotation-owned",
-      "kind": "flow",
-      "dimension": "Primary action",
-      "topics": [
-        "business",
-        "interaction",
-        "state",
-        "flow"
-      ],
-      "priority": "high",
-      "visible": true,
-      "source": {
-        "type": "mixed",
-        "ref": "CAND-P01-002"
-      },
-      "candidateId": "CAND-P01-002",
-      "evidence": [
-        "稳定锚点：[data-action=\"go-reviews\"]",
-        "可见文本：处理待审核"
-      ],
-      "nextActions": [],
-      "dependencies": [],
-      "risks": [],
-      "openQuestions": [],
-      "review": {
-        "required": true,
-        "status": "completed"
-      },
-      "createdBy": "ai",
-      "updatedAt": "2026-08-05T09:00:00Z",
-      "order": 2
-    },
-    {
-      "id": "ANN-P01-003",
-      "pageKey": "P01",
-      "annotationType": "J",
-      "target": {
-        "selector": ".metric-strip .metric-link",
-        "fallbackText": "订单总量",
-        "strategy": "css",
-        "boundsHint": {
-          "tag": "button",
-          "text": "订单总量"
-        }
-      },
-      "title": "概览指标下钻",
-      "contentMarkdown": "### 业务含义\n\n指标既用于汇总，也作为对应业务列表的快捷入口。\n\n### 交互规则\n\n订单、码段与未激活指标进入订单台账；已激活指标按已激活产品定位。\n\n### 状态与异常\n\n目标列表保留相应筛选条件；数据为空时显示空状态。\n\n### 页面流转\n\n进入订单台账或产品审核列表。",
-      "maintenancePolicy": "annotation-owned",
-      "kind": "flow",
-      "dimension": "Primary action",
-      "topics": [
-        "business",
-        "interaction",
-        "state",
-        "flow"
-      ],
-      "priority": "high",
-      "visible": true,
-      "source": {
-        "type": "mixed",
-        "ref": "CAND-P01-003"
-      },
-      "candidateId": "CAND-P01-003",
-      "evidence": [
-        "稳定锚点：.metric-strip .metric-link",
-        "可见文本：订单总量"
-      ],
-      "nextActions": [],
-      "dependencies": [],
-      "risks": [],
-      "openQuestions": [],
-      "review": {
-        "required": true,
-        "status": "completed"
-      },
-      "createdBy": "ai",
-      "updatedAt": "2026-08-05T09:00:00Z",
-      "order": 3
-    },
-    {
-      "id": "ANN-P01-004",
-      "pageKey": "P01",
-      "annotationType": "J",
-      "target": {
-        "selector": ".section-row .panel:first-child tbody [data-action=\"fx-order-detail\"]",
-        "fallbackText": "ORD-",
-        "strategy": "css",
-        "boundsHint": {
-          "tag": "button",
-          "text": "ORD-"
-        }
-      },
-      "title": "最近订单详情",
-      "contentMarkdown": "### 业务含义\n\n从概览直接核对某笔订单的码段与激活记录。\n\n### 交互规则\n\n点击订单号后记录当前订单并打开订单详情。\n\n### 状态与异常\n\n订单不存在时展示不可用提示并允许返回。\n\n### 页面流转\n\n进入订单详情内页。",
-      "maintenancePolicy": "annotation-owned",
-      "kind": "flow",
-      "dimension": "Primary action",
-      "topics": [
-        "business",
-        "interaction",
-        "state",
-        "flow"
-      ],
-      "priority": "high",
-      "visible": true,
-      "source": {
-        "type": "mixed",
-        "ref": "CAND-P01-004"
-      },
-      "candidateId": "CAND-P01-004",
-      "evidence": [
-        "稳定锚点：.section-row .panel:first-child tbody [data-action=\"fx-order-detail\"]",
-        "可见文本：ORD-"
-      ],
-      "nextActions": [],
-      "dependencies": [],
-      "risks": [],
-      "openQuestions": [],
-      "review": {
-        "required": true,
-        "status": "completed"
-      },
-      "createdBy": "ai",
-      "updatedAt": "2026-08-05T09:00:00Z",
-      "order": 4
-    },
-    {
-      "id": "ANN-P01-005",
-      "pageKey": "P01",
-      "annotationType": "J",
-      "target": {
-        "selector": ".section-row .panel:last-child .list-button",
-        "fallbackText": "等待审核",
-        "strategy": "css",
-        "boundsHint": {
-          "tag": "button",
-          "text": "等待审核"
-        }
-      },
-      "title": "待办事项入口",
-      "contentMarkdown": "### 业务含义\n\n待办聚合产品审核与撤回审核任务。\n\n### 交互规则\n\n点击产品待办进入审核详情；点击撤回待办进入撤回审核列表。\n\n### 状态与异常\n\n已被其他操作处理的待办在刷新后消失。\n\n### 页面流转\n\n进入对应审核页面。",
-      "maintenancePolicy": "annotation-owned",
-      "kind": "flow",
-      "dimension": "Primary action",
-      "topics": [
-        "business",
-        "interaction",
-        "state",
-        "flow"
-      ],
-      "priority": "high",
-      "visible": true,
-      "source": {
-        "type": "mixed",
-        "ref": "CAND-P01-005"
-      },
-      "candidateId": "CAND-P01-005",
-      "evidence": [
-        "稳定锚点：.section-row .panel:last-child .list-button",
-        "可见文本：等待审核"
-      ],
-      "nextActions": [],
-      "dependencies": [],
-      "risks": [],
-      "openQuestions": [],
-      "review": {
-        "required": true,
-        "status": "completed"
-      },
-      "createdBy": "ai",
-      "updatedAt": "2026-08-05T09:00:00Z",
-      "order": 5
-    },
     {
       "id": "ANN-P02-001",
       "pageKey": "P02",
@@ -1168,7 +898,7 @@
         "strategy": "css"
       },
       "title": "客户详情页面说明",
-      "contentMarkdown": "### 页面功能介绍\n\n从客户列表进入，集中查看客户完整资料、已激活产品和全部订单。\n\n### 核心内容\n\n上半区展示客户资料与账号状态，下半区展示订单总量、已激活、绑定申请中和剩余可用。\n\n### 业务流程\n\n可返回客户列表、创建订单、查看已激活产品或进入具体订单。\n\n### 主要操作\n\n返回、创建订单、查看已激活产品、查看绑定申请中明细、进入订单详情和绑定产品。\n\n### 待确认\n\n当前原型已明确页面操作与状态；后续如接入真实接口，应保持字段口径和状态名称一致。",
+      "contentMarkdown": "### 页面功能介绍\n\n从客户列表进入，集中查看客户完整资料和全部订单。\n\n### 核心内容\n\n上半区展示客户资料、账号状态和已激活产品数量；下半区展示该客户全部订单及码量状态。\n\n### 业务流程\n\n可返回客户列表、为启用客户创建订单，或从订单操作进入绑定和订单详情。\n\n### 主要操作\n\n返回、创建订单、查看订单、绑定产品。\n\n### 待确认\n\n当前原型已明确页面操作与状态；后续接入真实接口时，应保持字段口径、状态名称和权限边界一致。",
       "maintenancePolicy": "annotation-owned",
       "kind": "note",
       "dimension": "Page overview",
@@ -1197,7 +927,7 @@
         "status": "completed"
       },
       "createdBy": "ai",
-      "updatedAt": "2026-08-05T09:00:00Z",
+      "updatedAt": "2026-08-07T01:30:00Z",
       "order": 1
     },
     {
@@ -1295,53 +1025,6 @@
       "order": 3
     },
     {
-      "id": "ANN-P03-004",
-      "pageKey": "P03",
-      "annotationType": "J",
-      "target": {
-        "selector": "[data-action=\"fx-view-customer-products\"]",
-        "fallbackText": "已激活产品",
-        "strategy": "data",
-        "boundsHint": {
-          "tag": "button",
-          "text": "已激活产品"
-        }
-      },
-      "title": "查看已激活产品",
-      "contentMarkdown": "### 业务含义\n\n按当前客户筛选已激活产品。\n\n### 交互规则\n\n点击后带入客户名称和已激活状态筛选。\n\n### 状态与异常\n\n没有已激活产品时显示空结果。\n\n### 页面流转\n\n进入产品审核列表。",
-      "maintenancePolicy": "annotation-owned",
-      "kind": "flow",
-      "dimension": "Primary action",
-      "topics": [
-        "business",
-        "interaction",
-        "state",
-        "flow"
-      ],
-      "priority": "high",
-      "visible": true,
-      "source": {
-        "type": "mixed",
-        "ref": "CAND-P03-004"
-      },
-      "candidateId": "CAND-P03-004",
-      "evidence": [
-        "稳定锚点：[data-action=\"fx-view-customer-products\"]",
-        "可见文本：已激活产品"
-      ],
-      "nextActions": [],
-      "dependencies": [],
-      "risks": [],
-      "openQuestions": [],
-      "review": {
-        "required": true,
-        "status": "completed"
-      },
-      "createdBy": "ai",
-      "updatedAt": "2026-08-05T09:00:00Z",
-      "order": 4
-    },
-    {
       "id": "ANN-P03-005",
       "pageKey": "P03",
       "annotationType": "A",
@@ -1355,7 +1038,7 @@
         }
       },
       "title": "客户订单操作",
-      "contentMarkdown": "### 业务含义\n\n在客户详情内对单笔订单发起绑定或查看订单信息。\n\n### 交互规则\n\n有剩余可用码量时显示绑定产品；点击订单号或详情进入订单上下文。\n\n### 状态与异常\n\n可用量为零时不显示绑定入口。\n\n### 页面流转\n\n进入绑定弹窗或订单详情。",
+      "contentMarkdown": "### 业务含义\n\n在客户详情内对单笔订单执行绑定或查看详情。\n\n### 交互规则\n\n剩余可用码量大于零时显示绑定产品；详情始终可进入。\n\n### 状态与异常\n\n订单无余额时隐藏绑定入口；操作仅作用于当前客户订单。\n\n### 页面流转\n\n打开绑定弹窗或进入订单详情。",
       "maintenancePolicy": "annotation-owned",
       "kind": "interaction",
       "dimension": "Primary action",
@@ -1385,7 +1068,7 @@
         "status": "completed"
       },
       "createdBy": "ai",
-      "updatedAt": "2026-08-05T09:00:00Z",
+      "updatedAt": "2026-08-07T01:30:00Z",
       "order": 5
     },
     {
@@ -1491,7 +1174,7 @@
         }
       },
       "title": "生成数量与序列号预览",
-      "contentMarkdown": "### 业务含义\n\n生成数量决定订单总码量和连续序列号范围。\n\n### 交互规则\n\n数量必须为 1 至 5,000 的整数；序列号预览随数量实时更新且只读。\n\n### 状态与异常\n\n超出范围或为空时不创建订单，并定位到数量字段。\n\n### 页面流转\n\n创建成功后数量写入订单台账。",
+      "contentMarkdown": "### 业务含义\n\n生成数量决定订单总码量和连续序列号范围。\n\n### 交互规则\n\n填写大于零的整数，不设单次业务上限；序列号预览随数量实时更新且只读。\n\n### 状态与异常\n\n空值、非整数或非正数不能创建订单；超大数量应由服务端容量策略兜底。",
       "maintenancePolicy": "annotation-owned",
       "kind": "interaction",
       "dimension": "Primary action",
@@ -1521,7 +1204,7 @@
         "status": "completed"
       },
       "createdBy": "ai",
-      "updatedAt": "2026-08-05T09:00:00Z",
+      "updatedAt": "2026-08-07T01:30:00Z",
       "order": 3
     },
     {
@@ -2198,7 +1881,7 @@
         "strategy": "css"
       },
       "title": "订单详情页面说明",
-      "contentMarkdown": "### 页面功能介绍\n\n查看单笔订单完整信息与按时间排列的激活记录。\n\n### 核心内容\n\n订单信息展示总量、已激活、绑定申请中和剩余可用；激活记录统一展示码段、产品、批次、数量、操作人和状态。\n\n### 业务流程\n\n从订单台账或业务列表进入，可返回台账、继续绑定产品、打开产品或查看撤回重置详情。\n\n### 主要操作\n\n返回、绑定产品、点击关联产品、查看已重置记录。\n\n### 待确认\n\n当前原型已明确页面操作与状态；后续如接入真实接口，应保持字段口径和状态名称一致。",
+      "contentMarkdown": "### 页面功能介绍\n\n查看单笔订单完整信息与统一的产品绑定记录。\n\n### 核心内容\n\n订单信息展示总量、已激活、绑定申请中和剩余可用；绑定记录展示产品、批次、码段、数量、操作人、时间和状态。\n\n### 业务流程\n\n可继续绑定产品；根据状态进入绑定审核详情、查看只读资料、预览码、编辑退回记录或查看撤回重置原因。\n\n### 主要操作\n\n返回台账、绑定产品、查看或编辑产品资料、预览码、审核、撤回产品、查看重置原因。\n\n### 待确认\n\n当前原型已明确页面操作与状态；后续接入真实接口时，应保持字段口径、状态名称和权限边界一致。",
       "maintenancePolicy": "annotation-owned",
       "kind": "note",
       "dimension": "Page overview",
@@ -2227,7 +1910,7 @@
         "status": "completed"
       },
       "createdBy": "ai",
-      "updatedAt": "2026-08-05T09:00:00Z",
+      "updatedAt": "2026-08-07T01:30:00Z",
       "order": 1
     },
     {
@@ -2330,15 +2013,15 @@
       "annotationType": "J",
       "target": {
         "selector": "[data-action=\"fx-open-activation-product\"]",
-        "fallbackText": "产品",
-        "strategy": "data",
+        "fallbackText": "查看",
+        "strategy": "css",
         "boundsHint": {
           "tag": "button",
           "text": "产品"
         }
       },
-      "title": "查看关联产品",
-      "contentMarkdown": "### 业务含义\n\n从激活记录定位产品资料。\n\n### 交互规则\n\n点击产品名称后按产品和批次定位运营端产品审核列表。\n\n### 状态与异常\n\n产品记录不存在时提示并保留订单详情。\n\n### 页面流转\n\n进入产品审核列表。",
+      "title": "查看绑定产品详情",
+      "contentMarkdown": "### 业务含义\n\n从绑定记录进入对应产品资料。\n\n### 交互规则\n\n运营端打开五个资料模块的绑定审核详情；待审核记录可继续审核，已激活记录只读查看。\n\n### 状态与异常\n\n产品不存在时提示并保留订单详情。\n\n### 页面流转\n\n进入绑定审核详情。",
       "maintenancePolicy": "annotation-owned",
       "kind": "flow",
       "dimension": "Primary action",
@@ -2357,7 +2040,7 @@
       "candidateId": "CAND-P06-004",
       "evidence": [
         "稳定锚点：[data-action=\"fx-open-activation-product\"]",
-        "可见文本：产品"
+        "可见文本：查看"
       ],
       "nextActions": [],
       "dependencies": [],
@@ -2368,7 +2051,7 @@
         "status": "completed"
       },
       "createdBy": "ai",
-      "updatedAt": "2026-08-05T09:00:00Z",
+      "updatedAt": "2026-08-07T01:30:00Z",
       "order": 4
     },
     {
@@ -2419,294 +2102,16 @@
       "order": 5
     },
     {
-      "id": "ANN-P07-001",
-      "pageKey": "P07",
-      "annotationType": "P",
-      "target": {
-        "selector": ".page-header h1",
-        "fallbackText": "产品审核",
-        "strategy": "css"
-      },
-      "title": "产品审核页面说明",
-      "contentMarkdown": "### 页面功能介绍\n\n审核客户提交的产品资料，并维护待审核或已激活产品。\n\n### 核心内容\n\n列表按产品名称、批次、大类、客户、提交时间和状态展示。\n\n### 业务流程\n\n搜索定位产品，进入审核详情核对各资料模块；待审核产品可通过并激活或驳回。\n\n### 主要操作\n\n搜索、重置、导出、分类与状态筛选、日期筛选、审核查看和编辑。\n\n### 待确认\n\n当前原型已明确页面操作与状态；后续如接入真实接口，应保持字段口径和状态名称一致。",
-      "maintenancePolicy": "annotation-owned",
-      "kind": "note",
-      "dimension": "Page overview",
-      "topics": [
-        "overview",
-        "business",
-        "flow"
-      ],
-      "priority": "medium",
-      "visible": true,
-      "source": {
-        "type": "mixed",
-        "ref": "CAND-P07-001"
-      },
-      "candidateId": "CAND-P07-001",
-      "evidence": [
-        "稳定锚点：.page-header h1",
-        "可见文本：产品审核"
-      ],
-      "nextActions": [],
-      "dependencies": [],
-      "risks": [],
-      "openQuestions": [],
-      "review": {
-        "required": true,
-        "status": "completed"
-      },
-      "createdBy": "ai",
-      "updatedAt": "2026-08-05T09:00:00Z",
-      "order": 1
-    },
-    {
-      "id": "ANN-P07-002",
-      "pageKey": "P07",
-      "annotationType": "FILTER",
-      "target": {
-        "selector": "#fx-review-search",
-        "fallbackText": "产品、客户或批次",
-        "strategy": "id",
-        "boundsHint": {
-          "tag": "input",
-          "text": "产品、客户或批次"
-        }
-      },
-      "title": "产品搜索与重置",
-      "contentMarkdown": "### 业务含义\n\n按产品、客户或批次定位审核对象。\n\n### 交互规则\n\n输入即时筛选；重置清除关键词、日期、分类和状态。\n\n### 状态与异常\n\n无结果时显示空状态。\n\n### 页面流转\n\n停留在产品审核列表。",
-      "maintenancePolicy": "annotation-owned",
-      "kind": "interaction",
-      "dimension": "Primary action",
-      "topics": [
-        "business",
-        "interaction",
-        "state",
-        "flow"
-      ],
-      "priority": "high",
-      "visible": true,
-      "source": {
-        "type": "mixed",
-        "ref": "CAND-P07-002"
-      },
-      "candidateId": "CAND-P07-002",
-      "evidence": [
-        "稳定锚点：#fx-review-search",
-        "可见文本：产品、客户或批次"
-      ],
-      "nextActions": [],
-      "dependencies": [],
-      "risks": [],
-      "openQuestions": [],
-      "review": {
-        "required": true,
-        "status": "completed"
-      },
-      "createdBy": "ai",
-      "updatedAt": "2026-08-05T09:00:00Z",
-      "order": 2
-    },
-    {
-      "id": "ANN-P07-003",
-      "pageKey": "P07",
-      "annotationType": "FILTER",
-      "target": {
-        "selector": "[data-table-filter=\"productCategory\"]",
-        "fallbackText": "筛选产品大类",
-        "strategy": "data",
-        "boundsHint": {
-          "tag": "select",
-          "text": "筛选产品大类"
-        }
-      },
-      "title": "产品大类筛选",
-      "contentMarkdown": "### 业务含义\n\n按产品所属大类查看审核记录。\n\n### 交互规则\n\n选择大类后立即过滤列表，与状态和日期条件叠加。\n\n### 状态与异常\n\n全部大类恢复不限定分类。\n\n### 页面流转\n\n停留在产品审核列表。",
-      "maintenancePolicy": "annotation-owned",
-      "kind": "interaction",
-      "dimension": "Primary action",
-      "topics": [
-        "business",
-        "interaction",
-        "state",
-        "flow"
-      ],
-      "priority": "high",
-      "visible": true,
-      "source": {
-        "type": "mixed",
-        "ref": "CAND-P07-003"
-      },
-      "candidateId": "CAND-P07-003",
-      "evidence": [
-        "稳定锚点：[data-table-filter=\"productCategory\"]",
-        "可见文本：筛选产品大类"
-      ],
-      "nextActions": [],
-      "dependencies": [],
-      "risks": [],
-      "openQuestions": [],
-      "review": {
-        "required": true,
-        "status": "completed"
-      },
-      "createdBy": "ai",
-      "updatedAt": "2026-08-05T09:00:00Z",
-      "order": 3
-    },
-    {
-      "id": "ANN-P07-004",
-      "pageKey": "P07",
-      "annotationType": "FILTER",
-      "target": {
-        "selector": "[data-table-filter=\"reviewStatus\"]",
-        "fallbackText": "筛选状态",
-        "strategy": "data",
-        "boundsHint": {
-          "tag": "select",
-          "text": "筛选状态"
-        }
-      },
-      "title": "产品状态筛选",
-      "contentMarkdown": "### 业务含义\n\n查看待审核、已激活或已驳回产品。\n\n### 交互规则\n\n状态条件与搜索、分类和日期共同生效。\n\n### 状态与异常\n\n状态为空时显示空结果。\n\n### 页面流转\n\n停留在产品审核列表。",
-      "maintenancePolicy": "annotation-owned",
-      "kind": "interaction",
-      "dimension": "Primary action",
-      "topics": [
-        "business",
-        "interaction",
-        "state",
-        "flow"
-      ],
-      "priority": "high",
-      "visible": true,
-      "source": {
-        "type": "mixed",
-        "ref": "CAND-P07-004"
-      },
-      "candidateId": "CAND-P07-004",
-      "evidence": [
-        "稳定锚点：[data-table-filter=\"reviewStatus\"]",
-        "可见文本：筛选状态"
-      ],
-      "nextActions": [],
-      "dependencies": [],
-      "risks": [],
-      "openQuestions": [],
-      "review": {
-        "required": true,
-        "status": "completed"
-      },
-      "createdBy": "ai",
-      "updatedAt": "2026-08-05T09:00:00Z",
-      "order": 4
-    },
-    {
-      "id": "ANN-P07-005",
-      "pageKey": "P07",
-      "annotationType": "J",
-      "target": {
-        "selector": "[data-action=\"open-review\"]",
-        "fallbackText": "审核",
-        "strategy": "data",
-        "boundsHint": {
-          "tag": "button",
-          "text": "审核"
-        }
-      },
-      "title": "审核或查看产品",
-      "contentMarkdown": "### 业务含义\n\n进入产品资料内页逐模块核对。\n\n### 交互规则\n\n待审核显示审核，其他状态显示查看；进入时保持当前产品和模块上下文。\n\n### 状态与异常\n\n产品不存在时显示空状态并允许返回。\n\n### 页面流转\n\n进入产品审核详情。",
-      "maintenancePolicy": "annotation-owned",
-      "kind": "flow",
-      "dimension": "Primary action",
-      "topics": [
-        "business",
-        "interaction",
-        "state",
-        "flow"
-      ],
-      "priority": "high",
-      "visible": true,
-      "source": {
-        "type": "mixed",
-        "ref": "CAND-P07-005"
-      },
-      "candidateId": "CAND-P07-005",
-      "evidence": [
-        "稳定锚点：[data-action=\"open-review\"]",
-        "可见文本：审核"
-      ],
-      "nextActions": [],
-      "dependencies": [],
-      "risks": [],
-      "openQuestions": [],
-      "review": {
-        "required": true,
-        "status": "completed"
-      },
-      "createdBy": "ai",
-      "updatedAt": "2026-08-05T09:00:00Z",
-      "order": 5
-    },
-    {
-      "id": "ANN-P07-006",
-      "pageKey": "P07",
-      "annotationType": "PERM",
-      "target": {
-        "selector": "table tbody .table-actions",
-        "fallbackText": "编辑",
-        "strategy": "css",
-        "boundsHint": {
-          "tag": "button",
-          "text": "编辑"
-        }
-      },
-      "title": "产品行操作组",
-      "contentMarkdown": "### 业务含义\n\n区分审核查看与运营编辑。\n\n### 交互规则\n\n审核进入只读详情；编辑进入当前产品材料编辑状态。\n\n### 状态与异常\n\n已驳回产品不提供运营编辑入口。\n\n### 页面流转\n\n进入审核详情或编辑状态。\n\n### 风险提示\n\n权限边界：仅运营人员可直接编辑待审核或已激活产品，修改应记录操作人和时间。",
-      "maintenancePolicy": "annotation-owned",
-      "kind": "permission",
-      "dimension": "Primary action",
-      "topics": [
-        "business",
-        "interaction",
-        "state",
-        "flow",
-        "risk"
-      ],
-      "priority": "high",
-      "visible": true,
-      "source": {
-        "type": "mixed",
-        "ref": "CAND-P07-006"
-      },
-      "candidateId": "CAND-P07-006",
-      "evidence": [
-        "稳定锚点：table tbody .table-actions",
-        "可见文本：编辑"
-      ],
-      "nextActions": [],
-      "dependencies": [],
-      "risks": [],
-      "openQuestions": [],
-      "review": {
-        "required": true,
-        "status": "completed"
-      },
-      "createdBy": "ai",
-      "updatedAt": "2026-08-05T09:00:00Z",
-      "order": 6
-    },
-    {
       "id": "ANN-P08-001",
       "pageKey": "P08",
       "annotationType": "P",
       "target": {
         "selector": ".page-header h1",
-        "fallbackText": "产品审核详情",
+        "fallbackText": "绑定审核详情",
         "strategy": "css"
       },
-      "title": "产品审核详情页面说明",
-      "contentMarkdown": "### 页面功能介绍\n\n逐模块查看客户提交的产品资料，并执行通过激活、驳回或材料编辑。\n\n### 核心内容\n\n五个资料模块按客户在扫码端的展示顺序呈现；空字段在查看状态下隐藏。\n\n### 业务流程\n\n从产品审核列表进入，切换模块检查；通过时选择订单和激活数量，驳回时填写原因；编辑完成后返回当前审核页。\n\n### 主要操作\n\n返回、切换模块、检查当前模块、预览码、编辑材料、驳回、通过并激活、保存修改。\n\n### 待确认\n\n当前原型已明确页面操作与状态；后续如接入真实接口，应保持字段口径和状态名称一致。",
+      "title": "绑定审核详情页面说明",
+      "contentMarkdown": "### 页面功能介绍\n\n统一核对产品资料和本次绑定信息，并执行审核、查看或材料编辑。\n\n### 核心内容\n\n五个产品资料模块按扫码端展示顺序呈现；审核动作同时关联订单、申请数量与申请码段。\n\n### 业务流程\n\n从绑定审核列表或订单详情进入；待审核记录可通过并激活或驳回，已激活记录可查看或由运营端编辑材料。\n\n### 主要操作\n\n返回绑定审核、切换资料模块、预览码、编辑材料、通过并激活、驳回。\n\n### 待确认\n\n当前原型已明确页面操作与状态；后续接入真实接口时，应保持字段口径、状态名称和权限边界一致。",
       "maintenancePolicy": "annotation-owned",
       "kind": "note",
       "dimension": "Page overview",
@@ -2724,7 +2129,7 @@
       "candidateId": "CAND-P08-001",
       "evidence": [
         "稳定锚点：.page-header h1",
-        "可见文本：产品审核详情"
+        "可见文本：绑定审核详情"
       ],
       "nextActions": [],
       "dependencies": [],
@@ -2735,7 +2140,7 @@
         "status": "completed"
       },
       "createdBy": "ai",
-      "updatedAt": "2026-08-05T09:00:00Z",
+      "updatedAt": "2026-08-07T01:30:00Z",
       "order": 1
     },
     {
@@ -2744,15 +2149,15 @@
       "annotationType": "J",
       "target": {
         "selector": "[data-action=\"fx-back-reviews\"]",
-        "fallbackText": "返回产品审核",
-        "strategy": "data",
+        "fallbackText": "返回绑定审核",
+        "strategy": "css",
         "boundsHint": {
           "tag": "button",
           "text": "返回产品审核"
         }
       },
-      "title": "返回产品审核",
-      "contentMarkdown": "### 业务含义\n\n结束当前产品审核详情查看。\n\n### 交互规则\n\n返回时关闭二级弹窗并清除当前产品上下文。\n\n### 状态与异常\n\n产品记录异常时仍可返回。\n\n### 页面流转\n\n回到产品审核列表。",
+      "title": "返回绑定审核",
+      "contentMarkdown": "### 业务含义\n\n结束当前绑定审核详情查看。\n\n### 交互规则\n\n返回时清除当前产品和绑定申请上下文。\n\n### 状态与异常\n\n申请记录异常时仍可返回。\n\n### 页面流转\n\n回到绑定审核列表。",
       "maintenancePolicy": "annotation-owned",
       "kind": "flow",
       "dimension": "Primary action",
@@ -2771,7 +2176,7 @@
       "candidateId": "CAND-P08-002",
       "evidence": [
         "稳定锚点：[data-action=\"fx-back-reviews\"]",
-        "可见文本：返回产品审核"
+        "可见文本：返回绑定审核"
       ],
       "nextActions": [],
       "dependencies": [],
@@ -2782,7 +2187,7 @@
         "status": "completed"
       },
       "createdBy": "ai",
-      "updatedAt": "2026-08-05T09:00:00Z",
+      "updatedAt": "2026-08-07T01:30:00Z",
       "order": 2
     },
     {
@@ -2798,8 +2203,8 @@
           "text": "产品信息"
         }
       },
-      "title": "资料模块导航",
-      "contentMarkdown": "### 业务含义\n\n在产品、企业、生产单位、产品质量和生产追溯之间切换。\n\n### 交互规则\n\n点击模块只改变当前查看位置，不保存或提交数据。\n\n### 状态与异常\n\n最后一个模块不再展示继续检查按钮。\n\n### 页面流转\n\n停留在审核详情并切换模块。",
+      "title": "五个产品资料模块",
+      "contentMarkdown": "### 业务含义\n\n在产品、企业、生产单位、产品质量和生产追溯之间切换。\n\n### 交互规则\n\n运营端详情只展示五个产品资料模块，不展示客户端绑定设置模块。\n\n### 状态与异常\n\n空字段在只读查看时隐藏。\n\n### 页面流转\n\n停留在绑定审核详情并切换模块。",
       "maintenancePolicy": "annotation-owned",
       "kind": "interaction",
       "dimension": "Primary action",
@@ -2829,7 +2234,7 @@
         "status": "completed"
       },
       "createdBy": "ai",
-      "updatedAt": "2026-08-05T09:00:00Z",
+      "updatedAt": "2026-08-07T01:30:00Z",
       "order": 3
     },
     {
@@ -2893,7 +2298,7 @@
         }
       },
       "title": "编辑当前模块材料",
-      "contentMarkdown": "### 业务含义\n\n允许运营人员从当前审核模块直接进入编辑。\n\n### 交互规则\n\n进入编辑时保持当前模块，不跳回第一模块。\n\n### 状态与异常\n\n不支持编辑的状态隐藏按钮。\n\n### 页面流转\n\n在审核详情内切换为编辑状态。\n\n### 风险提示\n\n权限边界：该入口仅向运营人员开放；保存修改前可取消并回到只读审核状态，修改应留痕。",
+      "contentMarkdown": "### 业务含义\n\n允许运营人员修正待审核或已激活产品的资料内容。\n\n### 交互规则\n\n点击编辑材料后保持当前模块；保存修改回到只读详情。\n\n### 状态与异常\n\n已驳回记录不提供运营编辑入口。\n\n### 页面流转\n\n在绑定审核详情内切换编辑状态。\n\n### 风险提示\n\n权限边界：只有运营人员可直接修改审核材料。",
       "maintenancePolicy": "annotation-owned",
       "kind": "permission",
       "dimension": "Primary action",
@@ -2924,7 +2329,7 @@
         "status": "completed"
       },
       "createdBy": "ai",
-      "updatedAt": "2026-08-05T09:00:00Z",
+      "updatedAt": "2026-08-07T01:30:00Z",
       "order": 5
     },
     {
@@ -2932,12 +2337,12 @@
       "pageKey": "P08",
       "annotationType": "R",
       "target": {
-        "selector": ".modal",
+        "selector": "[data-action=\"fx-open-activation\"], [data-action=\"fx-approve-bind-request\"]",
         "fallbackText": "通过并激活",
         "strategy": "css"
       },
       "title": "通过并激活",
-      "contentMarkdown": "### 业务含义\n\n产品审核通过与首次码段激活在同一步完成。\n\n### 交互规则\n\n选择同一客户仍有剩余可用码量的订单，并填写本次激活数量。\n\n### 状态与异常\n\n没有可用订单时不得通过；失败时产品仍保持待审核。\n\n### 风险提示\n\n提交会改变产品状态和订单码量，必须保证数量守恒。",
+      "contentMarkdown": "### 业务含义\n\n在同一步完成产品资料审核和码段绑定审核。\n\n### 交互规则\n\n新建产品申请可核对或调整订单、数量与码段；已有产品追加绑定按申请内容直接校验并激活。\n\n### 状态与异常\n\n订单不可用、码量不足或码段冲突时不得通过。\n\n### 页面流转\n\n成功后返回绑定审核列表并发送站内信。\n\n### 风险提示\n\n提交会改变产品状态和订单码量，必须保证数量守恒与码段唯一。",
       "maintenancePolicy": "annotation-owned",
       "kind": "interaction",
       "dimension": "Surface overview",
@@ -2955,7 +2360,7 @@
       },
       "candidateId": "CAND-P08-006",
       "evidence": [
-        "稳定锚点：.modal",
+        "稳定锚点：[data-action=\"fx-open-activation\"], [data-action=\"fx-approve-bind-request\"]",
         "可见文本：通过并激活"
       ],
       "nextActions": [],
@@ -2969,11 +2374,8 @@
         "status": "completed"
       },
       "createdBy": "ai",
-      "updatedAt": "2026-08-05T09:00:00Z",
-      "order": 6,
-      "surfaceId": "surface-P08-approve-activation",
-      "displayWhenClosed": "on-trigger",
-      "fallbackAnchorSelector": "[data-action=\"fx-open-activation\"]"
+      "updatedAt": "2026-08-07T01:30:00Z",
+      "order": 6
     },
     {
       "id": "ANN-P08-007",
@@ -2989,7 +2391,7 @@
         }
       },
       "title": "激活订单",
-      "contentMarkdown": "### 业务含义\n\n确定首次激活码段来源订单。\n\n### 字段规则\n\n候选项展示订单号与可用码量；选定后输入框只显示订单号。\n\n### 状态与异常\n\n订单余额变化后应重新校验。",
+      "contentMarkdown": "### 业务含义\n\n确认本次激活码段来源订单。\n\n### 交互规则\n\n客户预填的订单会自动带入，运营端仍可从同一客户的可用订单中调整。\n\n### 状态与异常\n\n订单余额变化后应重新计算可用量和码段预览。",
       "maintenancePolicy": "annotation-owned",
       "kind": "interaction",
       "dimension": "Surface field",
@@ -3018,7 +2420,7 @@
         "status": "completed"
       },
       "createdBy": "ai",
-      "updatedAt": "2026-08-05T09:00:00Z",
+      "updatedAt": "2026-08-07T01:30:00Z",
       "order": 7,
       "surfaceId": "surface-P08-approve-activation",
       "displayWhenClosed": "sidebar-only",
@@ -3031,14 +2433,14 @@
       "target": {
         "selector": "#fx-activation-amount",
         "fallbackText": "本次激活数量",
-        "strategy": "id",
+        "strategy": "css",
         "boundsHint": {
           "tag": "input",
           "text": "本次激活数量"
         }
       },
-      "title": "本次激活数量",
-      "contentMarkdown": "### 业务含义\n\n确定首次关联产品的码量。\n\n### 字段规则\n\n最大值等于所选订单剩余可用码量，下方明确展示可用码量。\n\n### 状态与异常\n\n为空、非正数或超过上限时不提交。",
+      "title": "激活数量与码段预览",
+      "contentMarkdown": "### 业务含义\n\n确认本次激活数量，并联动预览连续绑定码段。\n\n### 交互规则\n\n数量最小为 1，最大为所选订单当前可用量；码段预览只读。\n\n### 状态与异常\n\n空值、非正数、超额或无连续码段时不得提交。",
       "maintenancePolicy": "annotation-owned",
       "kind": "interaction",
       "dimension": "Surface field",
@@ -3067,7 +2469,7 @@
         "status": "completed"
       },
       "createdBy": "ai",
-      "updatedAt": "2026-08-05T09:00:00Z",
+      "updatedAt": "2026-08-07T01:30:00Z",
       "order": 8,
       "surfaceId": "surface-P08-approve-activation",
       "displayWhenClosed": "sidebar-only",
@@ -3087,7 +2489,7 @@
         }
       },
       "title": "确认通过并激活",
-      "contentMarkdown": "### 业务含义\n\n完成审核通过并分配连续码段。\n\n### 交互规则\n\n提交前再次校验订单、数量与产品状态。\n\n### 状态与异常\n\n成功后产品变为已激活并返回审核列表。\n\n### 风险提示\n\n码段分配不可重复，操作应保留审核和激活记录。",
+      "contentMarkdown": "### 业务含义\n\n提交统一审核通过结果并激活码段。\n\n### 交互规则\n\n再次校验产品、订单、数量和码段后写入产品绑定记录。\n\n### 状态与异常\n\n成功后状态变为已激活，订单码量和操作人同步更新。\n\n### 页面流转\n\n回到绑定审核列表并通知客户。\n\n### 风险提示\n\n重复点击不得生成重复激活记录。",
       "maintenancePolicy": "annotation-owned",
       "kind": "interaction",
       "dimension": "Surface confirm",
@@ -3119,7 +2521,7 @@
         "status": "completed"
       },
       "createdBy": "ai",
-      "updatedAt": "2026-08-05T09:00:00Z",
+      "updatedAt": "2026-08-07T01:30:00Z",
       "order": 9,
       "surfaceId": "surface-P08-approve-activation",
       "displayWhenClosed": "sidebar-only",
@@ -3130,12 +2532,12 @@
       "pageKey": "P08",
       "annotationType": "R",
       "target": {
-        "selector": ".modal",
-        "fallbackText": "驳回产品资料",
+        "selector": "[data-action=\"fx-open-reject\"], [data-action=\"fx-reject-bind-request\"]",
+        "fallbackText": "驳回",
         "strategy": "css"
       },
-      "title": "驳回产品资料",
-      "contentMarkdown": "### 业务含义\n\n将待审核产品退回客户修改。\n\n### 交互规则\n\n必须填写可执行的驳回原因后确认。\n\n### 状态与异常\n\n成功后产品显示为已退回，客户端收到包含产品批次的通知。\n\n### 风险提示\n\n驳回会中断本次审核，不分配任何码段。",
+      "title": "驳回产品与绑定申请",
+      "contentMarkdown": "### 业务含义\n\n将产品资料与本次绑定申请一并退回客户修改。\n\n### 交互规则\n\n必须填写明确、可执行的驳回原因。\n\n### 状态与异常\n\n驳回不激活码段，并释放本次申请占用的可用码量。\n\n### 页面流转\n\n返回绑定审核列表并发送站内信。",
       "maintenancePolicy": "annotation-owned",
       "kind": "interaction",
       "dimension": "Surface overview",
@@ -3153,8 +2555,8 @@
       },
       "candidateId": "CAND-P08-010",
       "evidence": [
-        "稳定锚点：.modal",
-        "可见文本：驳回产品资料"
+        "稳定锚点：[data-action=\"fx-open-reject\"], [data-action=\"fx-reject-bind-request\"]",
+        "可见文本：驳回"
       ],
       "nextActions": [],
       "dependencies": [],
@@ -3167,27 +2569,24 @@
         "status": "completed"
       },
       "createdBy": "ai",
-      "updatedAt": "2026-08-05T09:00:00Z",
-      "order": 10,
-      "surfaceId": "surface-P08-reject-product",
-      "displayWhenClosed": "on-trigger",
-      "fallbackAnchorSelector": "[data-action=\"fx-open-reject\"]"
+      "updatedAt": "2026-08-07T01:30:00Z",
+      "order": 10
     },
     {
       "id": "ANN-P08-011",
       "pageKey": "P08",
       "annotationType": "C",
       "target": {
-        "selector": "#fx-reject-reason",
+        "selector": "#fx-reject-reason, #fx-bind-request-reason",
         "fallbackText": "驳回原因",
-        "strategy": "id",
+        "strategy": "css",
         "boundsHint": {
           "tag": "input",
           "text": "驳回原因"
         }
       },
       "title": "驳回原因",
-      "contentMarkdown": "### 业务含义\n\n说明需要补充或修改的具体内容。\n\n### 字段规则\n\n必填，文本应能指导客户定位问题。\n\n### 状态与异常\n\n为空时不允许确认驳回。",
+      "contentMarkdown": "### 业务含义\n\n说明产品资料或绑定信息需要修改的具体内容。\n\n### 交互规则\n\n必填，内容会完整展示给客户。\n\n### 状态与异常\n\n为空时不允许确认驳回。",
       "maintenancePolicy": "annotation-owned",
       "kind": "interaction",
       "dimension": "Surface field",
@@ -3204,7 +2603,7 @@
       },
       "candidateId": "CAND-P08-011",
       "evidence": [
-        "稳定锚点：#fx-reject-reason",
+        "稳定锚点：#fx-reject-reason, #fx-bind-request-reason",
         "可见文本：驳回原因"
       ],
       "nextActions": [],
@@ -3216,7 +2615,7 @@
         "status": "completed"
       },
       "createdBy": "ai",
-      "updatedAt": "2026-08-05T09:00:00Z",
+      "updatedAt": "2026-08-07T01:30:00Z",
       "order": 11,
       "surfaceId": "surface-P08-reject-product",
       "displayWhenClosed": "sidebar-only",
@@ -3227,16 +2626,16 @@
       "pageKey": "P08",
       "annotationType": "R",
       "target": {
-        "selector": "[data-action=\"fx-confirm-reject\"]",
+        "selector": "[data-action=\"fx-confirm-reject\"], [data-action=\"fx-confirm-bind-request-reject\"]",
         "fallbackText": "确认驳回",
-        "strategy": "data",
+        "strategy": "css",
         "boundsHint": {
           "tag": "button",
           "text": "确认驳回"
         }
       },
       "title": "确认驳回",
-      "contentMarkdown": "### 业务含义\n\n提交驳回结果并通知客户。\n\n### 交互规则\n\n确认后更新产品状态并生成结果通知。\n\n### 状态与异常\n\n失败时产品保持待审核。\n\n### 风险提示\n\n驳回原因会展示给客户，应避免模糊或无关表述。",
+      "contentMarkdown": "### 业务含义\n\n提交统一驳回结果并通知客户。\n\n### 交互规则\n\n更新审核状态、记录操作人与原因，不写入激活记录。\n\n### 状态与异常\n\n失败时保持待审核状态。\n\n### 页面流转\n\n回到绑定审核列表。",
       "maintenancePolicy": "annotation-owned",
       "kind": "interaction",
       "dimension": "Surface confirm",
@@ -3254,7 +2653,7 @@
       },
       "candidateId": "CAND-P08-012",
       "evidence": [
-        "稳定锚点：[data-action=\"fx-confirm-reject\"]",
+        "稳定锚点：[data-action=\"fx-confirm-reject\"], [data-action=\"fx-confirm-bind-request-reject\"]",
         "可见文本：确认驳回"
       ],
       "nextActions": [],
@@ -3268,11 +2667,8 @@
         "status": "completed"
       },
       "createdBy": "ai",
-      "updatedAt": "2026-08-05T09:00:00Z",
-      "order": 12,
-      "surfaceId": "surface-P08-reject-product",
-      "displayWhenClosed": "sidebar-only",
-      "fallbackAnchorSelector": "[data-action=\"fx-open-reject\"]"
+      "updatedAt": "2026-08-07T01:30:00Z",
+      "order": 12
     },
     {
       "id": "ANN-P09-001",
@@ -3284,7 +2680,7 @@
         "strategy": "css"
       },
       "title": "绑定审核页面说明",
-      "contentMarkdown": "### 页面功能介绍\n\n审核客户针对已有订单和已激活产品提交的追加绑定申请。\n\n### 核心内容\n\n列表展示产品、批次、客户、订单、申请数量、申请时间和状态。\n\n### 业务流程\n\n筛选待审批申请，核对订单剩余可用量后通过或驳回；已处理记录可查看详情。\n\n### 主要操作\n\n搜索、重置、日期与状态筛选、进入订单、通过、驳回和查看。\n\n### 待确认\n\n当前原型已明确页面操作与状态；后续如接入真实接口，应保持字段口径和状态名称一致。",
+      "contentMarkdown": "### 页面功能介绍\n\n统一审核产品资料、关联订单、申请数量与绑定码段。\n\n### 核心内容\n\n列表展示产品名称、批次、大类、客户、订单、申请码段、数量、时间、状态和操作。\n\n### 业务流程\n\n待审核记录进入详情同步审核产品与绑定信息；已激活和已驳回记录进入相同详情查看，符合权限的记录可编辑材料。\n\n### 主要操作\n\n搜索、产品大类筛选、数量排序、日期筛选、状态筛选、查看订单、审核、查看、编辑。\n\n### 待确认\n\n当前原型已明确页面操作与状态；后续接入真实接口时，应保持字段口径、状态名称和权限边界一致。",
       "maintenancePolicy": "annotation-owned",
       "kind": "note",
       "dimension": "Page overview",
@@ -3313,7 +2709,7 @@
         "status": "completed"
       },
       "createdBy": "ai",
-      "updatedAt": "2026-08-05T09:00:00Z",
+      "updatedAt": "2026-08-07T01:30:00Z",
       "order": 1
     },
     {
@@ -3330,7 +2726,7 @@
         }
       },
       "title": "绑定申请搜索",
-      "contentMarkdown": "### 业务含义\n\n按客户、订单、产品或批次定位申请。\n\n### 交互规则\n\n输入即时筛选并可重置全部条件。\n\n### 状态与异常\n\n无匹配结果时显示空状态。\n\n### 页面流转\n\n停留在绑定审核列表。",
+      "contentMarkdown": "### 业务含义\n\n按客户、订单、产品或申请码段定位记录。\n\n### 交互规则\n\n输入即时筛选；重置同步清除大类、日期、状态和排序条件。\n\n### 状态与异常\n\n无匹配结果时显示空状态。\n\n### 页面流转\n\n停留在绑定审核列表。",
       "maintenancePolicy": "annotation-owned",
       "kind": "interaction",
       "dimension": "Primary action",
@@ -3360,24 +2756,24 @@
         "status": "completed"
       },
       "createdBy": "ai",
-      "updatedAt": "2026-08-05T09:00:00Z",
+      "updatedAt": "2026-08-07T01:30:00Z",
       "order": 2
     },
     {
       "id": "ANN-P09-003",
       "pageKey": "P09",
-      "annotationType": "J",
+      "annotationType": "FILTER",
       "target": {
-        "selector": "[data-action=\"fx-order-detail\"]",
-        "fallbackText": "ORD-",
-        "strategy": "data",
+        "selector": "[title=\"筛选产品大类\"]",
+        "fallbackText": "产品大类",
+        "strategy": "css",
         "boundsHint": {
           "tag": "button",
           "text": "ORD-"
         }
       },
-      "title": "查看申请订单",
-      "contentMarkdown": "### 业务含义\n\n核对申请对应订单的码量与激活记录。\n\n### 交互规则\n\n点击订单号进入该订单详情。\n\n### 状态与异常\n\n订单不存在时展示不可用状态。\n\n### 页面流转\n\n进入订单详情。",
+      "title": "产品大类筛选",
+      "contentMarkdown": "### 业务含义\n\n按产品所属大类筛选统一审核记录。\n\n### 交互规则\n\n选择后与关键词、日期和状态条件叠加。\n\n### 状态与异常\n\n全部大类恢复不限定分类。\n\n### 页面流转\n\n停留在绑定审核列表。",
       "maintenancePolicy": "annotation-owned",
       "kind": "flow",
       "dimension": "Primary action",
@@ -3395,8 +2791,8 @@
       },
       "candidateId": "CAND-P09-003",
       "evidence": [
-        "稳定锚点：[data-action=\"fx-order-detail\"]",
-        "可见文本：ORD-"
+        "稳定锚点：[title=\"筛选产品大类\"]",
+        "可见文本：产品大类"
       ],
       "nextActions": [],
       "dependencies": [],
@@ -3407,24 +2803,24 @@
         "status": "completed"
       },
       "createdBy": "ai",
-      "updatedAt": "2026-08-05T09:00:00Z",
+      "updatedAt": "2026-08-07T01:30:00Z",
       "order": 3
     },
     {
       "id": "ANN-P09-004",
       "pageKey": "P09",
-      "annotationType": "R",
+      "annotationType": "FILTER",
       "target": {
-        "selector": "table tbody .table-actions",
-        "fallbackText": "通过",
+        "selector": "[data-action=\"fx-sort-bindRequests\"][data-sort=\"amount\"]",
+        "fallbackText": "申请数量",
         "strategy": "css",
         "boundsHint": {
           "tag": "button",
           "text": "通过"
         }
       },
-      "title": "绑定审核操作组",
-      "contentMarkdown": "### 业务含义\n\n待审批申请可通过或驳回，已处理申请可查看。\n\n### 交互规则\n\n通过前校验订单剩余可用；驳回必须填写原因。\n\n### 状态与异常\n\n处理完成后状态更新为已通过或已驳回。\n\n### 页面流转\n\n打开确认、驳回或详情弹窗。\n\n### 风险提示\n\n通过会分配连续码段并计入订单已激活量。",
+      "title": "申请数量排序",
+      "contentMarkdown": "### 业务含义\n\n按申请绑定数量比较审核记录。\n\n### 交互规则\n\n依次切换升序、降序和不排序；与当前筛选条件共同生效。\n\n### 状态与异常\n\n零值或异常值不应破坏列表排序。\n\n### 页面流转\n\n停留在绑定审核列表。",
       "maintenancePolicy": "annotation-owned",
       "kind": "interaction",
       "dimension": "Primary action",
@@ -3443,8 +2839,8 @@
       },
       "candidateId": "CAND-P09-004",
       "evidence": [
-        "稳定锚点：table tbody .table-actions",
-        "可见文本：通过"
+        "稳定锚点：[data-action=\"fx-sort-bindRequests\"][data-sort=\"amount\"]",
+        "可见文本：申请数量"
       ],
       "nextActions": [],
       "dependencies": [],
@@ -3455,20 +2851,20 @@
         "status": "completed"
       },
       "createdBy": "ai",
-      "updatedAt": "2026-08-05T09:00:00Z",
+      "updatedAt": "2026-08-07T01:30:00Z",
       "order": 4
     },
     {
       "id": "ANN-P09-005",
       "pageKey": "P09",
-      "annotationType": "R",
+      "annotationType": "J",
       "target": {
-        "selector": ".modal",
-        "fallbackText": "驳回绑定申请",
+        "selector": "[data-action=\"fx-order-detail\"]",
+        "fallbackText": "订单号",
         "strategy": "css"
       },
-      "title": "驳回绑定申请",
-      "contentMarkdown": "### 业务含义\n\n拒绝本次追加码段申请，不改变订单和产品现有激活记录。\n\n### 交互规则\n\n填写驳回原因并确认。\n\n### 状态与异常\n\n成功后申请变为已驳回并向客户发送结果通知。\n\n### 风险提示\n\n驳回原因面向客户，应清楚说明调整方式。",
+      "title": "查看关联订单",
+      "contentMarkdown": "### 业务含义\n\n核对申请对应订单的码量余额和全部绑定记录。\n\n### 交互规则\n\n点击订单号进入订单详情。\n\n### 状态与异常\n\n订单不存在时展示不可用状态。\n\n### 页面流转\n\n进入运营端订单详情。",
       "maintenancePolicy": "annotation-owned",
       "kind": "interaction",
       "dimension": "Surface overview",
@@ -3486,8 +2882,8 @@
       },
       "candidateId": "CAND-P09-005",
       "evidence": [
-        "稳定锚点：.modal",
-        "可见文本：驳回绑定申请"
+        "稳定锚点：[data-action=\"fx-order-detail\"]",
+        "可见文本：订单号"
       ],
       "nextActions": [],
       "dependencies": [],
@@ -3500,27 +2896,24 @@
         "status": "completed"
       },
       "createdBy": "ai",
-      "updatedAt": "2026-08-05T09:00:00Z",
-      "order": 5,
-      "surfaceId": "surface-P09-reject-bind-request",
-      "displayWhenClosed": "on-trigger",
-      "fallbackAnchorSelector": "[data-action=\"fx-reject-bind-request\"]"
+      "updatedAt": "2026-08-07T01:30:00Z",
+      "order": 5
     },
     {
       "id": "ANN-P09-006",
       "pageKey": "P09",
-      "annotationType": "C",
+      "annotationType": "FILTER",
       "target": {
-        "selector": "#fx-bind-request-reason",
-        "fallbackText": "绑定驳回原因",
-        "strategy": "id",
+        "selector": "[data-action=\"fx-open-customer-calendar\"][title=\"筛选申请时间\"]",
+        "fallbackText": "申请时间",
+        "strategy": "css",
         "boundsHint": {
           "tag": "input",
           "text": "绑定驳回原因"
         }
       },
-      "title": "绑定驳回原因",
-      "contentMarkdown": "### 业务含义\n\n说明不能通过申请的具体业务原因。\n\n### 字段规则\n\n必填后才可确认。\n\n### 状态与异常\n\n为空时保留弹窗并提示填写。",
+      "title": "申请时间筛选",
+      "contentMarkdown": "### 业务含义\n\n按申请时间范围筛选审核记录。\n\n### 交互规则\n\n选择起止日期后应用，可清除恢复全部时间。\n\n### 状态与异常\n\n结束日期早于开始日期时不应用。\n\n### 页面流转\n\n停留在绑定审核列表。",
       "maintenancePolicy": "annotation-owned",
       "kind": "interaction",
       "dimension": "Surface field",
@@ -3537,8 +2930,8 @@
       },
       "candidateId": "CAND-P09-006",
       "evidence": [
-        "稳定锚点：#fx-bind-request-reason",
-        "可见文本：绑定驳回原因"
+        "稳定锚点：[data-action=\"fx-open-customer-calendar\"][title=\"筛选申请时间\"]",
+        "可见文本：申请时间"
       ],
       "nextActions": [],
       "dependencies": [],
@@ -3549,27 +2942,24 @@
         "status": "completed"
       },
       "createdBy": "ai",
-      "updatedAt": "2026-08-05T09:00:00Z",
-      "order": 6,
-      "surfaceId": "surface-P09-reject-bind-request",
-      "displayWhenClosed": "sidebar-only",
-      "fallbackAnchorSelector": "[data-action=\"fx-reject-bind-request\"]"
+      "updatedAt": "2026-08-07T01:30:00Z",
+      "order": 6
     },
     {
       "id": "ANN-P09-007",
       "pageKey": "P09",
       "annotationType": "R",
       "target": {
-        "selector": "[data-action=\"fx-confirm-bind-request-reject\"]",
-        "fallbackText": "确认驳回绑定",
-        "strategy": "data",
+        "selector": "[data-action=\"fx-open-binding-review-product\"], [data-action=\"fx-edit-binding-review-product\"]",
+        "fallbackText": "审核",
+        "strategy": "css",
         "boundsHint": {
           "tag": "button",
           "text": "确认驳回绑定"
         }
       },
-      "title": "确认驳回绑定",
-      "contentMarkdown": "### 业务含义\n\n提交绑定申请驳回结果。\n\n### 交互规则\n\n确认后更新申请状态并发送通知。\n\n### 状态与异常\n\n失败时保持待审批。\n\n### 风险提示\n\n不得误改订单的已激活量和剩余可用量。",
+      "title": "绑定审核状态操作",
+      "contentMarkdown": "### 业务含义\n\n根据统一审核状态提供审核、查看和编辑入口。\n\n### 交互规则\n\n待审核显示审核和编辑；已激活显示查看和编辑；已驳回仅显示查看。\n\n### 状态与异常\n\n所有入口进入同一绑定审核详情，且只展示五个产品资料模块。\n\n### 页面流转\n\n进入绑定审核详情。\n\n### 风险提示\n\n权限边界：运营编辑入口不能向客户端暴露。",
       "maintenancePolicy": "annotation-owned",
       "kind": "interaction",
       "dimension": "Surface confirm",
@@ -3587,8 +2977,8 @@
       },
       "candidateId": "CAND-P09-007",
       "evidence": [
-        "稳定锚点：[data-action=\"fx-confirm-bind-request-reject\"]",
-        "可见文本：确认驳回绑定"
+        "稳定锚点：[data-action=\"fx-open-binding-review-product\"], [data-action=\"fx-edit-binding-review-product\"]",
+        "可见文本：审核"
       ],
       "nextActions": [],
       "dependencies": [],
@@ -3601,11 +2991,50 @@
         "status": "completed"
       },
       "createdBy": "ai",
-      "updatedAt": "2026-08-05T09:00:00Z",
-      "order": 7,
-      "surfaceId": "surface-P09-reject-bind-request",
-      "displayWhenClosed": "sidebar-only",
-      "fallbackAnchorSelector": "[data-action=\"fx-reject-bind-request\"]"
+      "updatedAt": "2026-08-07T01:30:00Z",
+      "order": 7
+    },
+    {
+      "id": "ANN-P09-008",
+      "pageKey": "P09",
+      "annotationType": "FILTER",
+      "target": {
+        "selector": "[title=\"筛选状态\"]",
+        "fallbackText": "状态",
+        "strategy": "css"
+      },
+      "title": "审核状态筛选",
+      "contentMarkdown": "### 业务含义\n\n按待审核、已激活或已驳回筛选统一审核记录。\n\n### 交互规则\n\n状态条件与搜索、大类和日期共同生效。\n\n### 状态与异常\n\n全部状态恢复完整列表。\n\n### 页面流转\n\n停留在绑定审核列表。",
+      "maintenancePolicy": "annotation-owned",
+      "kind": "interaction",
+      "dimension": "Primary action",
+      "topics": [
+        "business",
+        "interaction",
+        "flow"
+      ],
+      "priority": "high",
+      "visible": true,
+      "source": {
+        "type": "mixed",
+        "ref": "CAND-P09-008"
+      },
+      "candidateId": "CAND-P09-008",
+      "evidence": [
+        "稳定锚点：[title=\"筛选状态\"]",
+        "可见文本：状态"
+      ],
+      "nextActions": [],
+      "dependencies": [],
+      "risks": [],
+      "openQuestions": [],
+      "review": {
+        "required": true,
+        "status": "completed"
+      },
+      "createdBy": "ai",
+      "updatedAt": "2026-08-07T01:30:00Z",
+      "order": 8
     },
     {
       "id": "ANN-P10-001",
@@ -3617,7 +3046,7 @@
         "strategy": "css"
       },
       "title": "撤回审核页面说明",
-      "contentMarkdown": "### 页面功能介绍\n\n审批客户针对已激活产品发起的码段或整产品撤回申请。\n\n### 核心内容\n\n列表展示申请编号、产品、批次、撤回码段、客户、原因、申请时间、状态和操作。\n\n### 业务流程\n\n筛选待审批申请，核对客户选定的码段或整产品撤回范围后通过并重置对应码段，或填写原因驳回。\n\n### 主要操作\n\n搜索、重置、日期与状态筛选、通过、驳回和查看详情。\n\n### 待确认\n\n当前原型已明确页面操作与状态；后续如接入真实接口，应保持字段口径和状态名称一致。",
+      "contentMarkdown": "### 页面功能介绍\n\n审批客户针对某一产品的一个或多个已绑码段发起的撤回申请。\n\n### 核心内容\n\n列表明确展示产品、批次、具体撤回码段、客户、原因、申请时间、状态和操作。\n\n### 业务流程\n\n待审批记录通过时再次核对具体码段并逐段重置；驳回时填写原因，处理结果自动通知客户。\n\n### 主要操作\n\n搜索、日期筛选、状态筛选、查看具体码段、通过、驳回和查看处理结果。\n\n### 待确认\n\n当前原型已明确页面操作与状态；后续接入真实接口时，应保持字段口径、状态名称和权限边界一致。",
       "maintenancePolicy": "annotation-owned",
       "kind": "note",
       "dimension": "Page overview",
@@ -3646,7 +3075,7 @@
         "status": "completed"
       },
       "createdBy": "ai",
-      "updatedAt": "2026-08-05T09:00:00Z",
+      "updatedAt": "2026-08-07T01:30:00Z",
       "order": 1
     },
     {
@@ -3710,7 +3139,7 @@
         }
       },
       "title": "撤回审核操作组",
-      "contentMarkdown": "### 业务含义\n\n对待审批撤回执行通过或驳回，对已处理记录查看结果。\n\n### 交互规则\n\n通过会重置产品全部关联码；驳回必须填写处理原因。\n\n### 状态与异常\n\n处理完成后自动通知客户。\n\n### 页面流转\n\n打开撤回决策或详情弹窗。\n\n### 风险提示\n\n通过撤回会使全部关联码停止展示原产品资料，属于高影响操作。",
+      "contentMarkdown": "### 业务含义\n\n对待审批撤回执行通过或驳回，对已处理记录查看结果。\n\n### 交互规则\n\n通过和驳回都先打开确认弹窗，弹窗展示本次申请的具体码段和数量。\n\n### 状态与异常\n\n处理完成后状态、订单码量和站内信同步更新。\n\n### 页面流转\n\n打开撤回决策或详情弹窗。\n\n### 风险提示\n\n通过仅影响本次选中的码段，不得重置其他绑定码段。",
       "maintenancePolicy": "annotation-owned",
       "kind": "interaction",
       "dimension": "Primary action",
@@ -3741,7 +3170,7 @@
         "status": "completed"
       },
       "createdBy": "ai",
-      "updatedAt": "2026-08-05T09:00:00Z",
+      "updatedAt": "2026-08-07T01:30:00Z",
       "order": 3
     },
     {
@@ -3749,12 +3178,12 @@
       "pageKey": "P10",
       "annotationType": "R",
       "target": {
-        "selector": ".modal",
-        "fallbackText": "撤回审核决策",
+        "selector": ".modal .withdrawal-range-list",
+        "fallbackText": "撤回码段",
         "strategy": "css"
       },
-      "title": "撤回审核决策",
-      "contentMarkdown": "### 业务含义\n\n核对产品、客户与申请原因后决定是否解除全部码段关联。\n\n### 交互规则\n\n通过时确认全量重置；驳回时填写原因。\n\n### 状态与异常\n\n成功后更新申请、产品和订单激活记录，并通知客户。\n\n### 风险提示\n\n通过为不可逆的全量影响操作，必须二次确认。",
+      "title": "核对撤回码段",
+      "contentMarkdown": "### 业务含义\n\n在最终决策前核对产品、客户、具体码段、数量和申请原因。\n\n### 交互规则\n\n通过时逐段展示将被重置的码段；驳回时保留同一申请上下文并填写原因。\n\n### 状态与异常\n\n未记录具体码段时不得执行通过。\n\n### 页面流转\n\n停留在撤回确认弹窗。\n\n### 风险提示\n\n重置操作不可在本次审批中撤销。",
       "maintenancePolicy": "annotation-owned",
       "kind": "interaction",
       "dimension": "Surface overview",
@@ -3772,8 +3201,8 @@
       },
       "candidateId": "CAND-P10-004",
       "evidence": [
-        "稳定锚点：.modal",
-        "可见文本：撤回审核决策"
+        "稳定锚点：.modal .withdrawal-range-list",
+        "可见文本：撤回码段"
       ],
       "nextActions": [],
       "dependencies": [],
@@ -3786,7 +3215,7 @@
         "status": "completed"
       },
       "createdBy": "ai",
-      "updatedAt": "2026-08-05T09:00:00Z",
+      "updatedAt": "2026-08-07T01:30:00Z",
       "order": 4,
       "surfaceId": "surface-P10-withdraw-decision",
       "displayWhenClosed": "on-trigger",
@@ -3798,15 +3227,15 @@
       "annotationType": "R",
       "target": {
         "selector": "[data-action=\"fx-confirm-withdraw-decision\"]",
-        "fallbackText": "确认撤回处理",
-        "strategy": "data",
+        "fallbackText": "确认通过",
+        "strategy": "css",
         "boundsHint": {
           "tag": "button",
           "text": "确认撤回处理"
         }
       },
       "title": "确认撤回处理",
-      "contentMarkdown": "### 业务含义\n\n提交当前通过或驳回决定。\n\n### 交互规则\n\n通过时重置全部关联码；驳回时保存原因但不改变码状态。\n\n### 状态与异常\n\n失败时维持待审批和原码段状态。\n\n### 风险提示\n\n处理结果应完整记录数量、码段、时间和操作人。",
+      "contentMarkdown": "### 业务含义\n\n提交当前通过或驳回决定。\n\n### 交互规则\n\n通过时仅重置所列码段并恢复对应订单可用量；驳回时保存原因但不改变码状态。\n\n### 状态与异常\n\n失败时维持待审批和原码段状态。\n\n### 页面流转\n\n关闭弹窗并刷新撤回审核列表。\n\n### 风险提示\n\n处理记录必须保留码段、数量、时间和操作人。",
       "maintenancePolicy": "annotation-owned",
       "kind": "interaction",
       "dimension": "Surface confirm",
@@ -3825,7 +3254,7 @@
       "candidateId": "CAND-P10-005",
       "evidence": [
         "稳定锚点：[data-action=\"fx-confirm-withdraw-decision\"]",
-        "可见文本：确认撤回处理"
+        "可见文本：确认通过"
       ],
       "nextActions": [],
       "dependencies": [],
@@ -3838,11 +3267,98 @@
         "status": "completed"
       },
       "createdBy": "ai",
-      "updatedAt": "2026-08-05T09:00:00Z",
+      "updatedAt": "2026-08-07T01:30:00Z",
       "order": 5,
       "surfaceId": "surface-P10-withdraw-decision",
       "displayWhenClosed": "sidebar-only",
       "fallbackAnchorSelector": "[data-action=\"fx-approve-withdrawal\"]"
+    },
+    {
+      "id": "ANN-P10-006",
+      "pageKey": "P10",
+      "annotationType": "FILTER",
+      "target": {
+        "selector": "[title=\"筛选申请时间\"], [title=\"筛选状态\"]",
+        "fallbackText": "申请时间与状态",
+        "strategy": "css"
+      },
+      "title": "撤回申请日期与状态筛选",
+      "contentMarkdown": "### 业务含义\n\n按申请日期和审批状态定位撤回记录。\n\n### 交互规则\n\n日期与状态条件叠加生效，清除后恢复完整列表。\n\n### 状态与异常\n\n非法日期范围不应用。\n\n### 页面流转\n\n停留在撤回审核列表。",
+      "maintenancePolicy": "annotation-owned",
+      "kind": "interaction",
+      "dimension": "Primary action",
+      "topics": [
+        "business",
+        "interaction",
+        "flow"
+      ],
+      "priority": "high",
+      "visible": true,
+      "source": {
+        "type": "mixed",
+        "ref": "CAND-P10-006"
+      },
+      "candidateId": "CAND-P10-006",
+      "evidence": [
+        "稳定锚点：[title=\"筛选申请时间\"], [title=\"筛选状态\"]",
+        "可见文本：申请时间与状态"
+      ],
+      "nextActions": [],
+      "dependencies": [],
+      "risks": [],
+      "openQuestions": [],
+      "review": {
+        "required": true,
+        "status": "completed"
+      },
+      "createdBy": "ai",
+      "updatedAt": "2026-08-07T01:30:00Z",
+      "order": 6
+    },
+    {
+      "id": "ANN-P10-007",
+      "pageKey": "P10",
+      "annotationType": "C",
+      "target": {
+        "selector": "#fx-withdraw-reject-reason",
+        "fallbackText": "驳回原因",
+        "strategy": "css"
+      },
+      "title": "撤回驳回原因",
+      "contentMarkdown": "### 业务含义\n\n说明本次码段撤回不能通过的具体原因。\n\n### 交互规则\n\n驳回时必填，内容将通过站内信发送给客户。\n\n### 状态与异常\n\n为空时不允许确认驳回。",
+      "maintenancePolicy": "annotation-owned",
+      "kind": "interaction",
+      "dimension": "Primary action",
+      "topics": [
+        "business",
+        "interaction",
+        "flow"
+      ],
+      "priority": "high",
+      "visible": true,
+      "source": {
+        "type": "mixed",
+        "ref": "CAND-P10-007"
+      },
+      "candidateId": "CAND-P10-007",
+      "evidence": [
+        "稳定锚点：#fx-withdraw-reject-reason",
+        "可见文本：驳回原因"
+      ],
+      "nextActions": [],
+      "dependencies": [],
+      "risks": [],
+      "openQuestions": [],
+      "review": {
+        "required": true,
+        "status": "completed"
+      },
+      "createdBy": "ai",
+      "updatedAt": "2026-08-07T01:30:00Z",
+      "order": 7,
+      "surfaceId": "surface-P10-withdraw-decision",
+      "displayWhenClosed": "on-trigger",
+      "fallbackAnchorSelector": "[data-action=\"fx-reject-withdrawal\"]"
     },
     {
       "id": "ANN-P11-001",
@@ -4506,7 +4022,7 @@
         "strategy": "css"
       },
       "title": "数据概览页面说明",
-      "contentMarkdown": "### 页面功能介绍\n\n客户查看本企业订单、码段和产品状态的汇总入口。\n\n### 核心内容\n\n展示订单总量、码段总量、已激活、绑定申请中、剩余可用，以及最近订单和产品状态。\n\n### 业务流程\n\n点击指标、最近订单或产品状态进入对应业务列表并带入定位条件。\n\n### 主要操作\n\n指标下钻、最近订单跳转、查看全部订单和按状态查看产品。\n\n### 待确认\n\n当前原型已明确页面操作与状态；后续如接入真实接口，应保持字段口径和状态名称一致。",
+      "contentMarkdown": "### 页面功能介绍\n\n客户查看本企业订单与码量的实时汇总。\n\n### 核心内容\n\n五个指标展示订单总量、码段总量、已激活、绑定申请中和剩余可用；下方展示最近订单与绑定申请状态。\n\n### 业务流程\n\n点击指标、最近订单或申请状态进入订单台账和订单详情。\n\n### 主要操作\n\n指标下钻、最近订单排序与跳转、查看绑定申请状态。\n\n### 待确认\n\n当前原型已明确页面操作与状态；后续接入真实接口时，应保持字段口径、状态名称和权限边界一致。",
       "maintenancePolicy": "annotation-owned",
       "kind": "note",
       "dimension": "Page overview",
@@ -4535,7 +4051,7 @@
         "status": "completed"
       },
       "createdBy": "ai",
-      "updatedAt": "2026-08-05T09:00:00Z",
+      "updatedAt": "2026-08-07T01:30:00Z",
       "order": 1
     },
     {
@@ -4552,7 +4068,7 @@
         }
       },
       "title": "码量指标下钻",
-      "contentMarkdown": "### 业务含义\n\n五个指标帮助客户理解码量分配关系。\n\n### 交互规则\n\n订单、码段、绑定申请中和剩余可用进入订单台账；已激活进入产品列表。\n\n### 状态与异常\n\n总量应始终等于已激活、绑定申请中与剩余可用之和。\n\n### 页面流转\n\n进入订单台账或产品信息。",
+      "contentMarkdown": "### 业务含义\n\n五个指标帮助客户理解订单码量分配关系。\n\n### 交互规则\n\n所有指标进入订单台账；总量应等于已激活、绑定申请中与剩余可用之和。\n\n### 状态与异常\n\n数据为空时显示零值而不跳转到已删除的产品模块。\n\n### 页面流转\n\n进入订单台账。",
       "maintenancePolicy": "annotation-owned",
       "kind": "data",
       "dimension": "Primary action",
@@ -4582,7 +4098,7 @@
         "status": "completed"
       },
       "createdBy": "ai",
-      "updatedAt": "2026-08-05T09:00:00Z",
+      "updatedAt": "2026-08-07T01:30:00Z",
       "order": 2
     },
     {
@@ -4637,16 +4153,16 @@
       "pageKey": "P21",
       "annotationType": "J",
       "target": {
-        "selector": "[data-action=\"fx-customer-product-status\"]",
-        "fallbackText": "点击查看对应产品",
-        "strategy": "data",
+        "selector": ".section-row .panel:last-child [data-nav=\"orders\"]",
+        "fallbackText": "绑定申请状态",
+        "strategy": "css",
         "boundsHint": {
           "tag": "button",
           "text": "点击查看对应产品"
         }
       },
-      "title": "产品状态入口",
-      "contentMarkdown": "### 业务含义\n\n按待审核、已激活、草稿或已退回查看产品。\n\n### 交互规则\n\n点击后带入对应状态筛选。\n\n### 状态与异常\n\n状态无产品时不显示该状态入口。\n\n### 页面流转\n\n进入产品信息列表。",
+      "title": "绑定申请状态入口",
+      "contentMarkdown": "### 业务含义\n\n按待审核、已激活、草稿或已驳回汇总绑定申请。\n\n### 交互规则\n\n点击任一状态进入订单台账，在订单详情中查看对应记录。\n\n### 状态与异常\n\n无记录时显示空状态，不展示无效入口。\n\n### 页面流转\n\n进入订单台账。",
       "maintenancePolicy": "annotation-owned",
       "kind": "flow",
       "dimension": "Primary action",
@@ -4664,8 +4180,8 @@
       },
       "candidateId": "CAND-P21-004",
       "evidence": [
-        "稳定锚点：[data-action=\"fx-customer-product-status\"]",
-        "可见文本：点击查看对应产品"
+        "稳定锚点：.section-row .panel:last-child [data-nav=\"orders\"]",
+        "可见文本：绑定申请状态"
       ],
       "nextActions": [],
       "dependencies": [],
@@ -4676,7 +4192,7 @@
         "status": "completed"
       },
       "createdBy": "ai",
-      "updatedAt": "2026-08-05T09:00:00Z",
+      "updatedAt": "2026-08-07T01:30:00Z",
       "order": 4
     },
     {
@@ -4689,7 +4205,7 @@
         "strategy": "css"
       },
       "title": "订单台账页面说明",
-      "contentMarkdown": "### 页面功能介绍\n\n客户查看本企业订单码量和追加绑定申请情况。\n\n### 核心内容\n\n订单行展示总量、已激活、绑定申请中和剩余可用，并提供申请绑定与详情。\n\n### 业务流程\n\n按时间或码量排序订单，发起绑定申请，查看申请中明细或进入订单详情。\n\n### 主要操作\n\n日期筛选、码量排序、导出、申请绑定产品、查看申请中明细和订单详情。\n\n### 待确认\n\n当前原型已明确页面操作与状态；后续如接入真实接口，应保持字段口径和状态名称一致。",
+      "contentMarkdown": "### 页面功能介绍\n\n客户查看本企业订单码量和统一产品绑定申请情况。\n\n### 核心内容\n\n订单行展示总量、已激活、绑定申请中和剩余可用，并提供申请绑定与详情入口。\n\n### 业务流程\n\n发起申请时先选择绑定已有产品或新建产品并绑定；两种方式均预览申请码段并进入统一绑定审核。\n\n### 主要操作\n\n日期筛选、码量排序、导出、查看申请中明细、选择绑定方式、提交绑定申请和进入订单详情。\n\n### 待确认\n\n当前原型已明确页面操作与状态；后续接入真实接口时，应保持字段口径、状态名称和权限边界一致。",
       "maintenancePolicy": "annotation-owned",
       "kind": "note",
       "dimension": "Page overview",
@@ -4718,7 +4234,7 @@
         "status": "completed"
       },
       "createdBy": "ai",
-      "updatedAt": "2026-08-05T09:00:00Z",
+      "updatedAt": "2026-08-07T01:30:00Z",
       "order": 1
     },
     {
@@ -4877,7 +4393,7 @@
         }
       },
       "title": "订单行操作组",
-      "contentMarkdown": "### 业务含义\n\n从订单发起产品绑定申请或进入详情。\n\n### 交互规则\n\n有剩余可用时显示申请绑定产品；详情始终可进入。\n\n### 状态与异常\n\n同一订单已有待审批申请时不得重复占用相同额度。\n\n### 页面流转\n\n打开申请弹窗或进入订单详情。",
+      "contentMarkdown": "### 业务含义\n\n从订单发起产品绑定申请或进入订单详情。\n\n### 交互规则\n\n有剩余可用时显示申请绑定产品；详情始终可进入。\n\n### 状态与异常\n\n同一订单的待审核申请会占用可用量，超额申请必须拦截。\n\n### 页面流转\n\n打开绑定方式选择或进入订单详情。",
       "maintenancePolicy": "annotation-owned",
       "kind": "interaction",
       "dimension": "Primary action",
@@ -4907,7 +4423,7 @@
         "status": "completed"
       },
       "createdBy": "ai",
-      "updatedAt": "2026-08-05T09:00:00Z",
+      "updatedAt": "2026-08-07T01:30:00Z",
       "order": 5
     },
     {
@@ -4919,8 +4435,8 @@
         "fallbackText": "申请绑定产品",
         "strategy": "css"
       },
-      "title": "申请绑定产品",
-      "contentMarkdown": "### 业务含义\n\n从订单剩余可用码量中申请为已激活产品追加连续码段。\n\n### 交互规则\n\n搜索选择产品，自动带出批次，填写申请数量后提交运营审核。\n\n### 状态与异常\n\n提交后计入绑定申请中，不立即增加已激活量。\n\n### 风险提示\n\n申请占用订单可用量，重复申请和超额申请必须拦截。",
+      "title": "选择产品绑定方式",
+      "contentMarkdown": "### 业务含义\n\n在填写申请前选择绑定已有已激活产品，或新建产品资料并绑定。\n\n### 交互规则\n\n点击订单行的申请绑定产品后首先打开方式选择框。\n\n### 状态与异常\n\n订单无剩余可用码量时不显示选择项。\n\n### 页面流转\n\n进入已有产品绑定表单或新建产品编辑页。",
       "maintenancePolicy": "annotation-owned",
       "kind": "interaction",
       "dimension": "Surface overview",
@@ -4952,9 +4468,9 @@
         "status": "completed"
       },
       "createdBy": "ai",
-      "updatedAt": "2026-08-05T09:00:00Z",
+      "updatedAt": "2026-08-07T01:30:00Z",
       "order": 6,
-      "surfaceId": "surface-P22-request-bind",
+      "surfaceId": "surface-P22-bind-choice",
       "displayWhenClosed": "on-trigger",
       "fallbackAnchorSelector": "[data-action=\"fx-customer-bind-order\"]"
     },
@@ -4972,7 +4488,7 @@
         }
       },
       "title": "搜索已激活产品",
-      "contentMarkdown": "### 业务含义\n\n在当前客户的已激活产品中选择绑定对象。\n\n### 字段规则\n\n输入一到两个字符即可匹配产品名称或批次；选择后自动填充批次。\n\n### 状态与异常\n\n没有已激活产品时提供新建产品入口或空状态。",
+      "contentMarkdown": "### 业务含义\n\n在当前客户已激活产品中选择追加绑定对象。\n\n### 交互规则\n\n可按产品名称或批次搜索，选择后自动带出批次。\n\n### 状态与异常\n\n无匹配产品时不能提交，可返回重新选择绑定方式。",
       "maintenancePolicy": "annotation-owned",
       "kind": "interaction",
       "dimension": "Surface field",
@@ -5001,11 +4517,11 @@
         "status": "completed"
       },
       "createdBy": "ai",
-      "updatedAt": "2026-08-05T09:00:00Z",
+      "updatedAt": "2026-08-07T01:30:00Z",
       "order": 7,
-      "surfaceId": "surface-P22-request-bind",
+      "surfaceId": "surface-P22-existing-bind",
       "displayWhenClosed": "sidebar-only",
-      "fallbackAnchorSelector": "[data-action=\"fx-customer-bind-order\"]"
+      "fallbackAnchorSelector": "[data-action=\"fx-customer-select-existing-binding\"]"
     },
     {
       "id": "ANN-P22-008",
@@ -5021,7 +4537,7 @@
         }
       },
       "title": "申请绑定数量",
-      "contentMarkdown": "### 业务含义\n\n确定本次申请占用的订单码量。\n\n### 字段规则\n\n最小为 1，最大为当前剩余可用。\n\n### 状态与异常\n\n超额、空值或存在冲突申请时不提交。",
+      "contentMarkdown": "### 业务含义\n\n确定本次申请占用的订单码量。\n\n### 交互规则\n\n最小为 1，最大为当前剩余可用；输入后实时更新绑定码段预览。\n\n### 状态与异常\n\n超额、空值或存在冲突申请时不提交。",
       "maintenancePolicy": "annotation-owned",
       "kind": "interaction",
       "dimension": "Surface field",
@@ -5050,11 +4566,11 @@
         "status": "completed"
       },
       "createdBy": "ai",
-      "updatedAt": "2026-08-05T09:00:00Z",
+      "updatedAt": "2026-08-07T01:30:00Z",
       "order": 8,
-      "surfaceId": "surface-P22-request-bind",
+      "surfaceId": "surface-P22-existing-bind",
       "displayWhenClosed": "sidebar-only",
-      "fallbackAnchorSelector": "[data-action=\"fx-customer-bind-order\"]"
+      "fallbackAnchorSelector": "[data-action=\"fx-customer-select-existing-binding\"]"
     },
     {
       "id": "ANN-P22-009",
@@ -5070,7 +4586,7 @@
         }
       },
       "title": "提交绑定申请",
-      "contentMarkdown": "### 业务含义\n\n将申请发送给运营端审核。\n\n### 交互规则\n\n确认后生成待审批记录并刷新订单的绑定申请中数量。\n\n### 状态与异常\n\n失败时保留输入并说明原因。\n\n### 风险提示\n\n申请通过前不分配具体码段。",
+      "contentMarkdown": "### 业务含义\n\n将已有产品追加绑定申请发送给运营端统一审核。\n\n### 交互规则\n\n提交前核对产品、批次、数量和预览码段。\n\n### 状态与异常\n\n成功后生成待审核记录并刷新绑定申请中数量。\n\n### 页面流转\n\n关闭弹窗并回到订单台账。\n\n### 风险提示\n\n审核通过前不计入已激活量。",
       "maintenancePolicy": "annotation-owned",
       "kind": "interaction",
       "dimension": "Surface confirm",
@@ -5102,11 +4618,188 @@
         "status": "completed"
       },
       "createdBy": "ai",
-      "updatedAt": "2026-08-05T09:00:00Z",
+      "updatedAt": "2026-08-07T01:30:00Z",
       "order": 9,
-      "surfaceId": "surface-P22-request-bind",
+      "surfaceId": "surface-P22-existing-bind",
       "displayWhenClosed": "sidebar-only",
+      "fallbackAnchorSelector": "[data-action=\"fx-customer-select-existing-binding\"]"
+    },
+    {
+      "id": "ANN-P22-010",
+      "pageKey": "P22",
+      "annotationType": "J",
+      "target": {
+        "selector": "[data-action=\"fx-customer-select-existing-binding\"]",
+        "fallbackText": "选择已激活产品绑定",
+        "strategy": "css"
+      },
+      "title": "选择已有产品绑定",
+      "contentMarkdown": "### 业务含义\n\n为已有已激活产品申请追加绑定码量。\n\n### 交互规则\n\n点击后关闭方式选择并打开已有产品绑定表单。\n\n### 状态与异常\n\n没有可选产品时展示明确空状态。\n\n### 页面流转\n\n进入已有产品绑定表单。",
+      "maintenancePolicy": "annotation-owned",
+      "kind": "interaction",
+      "dimension": "Primary action",
+      "topics": [
+        "business",
+        "interaction",
+        "flow"
+      ],
+      "priority": "high",
+      "visible": true,
+      "source": {
+        "type": "mixed",
+        "ref": "CAND-P22-010"
+      },
+      "candidateId": "CAND-P22-010",
+      "evidence": [
+        "稳定锚点：[data-action=\"fx-customer-select-existing-binding\"]",
+        "可见文本：选择已激活产品绑定"
+      ],
+      "nextActions": [],
+      "dependencies": [],
+      "risks": [],
+      "openQuestions": [],
+      "review": {
+        "required": true,
+        "status": "completed"
+      },
+      "createdBy": "ai",
+      "updatedAt": "2026-08-07T01:30:00Z",
+      "order": 10,
+      "surfaceId": "surface-P22-bind-choice",
+      "displayWhenClosed": "on-trigger",
       "fallbackAnchorSelector": "[data-action=\"fx-customer-bind-order\"]"
+    },
+    {
+      "id": "ANN-P22-011",
+      "pageKey": "P22",
+      "annotationType": "J",
+      "target": {
+        "selector": "[data-action=\"fx-customer-new-product-for-order\"]",
+        "fallbackText": "新建产品审核并绑定",
+        "strategy": "css"
+      },
+      "title": "新建产品审核并绑定",
+      "contentMarkdown": "### 业务含义\n\n在当前订单上下文新建产品资料并同步申请绑定码段。\n\n### 交互规则\n\n点击后进入六模块产品编辑页，关联订单只读带入。\n\n### 状态与异常\n\n未保存离开时不生成有效审核记录。\n\n### 页面流转\n\n进入产品编辑与查看页面。",
+      "maintenancePolicy": "annotation-owned",
+      "kind": "interaction",
+      "dimension": "Primary action",
+      "topics": [
+        "business",
+        "interaction",
+        "flow"
+      ],
+      "priority": "high",
+      "visible": true,
+      "source": {
+        "type": "mixed",
+        "ref": "CAND-P22-011"
+      },
+      "candidateId": "CAND-P22-011",
+      "evidence": [
+        "稳定锚点：[data-action=\"fx-customer-new-product-for-order\"]",
+        "可见文本：新建产品审核并绑定"
+      ],
+      "nextActions": [],
+      "dependencies": [],
+      "risks": [],
+      "openQuestions": [],
+      "review": {
+        "required": true,
+        "status": "completed"
+      },
+      "createdBy": "ai",
+      "updatedAt": "2026-08-07T01:30:00Z",
+      "order": 11,
+      "surfaceId": "surface-P22-bind-choice",
+      "displayWhenClosed": "on-trigger",
+      "fallbackAnchorSelector": "[data-action=\"fx-customer-bind-order\"]"
+    },
+    {
+      "id": "ANN-P22-012",
+      "pageKey": "P22",
+      "annotationType": "DATA",
+      "target": {
+        "selector": "#fx-customer-bind-range-preview",
+        "fallbackText": "绑定码段预览",
+        "strategy": "css"
+      },
+      "title": "申请码段预览",
+      "contentMarkdown": "### 业务含义\n\n预览按当前订单与申请数量计算的连续码段。\n\n### 交互规则\n\n只读展示，随申请数量更新；审核通过前不会正式激活。\n\n### 状态与异常\n\n没有足够连续码段时显示不可分配并阻止提交。",
+      "maintenancePolicy": "annotation-owned",
+      "kind": "interaction",
+      "dimension": "Primary action",
+      "topics": [
+        "business",
+        "interaction",
+        "flow"
+      ],
+      "priority": "high",
+      "visible": true,
+      "source": {
+        "type": "mixed",
+        "ref": "CAND-P22-012"
+      },
+      "candidateId": "CAND-P22-012",
+      "evidence": [
+        "稳定锚点：#fx-customer-bind-range-preview",
+        "可见文本：绑定码段预览"
+      ],
+      "nextActions": [],
+      "dependencies": [],
+      "risks": [],
+      "openQuestions": [],
+      "review": {
+        "required": true,
+        "status": "completed"
+      },
+      "createdBy": "ai",
+      "updatedAt": "2026-08-07T01:30:00Z",
+      "order": 12,
+      "surfaceId": "surface-P22-existing-bind",
+      "displayWhenClosed": "on-trigger",
+      "fallbackAnchorSelector": "[data-action=\"fx-customer-select-existing-binding\"]"
+    },
+    {
+      "id": "ANN-P22-013",
+      "pageKey": "P22",
+      "annotationType": "FILTER",
+      "target": {
+        "selector": "[data-action=\"fx-sort-customerOrders\"]",
+        "fallbackText": "总量",
+        "strategy": "css"
+      },
+      "title": "订单码量排序",
+      "contentMarkdown": "### 业务含义\n\n按总量、已激活、绑定申请中或剩余可用排序订单。\n\n### 交互规则\n\n每个字段依次切换升序、降序和不排序。\n\n### 状态与异常\n\n同一时间仅保留一个有效排序字段。\n\n### 页面流转\n\n停留在订单台账。",
+      "maintenancePolicy": "annotation-owned",
+      "kind": "interaction",
+      "dimension": "Primary action",
+      "topics": [
+        "business",
+        "interaction",
+        "flow"
+      ],
+      "priority": "high",
+      "visible": true,
+      "source": {
+        "type": "mixed",
+        "ref": "CAND-P22-013"
+      },
+      "candidateId": "CAND-P22-013",
+      "evidence": [
+        "稳定锚点：[data-action=\"fx-sort-customerOrders\"]",
+        "可见文本：总量"
+      ],
+      "nextActions": [],
+      "dependencies": [],
+      "risks": [],
+      "openQuestions": [],
+      "review": {
+        "required": true,
+        "status": "completed"
+      },
+      "createdBy": "ai",
+      "updatedAt": "2026-08-07T01:30:00Z",
+      "order": 13
     },
     {
       "id": "ANN-P23-001",
@@ -5118,7 +4811,7 @@
         "strategy": "css"
       },
       "title": "订单详情页面说明",
-      "contentMarkdown": "### 页面功能介绍\n\n客户查看本企业单笔订单信息和全部激活记录。\n\n### 核心内容\n\n订单信息和激活记录与运营端使用相同字段，客户仅能访问本企业订单。\n\n### 业务流程\n\n从订单台账进入，可返回、发起绑定申请、查看关联产品或已重置原因。\n\n### 主要操作\n\n返回订单台账、申请绑定产品、打开关联产品和查看撤回记录。\n\n### 待确认\n\n当前原型已明确页面操作与状态；后续如接入真实接口，应保持字段口径和状态名称一致。",
+      "contentMarkdown": "### 页面功能介绍\n\n客户查看本企业单笔订单信息和统一产品绑定记录。\n\n### 核心内容\n\n订单信息展示四类码量；绑定记录统一展示产品、批次、码段、数量、操作人、时间、状态和状态化操作。\n\n### 业务流程\n\n可返回、继续申请绑定，并按草稿、待审核、已激活或已驳回状态编辑、查看、预览、提交或撤回。\n\n### 主要操作\n\n返回、申请绑定、编辑或查看产品、预览码、提交审核、撤回申请、撤回产品、查看重置原因。\n\n### 待确认\n\n当前原型已明确页面操作与状态；后续接入真实接口时，应保持字段口径、状态名称和权限边界一致。",
       "maintenancePolicy": "annotation-owned",
       "kind": "note",
       "dimension": "Page overview",
@@ -5147,7 +4840,7 @@
         "status": "completed"
       },
       "createdBy": "ai",
-      "updatedAt": "2026-08-05T09:00:00Z",
+      "updatedAt": "2026-08-07T01:30:00Z",
       "order": 1
     },
     {
@@ -5211,7 +4904,7 @@
         }
       },
       "title": "申请绑定产品",
-      "contentMarkdown": "### 业务含义\n\n订单有剩余可用码量时发起追加绑定申请。\n\n### 交互规则\n\n入口仅在剩余可用大于零时显示。\n\n### 状态与异常\n\n无余额时隐藏。\n\n### 页面流转\n\n打开申请绑定产品弹窗。",
+      "contentMarkdown": "### 业务含义\n\n订单有剩余可用码量时发起统一产品绑定申请。\n\n### 交互规则\n\n点击后先选择绑定已有已激活产品或新建产品并绑定。\n\n### 状态与异常\n\n无余额时隐藏；待审核申请占用的码量不能重复申请。\n\n### 页面流转\n\n打开产品绑定方式选择框。",
       "maintenancePolicy": "annotation-owned",
       "kind": "interaction",
       "dimension": "Primary action",
@@ -5241,7 +4934,7 @@
         "status": "completed"
       },
       "createdBy": "ai",
-      "updatedAt": "2026-08-05T09:00:00Z",
+      "updatedAt": "2026-08-07T01:30:00Z",
       "order": 3
     },
     {
@@ -5250,15 +4943,15 @@
       "annotationType": "J",
       "target": {
         "selector": "[data-action=\"fx-open-activation-product\"]",
-        "fallbackText": "产品",
-        "strategy": "data",
+        "fallbackText": "查看",
+        "strategy": "css",
         "boundsHint": {
           "tag": "button",
           "text": "产品"
         }
       },
-      "title": "查看关联产品",
-      "contentMarkdown": "### 业务含义\n\n从激活记录定位本企业产品资料。\n\n### 交互规则\n\n点击产品名称后进入产品列表并带入搜索。\n\n### 状态与异常\n\n产品不存在时提示并留在详情。\n\n### 页面流转\n\n进入产品信息列表。",
+      "title": "查看或编辑产品资料",
+      "contentMarkdown": "### 业务含义\n\n从绑定记录进入六模块产品资料页。\n\n### 交互规则\n\n待审核和已激活点击查看进入只读页；草稿和已驳回点击编辑进入可编辑页，绑定设置模块始终保留。\n\n### 状态与异常\n\n产品记录不存在时提示并留在订单详情。\n\n### 页面流转\n\n进入产品编辑与查看页面。",
       "maintenancePolicy": "annotation-owned",
       "kind": "flow",
       "dimension": "Primary action",
@@ -5277,7 +4970,7 @@
       "candidateId": "CAND-P23-004",
       "evidence": [
         "稳定锚点：[data-action=\"fx-open-activation-product\"]",
-        "可见文本：产品"
+        "可见文本：查看"
       ],
       "nextActions": [],
       "dependencies": [],
@@ -5288,227 +4981,38 @@
         "status": "completed"
       },
       "createdBy": "ai",
-      "updatedAt": "2026-08-05T09:00:00Z",
+      "updatedAt": "2026-08-07T01:30:00Z",
       "order": 4
     },
     {
-      "id": "ANN-P24-001",
-      "pageKey": "P24",
-      "annotationType": "P",
-      "target": {
-        "selector": ".page-header h1",
-        "fallbackText": "产品信息",
-        "strategy": "css"
-      },
-      "title": "产品信息页面说明",
-      "contentMarkdown": "### 页面功能介绍\n\n客户维护产品资料、预览扫码效果、提交审核并跟踪状态。\n\n### 核心内容\n\n列表展示产品名称、大类、批次、状态、提交时间和状态相关操作。\n\n### 业务流程\n\n新建或编辑产品后保存草稿；草稿提交审核，待审核可撤回修改。已激活产品如需撤回码段，应在撤回申请页面操作。\n\n### 主要操作\n\n搜索、分类与状态筛选、日期筛选、新建、编辑查看、预览码、提交审核或撤回待审核申请。\n\n### 待确认\n\n当前原型已明确页面操作与状态；后续如接入真实接口，应保持字段口径和状态名称一致。",
-      "maintenancePolicy": "annotation-owned",
-      "kind": "note",
-      "dimension": "Page overview",
-      "topics": [
-        "overview",
-        "business",
-        "flow"
-      ],
-      "priority": "medium",
-      "visible": true,
-      "source": {
-        "type": "mixed",
-        "ref": "CAND-P24-001"
-      },
-      "candidateId": "CAND-P24-001",
-      "evidence": [
-        "稳定锚点：.page-header h1",
-        "可见文本：产品信息"
-      ],
-      "nextActions": [],
-      "dependencies": [],
-      "risks": [],
-      "openQuestions": [],
-      "review": {
-        "required": true,
-        "status": "completed"
-      },
-      "createdBy": "ai",
-      "updatedAt": "2026-08-05T09:00:00Z",
-      "order": 1
-    },
-    {
-      "id": "ANN-P24-002",
-      "pageKey": "P24",
-      "annotationType": "FILTER",
-      "target": {
-        "selector": "#fx-customer-product-search",
-        "fallbackText": "搜索产品名称或批次",
-        "strategy": "id",
-        "boundsHint": {
-          "tag": "input",
-          "text": "搜索产品名称或批次"
-        }
-      },
-      "title": "产品搜索与重置",
-      "contentMarkdown": "### 业务含义\n\n按产品名称或批次定位本企业产品。\n\n### 交互规则\n\n输入即时筛选，并与大类、状态、日期共同生效。\n\n### 状态与异常\n\n无结果时显示空状态。\n\n### 页面流转\n\n停留在产品信息列表。",
-      "maintenancePolicy": "annotation-owned",
-      "kind": "interaction",
-      "dimension": "Primary action",
-      "topics": [
-        "business",
-        "interaction",
-        "state",
-        "flow"
-      ],
-      "priority": "high",
-      "visible": true,
-      "source": {
-        "type": "mixed",
-        "ref": "CAND-P24-002"
-      },
-      "candidateId": "CAND-P24-002",
-      "evidence": [
-        "稳定锚点：#fx-customer-product-search",
-        "可见文本：搜索产品名称或批次"
-      ],
-      "nextActions": [],
-      "dependencies": [],
-      "risks": [],
-      "openQuestions": [],
-      "review": {
-        "required": true,
-        "status": "completed"
-      },
-      "createdBy": "ai",
-      "updatedAt": "2026-08-05T09:00:00Z",
-      "order": 2
-    },
-    {
-      "id": "ANN-P24-003",
-      "pageKey": "P24",
-      "annotationType": "J",
-      "target": {
-        "selector": "[data-action=\"fx-new-product\"]",
-        "fallbackText": "新建产品",
-        "strategy": "data",
-        "boundsHint": {
-          "tag": "button",
-          "text": "新建产品"
-        }
-      },
-      "title": "新建产品",
-      "contentMarkdown": "### 业务含义\n\n创建新的产品资料草稿。\n\n### 交互规则\n\n点击后进入编辑内页并从产品信息模块开始。\n\n### 状态与异常\n\n未保存离开时不生成有效产品。\n\n### 页面流转\n\n进入产品编辑内页。",
-      "maintenancePolicy": "annotation-owned",
-      "kind": "flow",
-      "dimension": "Primary action",
-      "topics": [
-        "business",
-        "interaction",
-        "state",
-        "flow"
-      ],
-      "priority": "high",
-      "visible": true,
-      "source": {
-        "type": "mixed",
-        "ref": "CAND-P24-003"
-      },
-      "candidateId": "CAND-P24-003",
-      "evidence": [
-        "稳定锚点：[data-action=\"fx-new-product\"]",
-        "可见文本：新建产品"
-      ],
-      "nextActions": [],
-      "dependencies": [],
-      "risks": [],
-      "openQuestions": [],
-      "review": {
-        "required": true,
-        "status": "completed"
-      },
-      "createdBy": "ai",
-      "updatedAt": "2026-08-05T09:00:00Z",
-      "order": 3
-    },
-    {
-      "id": "ANN-P24-004",
-      "pageKey": "P24",
+      "id": "ANN-P23-005",
+      "pageKey": "P23",
       "annotationType": "S",
       "target": {
-        "selector": ".customer-product-table tbody .table-actions",
-        "fallbackText": "编辑",
-        "strategy": "css",
-        "boundsHint": {
-          "tag": "button",
-          "text": "编辑"
-        }
+        "selector": ".binding-record-table tbody .table-actions, .order-detail-page tbody .table-actions",
+        "fallbackText": "操作",
+        "strategy": "css"
       },
-      "title": "产品行操作组",
-      "contentMarkdown": "### 业务含义\n\n根据产品状态提供编辑查看、预览或提交操作。\n\n### 交互规则\n\n草稿可编辑和提交；待审核只读并可撤回申请；已激活可查看；已退回可继续编辑。\n\n### 状态与异常\n\n不符合状态的操作不显示。\n\n### 页面流转\n\n进入编辑内页或打开预览、提交确认。",
-      "maintenancePolicy": "annotation-owned",
-      "kind": "state",
-      "dimension": "Primary action",
-      "topics": [
-        "business",
-        "interaction",
-        "state",
-        "flow"
-      ],
-      "priority": "high",
-      "visible": true,
-      "source": {
-        "type": "mixed",
-        "ref": "CAND-P24-004"
-      },
-      "candidateId": "CAND-P24-004",
-      "evidence": [
-        "稳定锚点：.customer-product-table tbody .table-actions",
-        "可见文本：编辑"
-      ],
-      "nextActions": [],
-      "dependencies": [],
-      "risks": [],
-      "openQuestions": [],
-      "review": {
-        "required": true,
-        "status": "completed"
-      },
-      "createdBy": "ai",
-      "updatedAt": "2026-08-05T09:00:00Z",
-      "order": 4
-    },
-    {
-      "id": "ANN-P24-005",
-      "pageKey": "P24",
-      "annotationType": "A",
-      "target": {
-        "selector": "[data-action=\"fx-submit-product-row\"]",
-        "fallbackText": "草稿提交审核",
-        "strategy": "data",
-        "boundsHint": {
-          "tag": "button",
-          "text": "草稿提交审核"
-        }
-      },
-      "title": "草稿提交审核",
-      "contentMarkdown": "### 业务含义\n\n从产品列表直接提交已完成的草稿。\n\n### 交互规则\n\n提交前校验必填字段，确认后产品转为待审核。\n\n### 状态与异常\n\n校验失败时进入编辑页定位缺失内容。\n\n### 页面流转\n\n打开提交审核确认或进入编辑页。\n\n### 风险提示\n\n提交后资料转为只读，需撤回审核申请后才能修改。",
+      "title": "绑定记录状态操作",
+      "contentMarkdown": "### 业务含义\n\n操作项由绑定记录状态决定。\n\n### 交互规则\n\n待审核：查看、预览码、撤回申请；已激活：查看、预览码、撤回产品；草稿：编辑、预览码、提交审核；已驳回：编辑、预览码。\n\n### 状态与异常\n\n不符合当前状态的操作不得显示。\n\n### 页面流转\n\n进入产品页、打开预览或撤回确认。",
       "maintenancePolicy": "annotation-owned",
       "kind": "interaction",
       "dimension": "Primary action",
       "topics": [
         "business",
         "interaction",
-        "state",
-        "flow",
-        "risk"
+        "flow"
       ],
       "priority": "high",
       "visible": true,
       "source": {
         "type": "mixed",
-        "ref": "CAND-P24-005"
+        "ref": "CAND-P23-005"
       },
-      "candidateId": "CAND-P24-005",
+      "candidateId": "CAND-P23-005",
       "evidence": [
-        "稳定锚点：[data-action=\"fx-submit-product-row\"]",
-        "可见文本：草稿提交审核"
+        "稳定锚点：.binding-record-table tbody .table-actions, .order-detail-page tbody .table-actions",
+        "可见文本：操作"
       ],
       "nextActions": [],
       "dependencies": [],
@@ -5519,8 +5023,50 @@
         "status": "completed"
       },
       "createdBy": "ai",
-      "updatedAt": "2026-08-05T09:00:00Z",
+      "updatedAt": "2026-08-07T01:30:00Z",
       "order": 5
+    },
+    {
+      "id": "ANN-P23-006",
+      "pageKey": "P23",
+      "annotationType": "R",
+      "target": {
+        "selector": "[data-action=\"fx-withdraw-active-product\"]",
+        "fallbackText": "撤回产品",
+        "strategy": "css"
+      },
+      "title": "撤回已激活产品",
+      "contentMarkdown": "### 业务含义\n\n对当前已激活产品的全部有效绑定码段发起撤回。\n\n### 交互规则\n\n打开只读确认表单，明确列出产品、批次、具体码段和总数量。\n\n### 状态与异常\n\n存在待审批撤回时不得重复提交。\n\n### 页面流转\n\n提交后进入撤回申请列表等待运营审核。\n\n### 风险提示\n\n撤回产品仍以具体码段为处理单位。",
+      "maintenancePolicy": "annotation-owned",
+      "kind": "interaction",
+      "dimension": "Primary action",
+      "topics": [
+        "business",
+        "interaction",
+        "flow"
+      ],
+      "priority": "high",
+      "visible": true,
+      "source": {
+        "type": "mixed",
+        "ref": "CAND-P23-006"
+      },
+      "candidateId": "CAND-P23-006",
+      "evidence": [
+        "稳定锚点：[data-action=\"fx-withdraw-active-product\"]",
+        "可见文本：撤回产品"
+      ],
+      "nextActions": [],
+      "dependencies": [],
+      "risks": [],
+      "openQuestions": [],
+      "review": {
+        "required": true,
+        "status": "completed"
+      },
+      "createdBy": "ai",
+      "updatedAt": "2026-08-07T01:30:00Z",
+      "order": 6
     },
     {
       "id": "ANN-P25-001",
@@ -5532,7 +5078,7 @@
         "strategy": "css"
       },
       "title": "产品编辑与查看页面说明",
-      "contentMarkdown": "### 页面功能介绍\n\n按五个资料模块维护或只读查看产品在扫码端展示的内容。\n\n### 核心内容\n\n字段顺序与扫码端展示一致；支持标准字段、自定义字段、图片/PDF附件和追溯时间节点。\n\n### 业务流程\n\n逐模块填写并保存草稿，预览扫码效果，最后提交审核；只读状态下空字段直接隐藏。\n\n### 主要操作\n\n返回、切换模块、填写和拖动字段、新增字段、上传附件、上一步、继续、保存草稿、预览码和提交审核。\n\n### 待确认\n\n当前原型已明确页面操作与状态；后续如接入真实接口，应保持字段口径和状态名称一致。",
+      "contentMarkdown": "### 页面功能介绍\n\n按六个模块维护或只读查看产品资料与绑定设置。\n\n### 核心内容\n\n前五个模块对应扫码端产品内容，第六个绑定设置展示只读关联订单、申请数量、可用范围提示和申请码段预览。\n\n### 业务流程\n\n从订单申请入口或绑定记录进入；草稿和已驳回可编辑，待审核和已激活只读；保存草稿或提交后返回订单上下文。\n\n### 主要操作\n\n返回、切换六个模块、编辑字段、上传附件、保存草稿、预览码和提交统一绑定审核。\n\n### 待确认\n\n当前原型已明确页面操作与状态；后续接入真实接口时，应保持字段口径、状态名称和权限边界一致。",
       "maintenancePolicy": "annotation-owned",
       "kind": "note",
       "dimension": "Page overview",
@@ -5561,7 +5107,7 @@
         "status": "completed"
       },
       "createdBy": "ai",
-      "updatedAt": "2026-08-05T09:00:00Z",
+      "updatedAt": "2026-08-07T01:30:00Z",
       "order": 1
     },
     {
@@ -5571,14 +5117,14 @@
       "target": {
         "selector": "[data-action=\"fx-back-customer-products\"]",
         "fallbackText": "返回",
-        "strategy": "data",
+        "strategy": "css",
         "boundsHint": {
           "tag": "button",
           "text": "返回"
         }
       },
-      "title": "返回产品列表",
-      "contentMarkdown": "### 业务含义\n\n结束当前编辑或查看。\n\n### 交互规则\n\n编辑状态下已保存草稿保留；未保存输入按当前原型状态处理。\n\n### 状态与异常\n\n只读查看可直接返回。\n\n### 页面流转\n\n回到产品信息列表。",
+      "title": "返回订单上下文",
+      "contentMarkdown": "### 业务含义\n\n结束当前产品编辑或查看。\n\n### 交互规则\n\n有订单上下文时返回订单详情，否则返回订单台账。\n\n### 状态与异常\n\n只读查看可直接返回；未保存修改按当前原型状态处理。\n\n### 页面流转\n\n回到订单详情或订单台账。",
       "maintenancePolicy": "annotation-owned",
       "kind": "flow",
       "dimension": "Primary action",
@@ -5608,7 +5154,7 @@
         "status": "completed"
       },
       "createdBy": "ai",
-      "updatedAt": "2026-08-05T09:00:00Z",
+      "updatedAt": "2026-08-07T01:30:00Z",
       "order": 2
     },
     {
@@ -5624,8 +5170,8 @@
           "text": "产品信息"
         }
       },
-      "title": "产品资料模块",
-      "contentMarkdown": "### 业务含义\n\n控制产品、企业、生产单位、质量和追溯五类资料。\n\n### 交互规则\n\n点击任意模块进入对应字段；运营审核从当前模块点击编辑时保持该模块。\n\n### 状态与异常\n\n第一个模块不显示上一步，最后一个模块不显示继续。\n\n### 页面流转\n\n停留在编辑内页并切换模块。",
+      "title": "六个编辑模块",
+      "contentMarkdown": "### 业务含义\n\n控制五类产品资料和绑定设置。\n\n### 交互规则\n\n点击模块切换内容；绑定设置只在订单绑定上下文出现，运营审核详情只展示前五个产品资料模块。\n\n### 状态与异常\n\n第一个模块无上一步，最后一个模块无继续。\n\n### 页面流转\n\n停留在编辑页并切换模块。",
       "maintenancePolicy": "annotation-owned",
       "kind": "interaction",
       "dimension": "Primary action",
@@ -5655,7 +5201,7 @@
         "status": "completed"
       },
       "createdBy": "ai",
-      "updatedAt": "2026-08-05T09:00:00Z",
+      "updatedAt": "2026-08-07T01:30:00Z",
       "order": 3
     },
     {
@@ -5672,7 +5218,7 @@
         }
       },
       "title": "字段编辑与展示顺序",
-      "contentMarkdown": "### 业务含义\n\n字段内容和顺序共同决定扫码端展示。\n\n### 交互规则\n\n编辑状态可填写、拖动排序、删除自定义字段；查看状态仅显示已有值，空字段不展示。\n\n### 状态与异常\n\n必填字段缺失会阻止提交，附件读取失败保留原内容。\n\n### 页面流转\n\n停留在当前资料模块。",
+      "contentMarkdown": "### 业务含义\n\n字段内容与顺序共同决定消费者扫码页展示。\n\n### 交互规则\n\n编辑状态可填写、拖动排序和删除自定义字段；只读状态仅显示已有值，空字段不展示。\n\n### 状态与异常\n\n品牌、商标等单图字段最多 1 张；营业执照与检测报告各 1 份；其余图片/PDF字段合计最多 10 个。\n\n### 页面流转\n\n停留在当前资料模块。",
       "maintenancePolicy": "annotation-owned",
       "kind": "interaction",
       "dimension": "Primary action",
@@ -5702,7 +5248,7 @@
         "status": "completed"
       },
       "createdBy": "ai",
-      "updatedAt": "2026-08-05T09:00:00Z",
+      "updatedAt": "2026-08-07T01:30:00Z",
       "order": 4
     },
     {
@@ -5813,7 +5359,7 @@
         }
       },
       "title": "保存草稿",
-      "contentMarkdown": "### 业务含义\n\n保存当前产品资料但不进入审核。\n\n### 交互规则\n\n校验基础结构后保存，并返回产品列表。\n\n### 状态与异常\n\n失败时保留当前编辑内容。\n\n### 页面流转\n\n回到产品列表，状态保持草稿。",
+      "contentMarkdown": "### 业务含义\n\n保存当前产品资料和绑定设置，但不进入审核。\n\n### 交互规则\n\n保存后记录回到草稿状态；已驳回记录保存草稿后同样退回草稿。\n\n### 状态与异常\n\n失败时保留当前输入。\n\n### 页面流转\n\n回到当前订单详情，状态显示草稿。",
       "maintenancePolicy": "annotation-owned",
       "kind": "interaction",
       "dimension": "Primary action",
@@ -5843,7 +5389,7 @@
         "status": "completed"
       },
       "createdBy": "ai",
-      "updatedAt": "2026-08-05T09:00:00Z",
+      "updatedAt": "2026-08-07T01:30:00Z",
       "order": 7
     },
     {
@@ -5899,15 +5445,15 @@
       "annotationType": "A",
       "target": {
         "selector": "[data-action=\"fx-open-submit\"]",
-        "fallbackText": "提交产品审核",
-        "strategy": "data",
+        "fallbackText": "提交审核",
+        "strategy": "css",
         "boundsHint": {
           "tag": "button",
           "text": "提交产品审核"
         }
       },
-      "title": "提交产品审核",
-      "contentMarkdown": "### 业务含义\n\n将草稿交由运营端审核。\n\n### 交互规则\n\n仅客户编辑状态显示；点击后打开最终确认。\n\n### 状态与异常\n\n缺少必填内容时不进入提交完成状态。\n\n### 页面流转\n\n打开提交审核确认弹窗。\n\n### 风险提示\n\n确认提交后全部字段转为只读。",
+      "title": "提交统一绑定审核",
+      "contentMarkdown": "### 业务含义\n\n将产品资料、关联订单、申请数量和申请码段一并提交运营端。\n\n### 交互规则\n\n仅可编辑状态显示；点击后打开最终确认。\n\n### 状态与异常\n\n缺少必填资料、数量无效或码段不可用时不进入待审核。\n\n### 页面流转\n\n打开提交确认弹窗。\n\n### 风险提示\n\n确认后六个模块转为只读。",
       "maintenancePolicy": "annotation-owned",
       "kind": "interaction",
       "dimension": "Primary action",
@@ -5927,7 +5473,7 @@
       "candidateId": "CAND-P25-009",
       "evidence": [
         "稳定锚点：[data-action=\"fx-open-submit\"]",
-        "可见文本：提交产品审核"
+        "可见文本：提交审核"
       ],
       "nextActions": [],
       "dependencies": [],
@@ -5938,7 +5484,7 @@
         "status": "completed"
       },
       "createdBy": "ai",
-      "updatedAt": "2026-08-05T09:00:00Z",
+      "updatedAt": "2026-08-07T01:30:00Z",
       "order": 9
     },
     {
@@ -5947,11 +5493,11 @@
       "annotationType": "R",
       "target": {
         "selector": ".modal",
-        "fallbackText": "提交审核确认",
+        "fallbackText": "提交产品与绑定申请",
         "strategy": "css"
       },
-      "title": "提交审核确认",
-      "contentMarkdown": "### 业务含义\n\n在最终提交前核对产品、批次、目标订单、资料模块和附件数量。\n\n### 交互规则\n\n返回检查不提交；确认提交后产品进入待审核。\n\n### 状态与异常\n\n提交成功回到产品列表，失败保留编辑内容。\n\n### 风险提示\n\n提交后资料只读，修改需先撤回审核申请。",
+      "title": "提交产品与绑定申请确认",
+      "contentMarkdown": "### 业务含义\n\n在最终提交前核对产品、批次、关联订单、申请数量和申请码段。\n\n### 交互规则\n\n返回检查不提交；确认提交后生成统一待审核记录。\n\n### 状态与异常\n\n提交成功返回订单详情，失败保留编辑内容。\n\n### 页面流转\n\n停留在确认弹窗或返回订单详情。",
       "maintenancePolicy": "annotation-owned",
       "kind": "interaction",
       "dimension": "Surface overview",
@@ -5970,7 +5516,7 @@
       "candidateId": "CAND-P25-010",
       "evidence": [
         "稳定锚点：.modal",
-        "可见文本：提交审核确认"
+        "可见文本：提交产品与绑定申请"
       ],
       "nextActions": [],
       "dependencies": [],
@@ -5983,9 +5529,9 @@
         "status": "completed"
       },
       "createdBy": "ai",
-      "updatedAt": "2026-08-05T09:00:00Z",
+      "updatedAt": "2026-08-07T01:30:00Z",
       "order": 10,
-      "surfaceId": "surface-P25-submit-product",
+      "surfaceId": "surface-P25-submit-binding",
       "displayWhenClosed": "on-trigger",
       "fallbackAnchorSelector": "[data-action=\"fx-open-submit\"]"
     },
@@ -6003,7 +5549,7 @@
         }
       },
       "title": "确认提交",
-      "contentMarkdown": "### 业务含义\n\n完成产品资料提交。\n\n### 交互规则\n\n再次校验必填项和产品状态后创建审核任务。\n\n### 状态与异常\n\n成功后状态变为待审核并记录提交时间。\n\n### 风险提示\n\n重复点击不得生成重复审核任务。",
+      "contentMarkdown": "### 业务含义\n\n完成产品资料与绑定申请提交。\n\n### 交互规则\n\n再次校验六个模块、订单余额、数量和连续码段。\n\n### 状态与异常\n\n成功后状态变为待审核并记录提交时间；重复点击不得生成重复申请。\n\n### 页面流转\n\n回到订单详情。",
       "maintenancePolicy": "annotation-owned",
       "kind": "interaction",
       "dimension": "Surface confirm",
@@ -6035,11 +5581,179 @@
         "status": "completed"
       },
       "createdBy": "ai",
-      "updatedAt": "2026-08-05T09:00:00Z",
+      "updatedAt": "2026-08-07T01:30:00Z",
       "order": 11,
-      "surfaceId": "surface-P25-submit-product",
+      "surfaceId": "surface-P25-submit-binding",
       "displayWhenClosed": "sidebar-only",
       "fallbackAnchorSelector": "[data-action=\"fx-open-submit\"]"
+    },
+    {
+      "id": "ANN-P25-012",
+      "pageKey": "P25",
+      "annotationType": "DATA",
+      "target": {
+        "selector": "#fx-editor-bind-order",
+        "fallbackText": "关联订单",
+        "strategy": "css"
+      },
+      "title": "关联订单",
+      "contentMarkdown": "### 业务含义\n\n展示从订单申请入口带入的目标订单。\n\n### 交互规则\n\n只读，不允许在客户端编辑页修改。\n\n### 状态与异常\n\n订单不存在或已无可用码量时不能提交。",
+      "maintenancePolicy": "annotation-owned",
+      "kind": "interaction",
+      "dimension": "Primary action",
+      "topics": [
+        "business",
+        "interaction",
+        "flow"
+      ],
+      "priority": "high",
+      "visible": true,
+      "source": {
+        "type": "mixed",
+        "ref": "CAND-P25-012"
+      },
+      "candidateId": "CAND-P25-012",
+      "evidence": [
+        "稳定锚点：#fx-editor-bind-order",
+        "可见文本：关联订单"
+      ],
+      "nextActions": [],
+      "dependencies": [],
+      "risks": [],
+      "openQuestions": [],
+      "review": {
+        "required": true,
+        "status": "completed"
+      },
+      "createdBy": "ai",
+      "updatedAt": "2026-08-07T01:30:00Z",
+      "order": 12
+    },
+    {
+      "id": "ANN-P25-013",
+      "pageKey": "P25",
+      "annotationType": "C",
+      "target": {
+        "selector": "#fx-editor-bind-amount",
+        "fallbackText": "申请绑定数量",
+        "strategy": "css"
+      },
+      "title": "申请绑定数量",
+      "contentMarkdown": "### 业务含义\n\n确定本次新建产品申请占用的订单码量。\n\n### 交互规则\n\n最小为 1，最大为当前订单可用量；下方小字展示可用区间和可选数量。\n\n### 状态与异常\n\n超额或无连续码段时阻止提交。",
+      "maintenancePolicy": "annotation-owned",
+      "kind": "interaction",
+      "dimension": "Primary action",
+      "topics": [
+        "business",
+        "interaction",
+        "flow"
+      ],
+      "priority": "high",
+      "visible": true,
+      "source": {
+        "type": "mixed",
+        "ref": "CAND-P25-013"
+      },
+      "candidateId": "CAND-P25-013",
+      "evidence": [
+        "稳定锚点：#fx-editor-bind-amount",
+        "可见文本：申请绑定数量"
+      ],
+      "nextActions": [],
+      "dependencies": [],
+      "risks": [],
+      "openQuestions": [],
+      "review": {
+        "required": true,
+        "status": "completed"
+      },
+      "createdBy": "ai",
+      "updatedAt": "2026-08-07T01:30:00Z",
+      "order": 13
+    },
+    {
+      "id": "ANN-P25-014",
+      "pageKey": "P25",
+      "annotationType": "DATA",
+      "target": {
+        "selector": "#fx-editor-bind-range-preview",
+        "fallbackText": "本次申请码段",
+        "strategy": "css"
+      },
+      "title": "申请码段预览",
+      "contentMarkdown": "### 业务含义\n\n展示按当前数量计算的连续申请码段。\n\n### 交互规则\n\n只读，随数量更新；审核通过前不会正式分配。\n\n### 状态与异常\n\n无可用码段时显示明确提示并阻止提交。",
+      "maintenancePolicy": "annotation-owned",
+      "kind": "interaction",
+      "dimension": "Primary action",
+      "topics": [
+        "business",
+        "interaction",
+        "flow"
+      ],
+      "priority": "high",
+      "visible": true,
+      "source": {
+        "type": "mixed",
+        "ref": "CAND-P25-014"
+      },
+      "candidateId": "CAND-P25-014",
+      "evidence": [
+        "稳定锚点：#fx-editor-bind-range-preview",
+        "可见文本：本次申请码段"
+      ],
+      "nextActions": [],
+      "dependencies": [],
+      "risks": [],
+      "openQuestions": [],
+      "review": {
+        "required": true,
+        "status": "completed"
+      },
+      "createdBy": "ai",
+      "updatedAt": "2026-08-07T01:30:00Z",
+      "order": 14
+    },
+    {
+      "id": "ANN-P25-015",
+      "pageKey": "P25",
+      "annotationType": "R",
+      "target": {
+        "selector": ".upload-zone, .attachment-field",
+        "fallbackText": "上传附件",
+        "strategy": "css"
+      },
+      "title": "附件数量限制",
+      "contentMarkdown": "### 业务含义\n\n限制各资料字段的图片和 PDF 数量。\n\n### 交互规则\n\n品牌、商标等单图字段最多 1 张；营业执照和产品检测报告各 1 份；其余附件字段图片与 PDF 合计最多 10 个。\n\n### 状态与异常\n\n超过数量或单文件 10 MB 时拒绝添加并在上传控件附近提示。",
+      "maintenancePolicy": "annotation-owned",
+      "kind": "interaction",
+      "dimension": "Primary action",
+      "topics": [
+        "business",
+        "interaction",
+        "flow"
+      ],
+      "priority": "high",
+      "visible": true,
+      "source": {
+        "type": "mixed",
+        "ref": "CAND-P25-015"
+      },
+      "candidateId": "CAND-P25-015",
+      "evidence": [
+        "稳定锚点：.upload-zone, .attachment-field",
+        "可见文本：上传附件"
+      ],
+      "nextActions": [],
+      "dependencies": [],
+      "risks": [],
+      "openQuestions": [],
+      "review": {
+        "required": true,
+        "status": "completed"
+      },
+      "createdBy": "ai",
+      "updatedAt": "2026-08-07T01:30:00Z",
+      "order": 15
     },
     {
       "id": "ANN-P26-001",
@@ -6051,7 +5765,7 @@
         "strategy": "css"
       },
       "title": "撤回申请页面说明",
-      "contentMarkdown": "### 页面功能介绍\n\n客户对已激活产品的一个或多个已绑码段发起撤回申请，并跟踪处理结果。\n\n### 核心内容\n\n列表展示申请编号、产品、批次、撤回码段、原因、申请时间、状态和处理说明。\n\n### 业务流程\n\n选择已激活产品和需要撤回的已绑码段，填写原因后提交；运营端审核后更新为已通过或已驳回。\n\n### 主要操作\n\n发起申请、日期和状态筛选、查看处理说明。\n\n### 待确认\n\n当前原型已明确页面操作与状态；后续如接入真实接口，应保持字段口径和状态名称一致。",
+      "contentMarkdown": "### 页面功能介绍\n\n客户对已激活产品的一个或多个已绑码段发起撤回申请并跟踪结果。\n\n### 核心内容\n\n列表展示申请编号、产品、批次、具体码段、原因、申请时间、状态和处理说明。\n\n### 业务流程\n\n选择产品后单选、多选或全选已绑码段，填写原因提交；运营端审核通过后仅重置所选码段。\n\n### 主要操作\n\n发起申请、日期筛选、选择产品、勾选码段、全选、填写原因、提交和查看结果。\n\n### 待确认\n\n当前原型已明确页面操作与状态；后续接入真实接口时，应保持字段口径、状态名称和权限边界一致。",
       "maintenancePolicy": "annotation-owned",
       "kind": "note",
       "dimension": "Page overview",
@@ -6080,7 +5794,7 @@
         "status": "completed"
       },
       "createdBy": "ai",
-      "updatedAt": "2026-08-05T09:00:00Z",
+      "updatedAt": "2026-08-07T01:30:00Z",
       "order": 1
     },
     {
@@ -6188,7 +5902,7 @@
         "strategy": "css"
       },
       "title": "码段撤回申请",
-      "contentMarkdown": "### 业务含义\n\n申请撤回某一已激活产品的一个或多个已绑码段。\n\n### 交互规则\n\n搜索选择产品，自动带出批次，再单选、多选或全选已绑码段，填写原因后提交。\n\n### 状态与异常\n\n未选择产品、码段或未填写原因时不允许提交；提交后进入待审批。\n\n### 风险提示\n\n审批通过后仅重置本次选中的码段。",
+      "contentMarkdown": "### 业务含义\n\n申请撤回某一已激活产品的一个或多个已绑码段。\n\n### 交互规则\n\n先选择产品，再单选、多选或全选码段并填写原因。\n\n### 状态与异常\n\n未选择产品、码段或原因时不允许提交；已被待审批申请占用的码段不重复显示。\n\n### 页面流转\n\n提交后关闭弹窗并进入待审批。\n\n### 风险提示\n\n审批通过后只重置本次选中码段。",
       "maintenancePolicy": "annotation-owned",
       "kind": "interaction",
       "dimension": "Surface overview",
@@ -6220,7 +5934,7 @@
         "status": "completed"
       },
       "createdBy": "ai",
-      "updatedAt": "2026-08-05T09:00:00Z",
+      "updatedAt": "2026-08-07T01:30:00Z",
       "order": 4,
       "surfaceId": "surface-P26-customer-withdraw",
       "displayWhenClosed": "on-trigger",
@@ -6338,7 +6052,7 @@
         }
       },
       "title": "提交撤回申请",
-      "contentMarkdown": "### 业务含义\n\n创建待审批撤回记录。\n\n### 交互规则\n\n确认后记录产品、批次、原因和申请时间。\n\n### 状态与异常\n\n成功后关闭弹窗并刷新列表。\n\n### 风险提示\n\n重复待审批申请应被拦截，避免同一产品重复撤回。",
+      "contentMarkdown": "### 业务含义\n\n创建待审批码段撤回记录。\n\n### 交互规则\n\n确认后记录产品、批次、所有选中码段、数量、原因和申请时间。\n\n### 状态与异常\n\n成功后关闭弹窗并刷新列表；重复申请应被拦截。\n\n### 页面流转\n\n回到撤回申请列表。\n\n### 风险提示\n\n不得用“全部已绑码段”替代具体码段记录。",
       "maintenancePolicy": "annotation-owned",
       "kind": "interaction",
       "dimension": "Surface confirm",
@@ -6370,10 +6084,55 @@
         "status": "completed"
       },
       "createdBy": "ai",
-      "updatedAt": "2026-08-05T09:00:00Z",
+      "updatedAt": "2026-08-07T01:30:00Z",
       "order": 7,
       "surfaceId": "surface-P26-customer-withdraw",
       "displayWhenClosed": "sidebar-only",
+      "fallbackAnchorSelector": "[data-action=\"fx-open-withdraw\"]"
+    },
+    {
+      "id": "ANN-P26-008",
+      "pageKey": "P26",
+      "annotationType": "C",
+      "target": {
+        "selector": ".withdrawal-segment-list, #fx-withdraw-select-all",
+        "fallbackText": "已绑码段",
+        "strategy": "css"
+      },
+      "title": "选择已绑码段",
+      "contentMarkdown": "### 业务含义\n\n选择本次需要撤回的具体已绑码段。\n\n### 交互规则\n\n支持单选、多选和全选；每项展示码段、来源订单和数量，底部汇总已选数量。\n\n### 状态与异常\n\n未选择任何码段时不能提交；选择产品变化后重新加载码段但不整页刷新。",
+      "maintenancePolicy": "annotation-owned",
+      "kind": "interaction",
+      "dimension": "Primary action",
+      "topics": [
+        "business",
+        "interaction",
+        "flow"
+      ],
+      "priority": "high",
+      "visible": true,
+      "source": {
+        "type": "mixed",
+        "ref": "CAND-P26-008"
+      },
+      "candidateId": "CAND-P26-008",
+      "evidence": [
+        "稳定锚点：.withdrawal-segment-list, #fx-withdraw-select-all",
+        "可见文本：已绑码段"
+      ],
+      "nextActions": [],
+      "dependencies": [],
+      "risks": [],
+      "openQuestions": [],
+      "review": {
+        "required": true,
+        "status": "completed"
+      },
+      "createdBy": "ai",
+      "updatedAt": "2026-08-07T01:30:00Z",
+      "order": 8,
+      "surfaceId": "surface-P26-customer-withdraw",
+      "displayWhenClosed": "on-trigger",
       "fallbackAnchorSelector": "[data-action=\"fx-open-withdraw\"]"
     },
     {
@@ -6805,7 +6564,7 @@
         }
       },
       "title": "扫码展示端页面说明",
-      "contentMarkdown": "### 页面功能介绍\n\n消费者扫描单码后查看公开的产品溯源资料和当前码状态。\n\n### 核心内容\n\n已激活码展示产品主图、查询次数、码号、动态资料模块和附件；未激活与已重置码展示状态说明。\n\n### 业务流程\n\n系统识别单码状态；已激活进入资料浏览，图片可放大，PDF 可在线查看。\n\n### 主要操作\n\n切换资料模块、展开更多字段、查看图片、查看 PDF 和切换原型状态。\n\n### 待确认\n\n当前原型已明确页面操作与状态；后续如接入真实接口，应保持字段口径和状态名称一致。",
+      "contentMarkdown": "### 页面功能介绍\n\n消费者扫描单码后查看公开产品资料和当前码状态。\n\n### 核心内容\n\n已激活码展示产品主图、码号和动态资料；未激活、已重置与预览状态分别展示对应说明。\n\n### 业务流程\n\n系统识别单码状态；已激活进入资料浏览，图片可查看，PDF 直接嵌入展示。\n\n### 主要操作\n\n切换资料模块、展开更多字段、查看图片和直接阅读 PDF。\n\n### 待确认\n\n当前原型已明确页面操作与状态；后续接入真实接口时，应保持字段口径、状态名称和权限边界一致。",
       "maintenancePolicy": "annotation-owned",
       "kind": "note",
       "dimension": "Page overview",
@@ -6834,7 +6593,7 @@
         "status": "completed"
       },
       "createdBy": "ai",
-      "updatedAt": "2026-08-05T09:00:00Z",
+      "updatedAt": "2026-08-07T01:30:00Z",
       "order": 1
     },
     {
@@ -6991,8 +6750,8 @@
           "text": "图片"
         }
       },
-      "title": "查看公开附件",
-      "contentMarkdown": "### 业务含义\n\n查看产品公开的图片或 PDF 佐证资料。\n\n### 交互规则\n\n图片点击放大；PDF 在页面内受控区域预览。\n\n### 状态与异常\n\n附件没有有效来源时不展示空项目。\n\n### 页面流转\n\n打开图片预览或查看 PDF。",
+      "title": "查看公开图片与 PDF",
+      "contentMarkdown": "### 业务含义\n\n按客户设置顺序展示公开图片和 PDF。\n\n### 交互规则\n\n图片直接展示；PDF 直接嵌入页面阅读，不提供下载、缩放或翻页工具栏等额外操作项。\n\n### 状态与异常\n\n附件不可用时显示占位说明，不影响其他资料模块。\n\n### 页面流转\n\n停留在扫码展示端。",
       "maintenancePolicy": "annotation-owned",
       "kind": "interaction",
       "dimension": "Primary action",
@@ -7022,7 +6781,7 @@
         "status": "completed"
       },
       "createdBy": "ai",
-      "updatedAt": "2026-08-05T09:00:00Z",
+      "updatedAt": "2026-08-07T01:30:00Z",
       "order": 5
     },
     {
