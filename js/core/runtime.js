@@ -99,11 +99,13 @@ function syncCurrentRoute() {
   if (page === "editor" && state.editorTargetOrderNo) target.searchParams.set("order", state.editorTargetOrderNo);
   if (["review-detail", "editor"].includes(page) && Number(state.productStep) > 0) target.searchParams.set("step", state.productStep);
   document.title = pageTitles[`${state.portal}:${page}`] || document.title;
+  const routeState = { portal: state.portal, page };
   if (window.location.pathname !== target.pathname) {
-    window.location.assign(target.href);
+    window.history.pushState(routeState, "", target.href);
+    document.body.dataset.initialPage = page;
     return;
   }
-  if (window.location.search !== target.search || window.location.hash) window.history.replaceState({ portal: state.portal, page }, "", target.href);
+  if (window.location.search !== target.search || window.location.hash) window.history.replaceState(routeState, "", target.href);
 }
 
 function showToast(message) {
@@ -334,10 +336,17 @@ document.addEventListener("keydown", (event) => {
   }
 });
 
+function fxPageFromLocation(portal) {
+  const pathname = window.location.pathname;
+  const route = Object.entries(pageFiles[portal] || {}).find(([, file]) => new URL(file, document.baseURI).pathname === pathname);
+  return route?.[0] || document.body.dataset.initialPage || initialPage;
+}
+
 function restoreFromLocation() {
-  const page = document.body.dataset.initialPage || initialPage;
+  const page = fxPageFromLocation(entryPortal);
   const params = new URLSearchParams(window.location.search);
   state.portal = entryPortal;
+  document.body.dataset.initialPage = page;
   const opsRoutes = new Set([...nav.ops.map(item => item[0]), "codes", "customer-detail", "review-detail", "order-detail"]);
   if (entryPortal === "ops" && opsRoutes.has(page)) state.opsPage = page;
   const customerRoutes = new Set([...nav.customer.map(item => item[0]), "editor", "order-detail"]);

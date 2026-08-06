@@ -1,17 +1,39 @@
 const projectRoot = new URL("../", import.meta.url);
+const assetVersion = "msh81blz";
 let bootPromise = null;
+
+function assetUrl(relativePath) {
+  const url = new URL(relativePath, projectRoot);
+  url.searchParams.set("v", assetVersion);
+  return url.href;
+}
+
+function preloadClassicScripts(relativePaths) {
+  return Promise.all(relativePaths.map(relativePath => new Promise(resolve => {
+    const link = document.createElement("link");
+    link.rel = "preload";
+    link.as = "script";
+    link.href = assetUrl(relativePath);
+    link.onload = resolve;
+    link.onerror = resolve;
+    document.head.appendChild(link);
+  })));
+}
 
 function loadClassicScript(relativePath) {
   return new Promise((resolve, reject) => {
     const script = document.createElement("script");
-    const scriptUrl = new URL(relativePath, projectRoot);
-    scriptUrl.searchParams.set("v", "msh5m4wk");
-    script.src = scriptUrl.href;
+    script.src = assetUrl(relativePath);
     script.async = false;
     script.onload = resolve;
     script.onerror = () => reject(new Error(`Failed to load ${relativePath}`));
     document.head.appendChild(script);
   });
+}
+
+async function loadClassicScripts(relativePaths) {
+  await preloadClassicScripts(relativePaths);
+  for (const relativePath of relativePaths) await loadClassicScript(relativePath);
 }
 
 export function bootstrapPage(config) {
@@ -26,7 +48,7 @@ export function bootstrapPage(config) {
     dataUrl: new URL("prototype-annotator/annotations.json", projectRoot).href
   };
 
-  const scripts = [
+  const appScripts = [
     "vendor/lucide.min.js",
     "vendor/qrcode-generator.min.js",
     "js/core/config.js",
@@ -37,18 +59,20 @@ export function bootstrapPage(config) {
     "js/components/application.js",
     "js/views/business.js",
     "js/views/scan.js",
-    "js/core/enhanced-runtime.js",
+    "js/core/enhanced-runtime.js"
+  ];
+  const annotationScripts = [
     "prototype-annotator/runtime/markdown-renderer.js",
     "prototype-annotator/runtime/mermaid-loader.js",
     "prototype-annotator/runtime/prototype-annotator.js"
   ];
-  bootPromise = scripts
-    .reduce((promise, script) => promise.then(() => loadClassicScript(script)), Promise.resolve())
-    .then(() => {
-      window.TRACE_APP_READY = true;
-      document.documentElement.dataset.appReady = "true";
-      return config;
-    });
+
+  bootPromise = loadClassicScripts(appScripts).then(() => {
+    window.TRACE_APP_READY = true;
+    document.documentElement.dataset.appReady = "true";
+    window.TRACE_ANNOTATOR_BOOT = loadClassicScripts(annotationScripts).catch(error => console.warn(error));
+    return config;
+  });
   window.TRACE_APP_BOOT = bootPromise;
   return bootPromise;
 }
