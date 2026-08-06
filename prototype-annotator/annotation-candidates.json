@@ -1,0 +1,2922 @@
+{
+  "version": 1,
+  "generatedAt": "2026-08-05T09:00:00Z",
+  "root": "C:\\Users\\钟长鸿\\Documents\\溯源系统\\prototype",
+  "sources": {
+    "pageMap": "page-map.json",
+    "docs": [
+      "实际原型页面与已实现交互"
+    ]
+  },
+  "pages": [
+    {
+      "pageKey": "P01",
+      "title": "运营概览",
+      "path": "index.html",
+      "route": "#overview",
+      "candidates": [
+        {
+          "candidateId": "CAND-P01-001",
+          "pageKey": "P01",
+          "elementId": "P01-E001",
+          "selector": ".page-header h1",
+          "strategy": "css",
+          "fallbackText": "运营概览",
+          "annotationType": "P",
+          "kind": "note",
+          "dimension": "Page overview",
+          "priority": "medium",
+          "reason": "运营概览页面说明是当前页面需要评审或验收的功能点。",
+          "evidence": [
+            "稳定锚点：.page-header h1",
+            "可见文本：运营概览"
+          ],
+          "selected": true,
+          "skipReason": null
+        },
+        {
+          "candidateId": "CAND-P01-002",
+          "pageKey": "P01",
+          "elementId": "P01-E002",
+          "selector": "[data-action=\"go-reviews\"]",
+          "strategy": "data",
+          "fallbackText": "处理待审核",
+          "annotationType": "J",
+          "kind": "flow",
+          "dimension": "Primary action",
+          "priority": "high",
+          "reason": "处理待审核是当前页面需要评审或验收的功能点。",
+          "evidence": [
+            "稳定锚点：[data-action=\"go-reviews\"]",
+            "可见文本：处理待审核"
+          ],
+          "selected": true,
+          "skipReason": null
+        },
+        {
+          "candidateId": "CAND-P01-003",
+          "pageKey": "P01",
+          "elementId": "P01-E003",
+          "selector": ".metric-strip .metric-link",
+          "strategy": "css",
+          "fallbackText": "订单总量",
+          "annotationType": "J",
+          "kind": "flow",
+          "dimension": "Primary action",
+          "priority": "high",
+          "reason": "概览指标下钻是当前页面需要评审或验收的功能点。",
+          "evidence": [
+            "稳定锚点：.metric-strip .metric-link",
+            "可见文本：订单总量"
+          ],
+          "selected": true,
+          "skipReason": null
+        },
+        {
+          "candidateId": "CAND-P01-004",
+          "pageKey": "P01",
+          "elementId": "P01-E004",
+          "selector": ".section-row .panel:first-child tbody [data-action=\"fx-order-detail\"]",
+          "strategy": "css",
+          "fallbackText": "ORD-",
+          "annotationType": "J",
+          "kind": "flow",
+          "dimension": "Primary action",
+          "priority": "high",
+          "reason": "最近订单详情是当前页面需要评审或验收的功能点。",
+          "evidence": [
+            "稳定锚点：.section-row .panel:first-child tbody [data-action=\"fx-order-detail\"]",
+            "可见文本：ORD-"
+          ],
+          "selected": true,
+          "skipReason": null
+        },
+        {
+          "candidateId": "CAND-P01-005",
+          "pageKey": "P01",
+          "elementId": "P01-E005",
+          "selector": ".section-row .panel:last-child .list-button",
+          "strategy": "css",
+          "fallbackText": "等待审核",
+          "annotationType": "J",
+          "kind": "flow",
+          "dimension": "Primary action",
+          "priority": "high",
+          "reason": "待办事项入口是当前页面需要评审或验收的功能点。",
+          "evidence": [
+            "稳定锚点：.section-row .panel:last-child .list-button",
+            "可见文本：等待审核"
+          ],
+          "selected": true,
+          "skipReason": null
+        }
+      ]
+    },
+    {
+      "pageKey": "P02",
+      "title": "客户列表",
+      "path": "index.html",
+      "route": "#customers",
+      "candidates": [
+        {
+          "candidateId": "CAND-P02-001",
+          "pageKey": "P02",
+          "elementId": "P02-E001",
+          "selector": ".page-header h1",
+          "strategy": "css",
+          "fallbackText": "客户列表",
+          "annotationType": "P",
+          "kind": "note",
+          "dimension": "Page overview",
+          "priority": "medium",
+          "reason": "客户列表页面说明是当前页面需要评审或验收的功能点。",
+          "evidence": [
+            "稳定锚点：.page-header h1",
+            "可见文本：客户列表"
+          ],
+          "selected": true,
+          "skipReason": null
+        },
+        {
+          "candidateId": "CAND-P02-002",
+          "pageKey": "P02",
+          "elementId": "P02-E002",
+          "selector": "#fx-customer-search",
+          "strategy": "id",
+          "fallbackText": "搜索客户名称、账号或电话",
+          "annotationType": "FILTER",
+          "kind": "interaction",
+          "dimension": "Primary action",
+          "priority": "high",
+          "reason": "客户搜索与重置是当前页面需要评审或验收的功能点。",
+          "evidence": [
+            "稳定锚点：#fx-customer-search",
+            "可见文本：搜索客户名称、账号或电话"
+          ],
+          "selected": true,
+          "skipReason": null
+        },
+        {
+          "candidateId": "CAND-P02-003",
+          "pageKey": "P02",
+          "elementId": "P02-E003",
+          "selector": "[data-action=\"fx-export-customers\"]",
+          "strategy": "data",
+          "fallbackText": "导出",
+          "annotationType": "A",
+          "kind": "interaction",
+          "dimension": "Primary action",
+          "priority": "high",
+          "reason": "导出客户列表是当前页面需要评审或验收的功能点。",
+          "evidence": [
+            "稳定锚点：[data-action=\"fx-export-customers\"]",
+            "可见文本：导出"
+          ],
+          "selected": true,
+          "skipReason": null
+        },
+        {
+          "candidateId": "CAND-P02-004",
+          "pageKey": "P02",
+          "elementId": "P02-E004",
+          "selector": ".customer-account-table tbody .table-actions",
+          "strategy": "css",
+          "fallbackText": "详情",
+          "annotationType": "PERM",
+          "kind": "permission",
+          "dimension": "Primary action",
+          "priority": "high",
+          "reason": "客户行操作组是当前页面需要评审或验收的功能点。",
+          "evidence": [
+            "稳定锚点：.customer-account-table tbody .table-actions",
+            "可见文本：详情"
+          ],
+          "selected": true,
+          "skipReason": null
+        },
+        {
+          "candidateId": "CAND-P02-005",
+          "pageKey": "P02",
+          "elementId": "P02-E005",
+          "selector": ".modal",
+          "strategy": "css",
+          "fallbackText": "新建客户",
+          "annotationType": "R",
+          "kind": "interaction",
+          "dimension": "Surface overview",
+          "priority": "high",
+          "reason": "新建客户是当前页面需要评审或验收的功能点。",
+          "evidence": [
+            "稳定锚点：.modal",
+            "可见文本：新建客户"
+          ],
+          "selected": true,
+          "skipReason": null,
+          "surfaceId": "surface-P02-new-customer"
+        },
+        {
+          "candidateId": "CAND-P02-006",
+          "pageKey": "P02",
+          "elementId": "P02-E006",
+          "selector": "#fx-customer-account",
+          "strategy": "id",
+          "fallbackText": "登录账号",
+          "annotationType": "C",
+          "kind": "interaction",
+          "dimension": "Surface field",
+          "priority": "high",
+          "reason": "登录账号是当前页面需要评审或验收的功能点。",
+          "evidence": [
+            "稳定锚点：#fx-customer-account",
+            "可见文本：登录账号"
+          ],
+          "selected": true,
+          "skipReason": null,
+          "surfaceId": "surface-P02-new-customer"
+        },
+        {
+          "candidateId": "CAND-P02-007",
+          "pageKey": "P02",
+          "elementId": "P02-E007",
+          "selector": "#fx-customer-license",
+          "strategy": "id",
+          "fallbackText": "客户证件附件",
+          "annotationType": "C",
+          "kind": "interaction",
+          "dimension": "Surface field",
+          "priority": "high",
+          "reason": "客户证件附件是当前页面需要评审或验收的功能点。",
+          "evidence": [
+            "稳定锚点：#fx-customer-license",
+            "可见文本：客户证件附件"
+          ],
+          "selected": true,
+          "skipReason": null,
+          "surfaceId": "surface-P02-new-customer"
+        },
+        {
+          "candidateId": "CAND-P02-008",
+          "pageKey": "P02",
+          "elementId": "P02-E008",
+          "selector": "[data-action=\"fx-confirm-customer\"]",
+          "strategy": "data",
+          "fallbackText": "保存客户",
+          "annotationType": "R",
+          "kind": "interaction",
+          "dimension": "Surface confirm",
+          "priority": "high",
+          "reason": "保存客户是当前页面需要评审或验收的功能点。",
+          "evidence": [
+            "稳定锚点：[data-action=\"fx-confirm-customer\"]",
+            "可见文本：保存客户"
+          ],
+          "selected": true,
+          "skipReason": null,
+          "surfaceId": "surface-P02-new-customer"
+        },
+        {
+          "candidateId": "CAND-P02-009",
+          "pageKey": "P02",
+          "elementId": "P02-E009",
+          "selector": ".modal",
+          "strategy": "css",
+          "fallbackText": "编辑客户",
+          "annotationType": "R",
+          "kind": "interaction",
+          "dimension": "Surface overview",
+          "priority": "high",
+          "reason": "编辑客户是当前页面需要评审或验收的功能点。",
+          "evidence": [
+            "稳定锚点：.modal",
+            "可见文本：编辑客户"
+          ],
+          "selected": true,
+          "skipReason": null,
+          "surfaceId": "surface-P02-edit-customer"
+        },
+        {
+          "candidateId": "CAND-P02-010",
+          "pageKey": "P02",
+          "elementId": "P02-E010",
+          "selector": "[data-action=\"fx-reset-customer-password\"]",
+          "strategy": "data",
+          "fallbackText": "重置客户密码",
+          "annotationType": "R",
+          "kind": "interaction",
+          "dimension": "Surface confirm",
+          "priority": "high",
+          "reason": "重置客户密码是当前页面需要评审或验收的功能点。",
+          "evidence": [
+            "稳定锚点：[data-action=\"fx-reset-customer-password\"]",
+            "可见文本：重置客户密码"
+          ],
+          "selected": true,
+          "skipReason": null,
+          "surfaceId": "surface-P02-edit-customer"
+        },
+        {
+          "candidateId": "CAND-P02-011",
+          "pageKey": "P02",
+          "elementId": "P02-E011",
+          "selector": "[data-action=\"fx-confirm-customer\"]",
+          "strategy": "data",
+          "fallbackText": "保存客户修改",
+          "annotationType": "R",
+          "kind": "interaction",
+          "dimension": "Surface confirm",
+          "priority": "high",
+          "reason": "保存客户修改是当前页面需要评审或验收的功能点。",
+          "evidence": [
+            "稳定锚点：[data-action=\"fx-confirm-customer\"]",
+            "可见文本：保存客户修改"
+          ],
+          "selected": true,
+          "skipReason": null,
+          "surfaceId": "surface-P02-edit-customer"
+        }
+      ]
+    },
+    {
+      "pageKey": "P03",
+      "title": "客户详情",
+      "path": "index.html",
+      "route": "#customer-detail",
+      "candidates": [
+        {
+          "candidateId": "CAND-P03-001",
+          "pageKey": "P03",
+          "elementId": "P03-E001",
+          "selector": ".page-header h1",
+          "strategy": "css",
+          "fallbackText": "客户详情",
+          "annotationType": "P",
+          "kind": "note",
+          "dimension": "Page overview",
+          "priority": "medium",
+          "reason": "客户详情页面说明是当前页面需要评审或验收的功能点。",
+          "evidence": [
+            "稳定锚点：.page-header h1",
+            "可见文本：客户详情"
+          ],
+          "selected": true,
+          "skipReason": null
+        },
+        {
+          "candidateId": "CAND-P03-002",
+          "pageKey": "P03",
+          "elementId": "P03-E002",
+          "selector": "[data-action=\"fx-back-customers\"]",
+          "strategy": "data",
+          "fallbackText": "返回客户列表",
+          "annotationType": "J",
+          "kind": "flow",
+          "dimension": "Primary action",
+          "priority": "high",
+          "reason": "返回客户列表是当前页面需要评审或验收的功能点。",
+          "evidence": [
+            "稳定锚点：[data-action=\"fx-back-customers\"]",
+            "可见文本：返回客户列表"
+          ],
+          "selected": true,
+          "skipReason": null
+        },
+        {
+          "candidateId": "CAND-P03-003",
+          "pageKey": "P03",
+          "elementId": "P03-E003",
+          "selector": "[data-action=\"fx-customer-create-order\"]",
+          "strategy": "data",
+          "fallbackText": "创建订单",
+          "annotationType": "J",
+          "kind": "flow",
+          "dimension": "Primary action",
+          "priority": "high",
+          "reason": "为客户创建订单是当前页面需要评审或验收的功能点。",
+          "evidence": [
+            "稳定锚点：[data-action=\"fx-customer-create-order\"]",
+            "可见文本：创建订单"
+          ],
+          "selected": true,
+          "skipReason": null
+        },
+        {
+          "candidateId": "CAND-P03-004",
+          "pageKey": "P03",
+          "elementId": "P03-E004",
+          "selector": "[data-action=\"fx-view-customer-products\"]",
+          "strategy": "data",
+          "fallbackText": "已激活产品",
+          "annotationType": "J",
+          "kind": "flow",
+          "dimension": "Primary action",
+          "priority": "high",
+          "reason": "查看已激活产品是当前页面需要评审或验收的功能点。",
+          "evidence": [
+            "稳定锚点：[data-action=\"fx-view-customer-products\"]",
+            "可见文本：已激活产品"
+          ],
+          "selected": true,
+          "skipReason": null
+        },
+        {
+          "candidateId": "CAND-P03-005",
+          "pageKey": "P03",
+          "elementId": "P03-E005",
+          "selector": ".customer-detail-page tbody .table-actions",
+          "strategy": "css",
+          "fallbackText": "绑定产品",
+          "annotationType": "A",
+          "kind": "interaction",
+          "dimension": "Primary action",
+          "priority": "high",
+          "reason": "客户订单操作是当前页面需要评审或验收的功能点。",
+          "evidence": [
+            "稳定锚点：.customer-detail-page tbody .table-actions",
+            "可见文本：绑定产品"
+          ],
+          "selected": true,
+          "skipReason": null
+        }
+      ]
+    },
+    {
+      "pageKey": "P04",
+      "title": "创建订单",
+      "path": "index.html",
+      "route": "#codes",
+      "candidates": [
+        {
+          "candidateId": "CAND-P04-001",
+          "pageKey": "P04",
+          "elementId": "P04-E001",
+          "selector": ".page-header h1",
+          "strategy": "css",
+          "fallbackText": "创建订单",
+          "annotationType": "P",
+          "kind": "note",
+          "dimension": "Page overview",
+          "priority": "medium",
+          "reason": "创建订单页面说明是当前页面需要评审或验收的功能点。",
+          "evidence": [
+            "稳定锚点：.page-header h1",
+            "可见文本：创建订单"
+          ],
+          "selected": true,
+          "skipReason": null
+        },
+        {
+          "candidateId": "CAND-P04-002",
+          "pageKey": "P04",
+          "elementId": "P04-E002",
+          "selector": "#fx-qr-customer-search",
+          "strategy": "id",
+          "fallbackText": "搜索客户名称",
+          "annotationType": "C",
+          "kind": "interaction",
+          "dimension": "Primary action",
+          "priority": "high",
+          "reason": "选择客户名称是当前页面需要评审或验收的功能点。",
+          "evidence": [
+            "稳定锚点：#fx-qr-customer-search",
+            "可见文本：搜索客户名称"
+          ],
+          "selected": true,
+          "skipReason": null
+        },
+        {
+          "candidateId": "CAND-P04-003",
+          "pageKey": "P04",
+          "elementId": "P04-E003",
+          "selector": "#fx-qr-amount",
+          "strategy": "id",
+          "fallbackText": "生成数量",
+          "annotationType": "R",
+          "kind": "interaction",
+          "dimension": "Primary action",
+          "priority": "high",
+          "reason": "生成数量与序列号预览是当前页面需要评审或验收的功能点。",
+          "evidence": [
+            "稳定锚点：#fx-qr-amount",
+            "可见文本：生成数量"
+          ],
+          "selected": true,
+          "skipReason": null
+        },
+        {
+          "candidateId": "CAND-P04-004",
+          "pageKey": "P04",
+          "elementId": "P04-E004",
+          "selector": "#fx-qr-style",
+          "strategy": "id",
+          "fallbackText": "二维码样式",
+          "annotationType": "C",
+          "kind": "interaction",
+          "dimension": "Primary action",
+          "priority": "high",
+          "reason": "二维码样式与尺寸是当前页面需要评审或验收的功能点。",
+          "evidence": [
+            "稳定锚点：#fx-qr-style",
+            "可见文本：二维码样式"
+          ],
+          "selected": true,
+          "skipReason": null
+        },
+        {
+          "candidateId": "CAND-P04-005",
+          "pageKey": "P04",
+          "elementId": "P04-E005",
+          "selector": "[data-action=\"fx-create-order\"]",
+          "strategy": "data",
+          "fallbackText": "创建订单",
+          "annotationType": "A",
+          "kind": "interaction",
+          "dimension": "Primary action",
+          "priority": "high",
+          "reason": "创建订单是当前页面需要评审或验收的功能点。",
+          "evidence": [
+            "稳定锚点：[data-action=\"fx-create-order\"]",
+            "可见文本：创建订单"
+          ],
+          "selected": true,
+          "skipReason": null
+        },
+        {
+          "candidateId": "CAND-P04-006",
+          "pageKey": "P04",
+          "elementId": "P04-E006",
+          "selector": ".wizard-actions",
+          "strategy": "css",
+          "fallbackText": "完成",
+          "annotationType": "A",
+          "kind": "interaction",
+          "dimension": "Primary action",
+          "priority": "high",
+          "reason": "创建完成操作是当前页面需要评审或验收的功能点。",
+          "evidence": [
+            "稳定锚点：.wizard-actions",
+            "可见文本：完成"
+          ],
+          "selected": true,
+          "skipReason": null
+        }
+      ]
+    },
+    {
+      "pageKey": "P05",
+      "title": "订单码量台账",
+      "path": "index.html",
+      "route": "#orders",
+      "candidates": [
+        {
+          "candidateId": "CAND-P05-001",
+          "pageKey": "P05",
+          "elementId": "P05-E001",
+          "selector": ".page-header h1",
+          "strategy": "css",
+          "fallbackText": "订单码量台账",
+          "annotationType": "P",
+          "kind": "note",
+          "dimension": "Page overview",
+          "priority": "medium",
+          "reason": "订单码量台账页面说明是当前页面需要评审或验收的功能点。",
+          "evidence": [
+            "稳定锚点：.page-header h1",
+            "可见文本：订单码量台账"
+          ],
+          "selected": true,
+          "skipReason": null
+        },
+        {
+          "candidateId": "CAND-P05-002",
+          "pageKey": "P05",
+          "elementId": "P05-E002",
+          "selector": "#fx-order-search",
+          "strategy": "id",
+          "fallbackText": "客户名称、订单号或备注",
+          "annotationType": "FILTER",
+          "kind": "interaction",
+          "dimension": "Primary action",
+          "priority": "high",
+          "reason": "订单搜索与重置是当前页面需要评审或验收的功能点。",
+          "evidence": [
+            "稳定锚点：#fx-order-search",
+            "可见文本：客户名称、订单号或备注"
+          ],
+          "selected": true,
+          "skipReason": null
+        },
+        {
+          "candidateId": "CAND-P05-003",
+          "pageKey": "P05",
+          "elementId": "P05-E003",
+          "selector": "[data-action=\"fx-open-order-calendar\"]",
+          "strategy": "data",
+          "fallbackText": "筛选创建时间",
+          "annotationType": "FILTER",
+          "kind": "interaction",
+          "dimension": "Primary action",
+          "priority": "high",
+          "reason": "创建时间筛选是当前页面需要评审或验收的功能点。",
+          "evidence": [
+            "稳定锚点：[data-action=\"fx-open-order-calendar\"]",
+            "可见文本：筛选创建时间"
+          ],
+          "selected": true,
+          "skipReason": null
+        },
+        {
+          "candidateId": "CAND-P05-004",
+          "pageKey": "P05",
+          "elementId": "P05-E004",
+          "selector": ".order-table thead [data-action^=\"fx-sort-orders\"]",
+          "strategy": "css",
+          "fallbackText": "未排序",
+          "annotationType": "FILTER",
+          "kind": "interaction",
+          "dimension": "Primary action",
+          "priority": "high",
+          "reason": "码量排序是当前页面需要评审或验收的功能点。",
+          "evidence": [
+            "稳定锚点：.order-table thead [data-action^=\"fx-sort-orders\"]",
+            "可见文本：未排序"
+          ],
+          "selected": true,
+          "skipReason": null
+        },
+        {
+          "candidateId": "CAND-P05-005",
+          "pageKey": "P05",
+          "elementId": "P05-E005",
+          "selector": "[data-action=\"fx-view-order-bind-requests\"]",
+          "strategy": "data",
+          "fallbackText": "查看绑定申请中数量",
+          "annotationType": "A",
+          "kind": "interaction",
+          "dimension": "Primary action",
+          "priority": "high",
+          "reason": "绑定申请中明细是当前页面需要评审或验收的功能点。",
+          "evidence": [
+            "稳定锚点：[data-action=\"fx-view-order-bind-requests\"]",
+            "可见文本：查看绑定申请中数量"
+          ],
+          "selected": true,
+          "skipReason": null
+        },
+        {
+          "candidateId": "CAND-P05-006",
+          "pageKey": "P05",
+          "elementId": "P05-E006",
+          "selector": ".order-table tbody .table-actions",
+          "strategy": "css",
+          "fallbackText": "详情",
+          "annotationType": "A",
+          "kind": "interaction",
+          "dimension": "Primary action",
+          "priority": "high",
+          "reason": "订单行操作组是当前页面需要评审或验收的功能点。",
+          "evidence": [
+            "稳定锚点：.order-table tbody .table-actions",
+            "可见文本：详情"
+          ],
+          "selected": true,
+          "skipReason": null
+        },
+        {
+          "candidateId": "CAND-P05-007",
+          "pageKey": "P05",
+          "elementId": "P05-E007",
+          "selector": "[data-action=\"fx-find-customer-account\"]",
+          "strategy": "data",
+          "fallbackText": "云岭",
+          "annotationType": "J",
+          "kind": "flow",
+          "dimension": "Primary action",
+          "priority": "high",
+          "reason": "跳转客户列表是当前页面需要评审或验收的功能点。",
+          "evidence": [
+            "稳定锚点：[data-action=\"fx-find-customer-account\"]",
+            "可见文本：云岭"
+          ],
+          "selected": true,
+          "skipReason": null
+        },
+        {
+          "candidateId": "CAND-P05-008",
+          "pageKey": "P05",
+          "elementId": "P05-E008",
+          "selector": ".modal",
+          "strategy": "css",
+          "fallbackText": "订单绑定产品",
+          "annotationType": "R",
+          "kind": "interaction",
+          "dimension": "Surface overview",
+          "priority": "high",
+          "reason": "订单绑定产品是当前页面需要评审或验收的功能点。",
+          "evidence": [
+            "稳定锚点：.modal",
+            "可见文本：订单绑定产品"
+          ],
+          "selected": true,
+          "skipReason": null,
+          "surfaceId": "surface-P05-bind-product"
+        },
+        {
+          "candidateId": "CAND-P05-009",
+          "pageKey": "P05",
+          "elementId": "P05-E009",
+          "selector": "#fx-ops-bind-product-search",
+          "strategy": "id",
+          "fallbackText": "搜索绑定产品",
+          "annotationType": "C",
+          "kind": "interaction",
+          "dimension": "Surface field",
+          "priority": "high",
+          "reason": "搜索绑定产品是当前页面需要评审或验收的功能点。",
+          "evidence": [
+            "稳定锚点：#fx-ops-bind-product-search",
+            "可见文本：搜索绑定产品"
+          ],
+          "selected": true,
+          "skipReason": null,
+          "surfaceId": "surface-P05-bind-product"
+        },
+        {
+          "candidateId": "CAND-P05-010",
+          "pageKey": "P05",
+          "elementId": "P05-E010",
+          "selector": "#fx-ops-bind-amount",
+          "strategy": "id",
+          "fallbackText": "本次绑定数量",
+          "annotationType": "C",
+          "kind": "interaction",
+          "dimension": "Surface field",
+          "priority": "high",
+          "reason": "本次绑定数量是当前页面需要评审或验收的功能点。",
+          "evidence": [
+            "稳定锚点：#fx-ops-bind-amount",
+            "可见文本：本次绑定数量"
+          ],
+          "selected": true,
+          "skipReason": null,
+          "surfaceId": "surface-P05-bind-product"
+        },
+        {
+          "candidateId": "CAND-P05-011",
+          "pageKey": "P05",
+          "elementId": "P05-E011",
+          "selector": "[data-action=\"fx-confirm-ops-bind\"]",
+          "strategy": "data",
+          "fallbackText": "确认绑定",
+          "annotationType": "R",
+          "kind": "interaction",
+          "dimension": "Surface confirm",
+          "priority": "high",
+          "reason": "确认绑定是当前页面需要评审或验收的功能点。",
+          "evidence": [
+            "稳定锚点：[data-action=\"fx-confirm-ops-bind\"]",
+            "可见文本：确认绑定"
+          ],
+          "selected": true,
+          "skipReason": null,
+          "surfaceId": "surface-P05-bind-product"
+        }
+      ]
+    },
+    {
+      "pageKey": "P06",
+      "title": "订单详情",
+      "path": "index.html",
+      "route": "#order-detail",
+      "candidates": [
+        {
+          "candidateId": "CAND-P06-001",
+          "pageKey": "P06",
+          "elementId": "P06-E001",
+          "selector": ".page-header h1",
+          "strategy": "css",
+          "fallbackText": "订单详情",
+          "annotationType": "P",
+          "kind": "note",
+          "dimension": "Page overview",
+          "priority": "medium",
+          "reason": "订单详情页面说明是当前页面需要评审或验收的功能点。",
+          "evidence": [
+            "稳定锚点：.page-header h1",
+            "可见文本：订单详情"
+          ],
+          "selected": true,
+          "skipReason": null
+        },
+        {
+          "candidateId": "CAND-P06-002",
+          "pageKey": "P06",
+          "elementId": "P06-E002",
+          "selector": "[data-action=\"fx-back-orders\"]",
+          "strategy": "data",
+          "fallbackText": "返回订单台账",
+          "annotationType": "J",
+          "kind": "flow",
+          "dimension": "Primary action",
+          "priority": "high",
+          "reason": "返回订单台账是当前页面需要评审或验收的功能点。",
+          "evidence": [
+            "稳定锚点：[data-action=\"fx-back-orders\"]",
+            "可见文本：返回订单台账"
+          ],
+          "selected": true,
+          "skipReason": null
+        },
+        {
+          "candidateId": "CAND-P06-003",
+          "pageKey": "P06",
+          "elementId": "P06-E003",
+          "selector": "[data-action=\"fx-ops-bind-order\"]",
+          "strategy": "data",
+          "fallbackText": "绑定产品",
+          "annotationType": "A",
+          "kind": "interaction",
+          "dimension": "Primary action",
+          "priority": "high",
+          "reason": "继续绑定产品是当前页面需要评审或验收的功能点。",
+          "evidence": [
+            "稳定锚点：[data-action=\"fx-ops-bind-order\"]",
+            "可见文本：绑定产品"
+          ],
+          "selected": true,
+          "skipReason": null
+        },
+        {
+          "candidateId": "CAND-P06-004",
+          "pageKey": "P06",
+          "elementId": "P06-E004",
+          "selector": "[data-action=\"fx-open-activation-product\"]",
+          "strategy": "data",
+          "fallbackText": "产品",
+          "annotationType": "J",
+          "kind": "flow",
+          "dimension": "Primary action",
+          "priority": "high",
+          "reason": "查看关联产品是当前页面需要评审或验收的功能点。",
+          "evidence": [
+            "稳定锚点：[data-action=\"fx-open-activation-product\"]",
+            "可见文本：产品"
+          ],
+          "selected": true,
+          "skipReason": null
+        },
+        {
+          "candidateId": "CAND-P06-005",
+          "pageKey": "P06",
+          "elementId": "P06-E005",
+          "selector": "[data-action=\"fx-view-activation-withdrawal\"]",
+          "strategy": "data",
+          "fallbackText": "已重置",
+          "annotationType": "J",
+          "kind": "flow",
+          "dimension": "Primary action",
+          "priority": "high",
+          "reason": "查看重置原因是当前页面需要评审或验收的功能点。",
+          "evidence": [
+            "稳定锚点：[data-action=\"fx-view-activation-withdrawal\"]",
+            "可见文本：已重置"
+          ],
+          "selected": true,
+          "skipReason": null
+        }
+      ]
+    },
+    {
+      "pageKey": "P07",
+      "title": "产品审核",
+      "path": "index.html",
+      "route": "#reviews",
+      "candidates": [
+        {
+          "candidateId": "CAND-P07-001",
+          "pageKey": "P07",
+          "elementId": "P07-E001",
+          "selector": ".page-header h1",
+          "strategy": "css",
+          "fallbackText": "产品审核",
+          "annotationType": "P",
+          "kind": "note",
+          "dimension": "Page overview",
+          "priority": "medium",
+          "reason": "产品审核页面说明是当前页面需要评审或验收的功能点。",
+          "evidence": [
+            "稳定锚点：.page-header h1",
+            "可见文本：产品审核"
+          ],
+          "selected": true,
+          "skipReason": null
+        },
+        {
+          "candidateId": "CAND-P07-002",
+          "pageKey": "P07",
+          "elementId": "P07-E002",
+          "selector": "#fx-review-search",
+          "strategy": "id",
+          "fallbackText": "产品、客户或批次",
+          "annotationType": "FILTER",
+          "kind": "interaction",
+          "dimension": "Primary action",
+          "priority": "high",
+          "reason": "产品搜索与重置是当前页面需要评审或验收的功能点。",
+          "evidence": [
+            "稳定锚点：#fx-review-search",
+            "可见文本：产品、客户或批次"
+          ],
+          "selected": true,
+          "skipReason": null
+        },
+        {
+          "candidateId": "CAND-P07-003",
+          "pageKey": "P07",
+          "elementId": "P07-E003",
+          "selector": "[data-table-filter=\"productCategory\"]",
+          "strategy": "data",
+          "fallbackText": "筛选产品大类",
+          "annotationType": "FILTER",
+          "kind": "interaction",
+          "dimension": "Primary action",
+          "priority": "high",
+          "reason": "产品大类筛选是当前页面需要评审或验收的功能点。",
+          "evidence": [
+            "稳定锚点：[data-table-filter=\"productCategory\"]",
+            "可见文本：筛选产品大类"
+          ],
+          "selected": true,
+          "skipReason": null
+        },
+        {
+          "candidateId": "CAND-P07-004",
+          "pageKey": "P07",
+          "elementId": "P07-E004",
+          "selector": "[data-table-filter=\"reviewStatus\"]",
+          "strategy": "data",
+          "fallbackText": "筛选状态",
+          "annotationType": "FILTER",
+          "kind": "interaction",
+          "dimension": "Primary action",
+          "priority": "high",
+          "reason": "产品状态筛选是当前页面需要评审或验收的功能点。",
+          "evidence": [
+            "稳定锚点：[data-table-filter=\"reviewStatus\"]",
+            "可见文本：筛选状态"
+          ],
+          "selected": true,
+          "skipReason": null
+        },
+        {
+          "candidateId": "CAND-P07-005",
+          "pageKey": "P07",
+          "elementId": "P07-E005",
+          "selector": "[data-action=\"open-review\"]",
+          "strategy": "data",
+          "fallbackText": "审核",
+          "annotationType": "J",
+          "kind": "flow",
+          "dimension": "Primary action",
+          "priority": "high",
+          "reason": "审核或查看产品是当前页面需要评审或验收的功能点。",
+          "evidence": [
+            "稳定锚点：[data-action=\"open-review\"]",
+            "可见文本：审核"
+          ],
+          "selected": true,
+          "skipReason": null
+        },
+        {
+          "candidateId": "CAND-P07-006",
+          "pageKey": "P07",
+          "elementId": "P07-E006",
+          "selector": "table tbody .table-actions",
+          "strategy": "css",
+          "fallbackText": "编辑",
+          "annotationType": "PERM",
+          "kind": "permission",
+          "dimension": "Primary action",
+          "priority": "high",
+          "reason": "产品行操作组是当前页面需要评审或验收的功能点。",
+          "evidence": [
+            "稳定锚点：table tbody .table-actions",
+            "可见文本：编辑"
+          ],
+          "selected": true,
+          "skipReason": null
+        }
+      ]
+    },
+    {
+      "pageKey": "P08",
+      "title": "产品审核详情",
+      "path": "index.html",
+      "route": "#review-detail",
+      "candidates": [
+        {
+          "candidateId": "CAND-P08-001",
+          "pageKey": "P08",
+          "elementId": "P08-E001",
+          "selector": ".page-header h1",
+          "strategy": "css",
+          "fallbackText": "产品审核详情",
+          "annotationType": "P",
+          "kind": "note",
+          "dimension": "Page overview",
+          "priority": "medium",
+          "reason": "产品审核详情页面说明是当前页面需要评审或验收的功能点。",
+          "evidence": [
+            "稳定锚点：.page-header h1",
+            "可见文本：产品审核详情"
+          ],
+          "selected": true,
+          "skipReason": null
+        },
+        {
+          "candidateId": "CAND-P08-002",
+          "pageKey": "P08",
+          "elementId": "P08-E002",
+          "selector": "[data-action=\"fx-back-reviews\"]",
+          "strategy": "data",
+          "fallbackText": "返回产品审核",
+          "annotationType": "J",
+          "kind": "flow",
+          "dimension": "Primary action",
+          "priority": "high",
+          "reason": "返回产品审核是当前页面需要评审或验收的功能点。",
+          "evidence": [
+            "稳定锚点：[data-action=\"fx-back-reviews\"]",
+            "可见文本：返回产品审核"
+          ],
+          "selected": true,
+          "skipReason": null
+        },
+        {
+          "candidateId": "CAND-P08-003",
+          "pageKey": "P08",
+          "elementId": "P08-E003",
+          "selector": ".stepper [data-action=\"product-step\"]",
+          "strategy": "css",
+          "fallbackText": "产品信息",
+          "annotationType": "A",
+          "kind": "interaction",
+          "dimension": "Primary action",
+          "priority": "high",
+          "reason": "资料模块导航是当前页面需要评审或验收的功能点。",
+          "evidence": [
+            "稳定锚点：.stepper [data-action=\"product-step\"]",
+            "可见文本：产品信息"
+          ],
+          "selected": true,
+          "skipReason": null
+        },
+        {
+          "candidateId": "CAND-P08-004",
+          "pageKey": "P08",
+          "elementId": "P08-E004",
+          "selector": "[data-action=\"fx-preview-current\"]",
+          "strategy": "data",
+          "fallbackText": "预览码",
+          "annotationType": "A",
+          "kind": "interaction",
+          "dimension": "Primary action",
+          "priority": "high",
+          "reason": "预览扫码效果是当前页面需要评审或验收的功能点。",
+          "evidence": [
+            "稳定锚点：[data-action=\"fx-preview-current\"]",
+            "可见文本：预览码"
+          ],
+          "selected": true,
+          "skipReason": null
+        },
+        {
+          "candidateId": "CAND-P08-005",
+          "pageKey": "P08",
+          "elementId": "P08-E005",
+          "selector": "[data-action=\"fx-ops-edit-product\"]",
+          "strategy": "data",
+          "fallbackText": "编辑材料",
+          "annotationType": "PERM",
+          "kind": "permission",
+          "dimension": "Primary action",
+          "priority": "high",
+          "reason": "编辑当前模块材料是当前页面需要评审或验收的功能点。",
+          "evidence": [
+            "稳定锚点：[data-action=\"fx-ops-edit-product\"]",
+            "可见文本：编辑材料"
+          ],
+          "selected": true,
+          "skipReason": null
+        },
+        {
+          "candidateId": "CAND-P08-006",
+          "pageKey": "P08",
+          "elementId": "P08-E006",
+          "selector": ".modal",
+          "strategy": "css",
+          "fallbackText": "通过并激活",
+          "annotationType": "R",
+          "kind": "interaction",
+          "dimension": "Surface overview",
+          "priority": "high",
+          "reason": "通过并激活是当前页面需要评审或验收的功能点。",
+          "evidence": [
+            "稳定锚点：.modal",
+            "可见文本：通过并激活"
+          ],
+          "selected": true,
+          "skipReason": null,
+          "surfaceId": "surface-P08-approve-activation"
+        },
+        {
+          "candidateId": "CAND-P08-007",
+          "pageKey": "P08",
+          "elementId": "P08-E007",
+          "selector": "#fx-activation-order-search",
+          "strategy": "id",
+          "fallbackText": "激活订单",
+          "annotationType": "C",
+          "kind": "interaction",
+          "dimension": "Surface field",
+          "priority": "high",
+          "reason": "激活订单是当前页面需要评审或验收的功能点。",
+          "evidence": [
+            "稳定锚点：#fx-activation-order-search",
+            "可见文本：激活订单"
+          ],
+          "selected": true,
+          "skipReason": null,
+          "surfaceId": "surface-P08-approve-activation"
+        },
+        {
+          "candidateId": "CAND-P08-008",
+          "pageKey": "P08",
+          "elementId": "P08-E008",
+          "selector": "#fx-activation-amount",
+          "strategy": "id",
+          "fallbackText": "本次激活数量",
+          "annotationType": "C",
+          "kind": "interaction",
+          "dimension": "Surface field",
+          "priority": "high",
+          "reason": "本次激活数量是当前页面需要评审或验收的功能点。",
+          "evidence": [
+            "稳定锚点：#fx-activation-amount",
+            "可见文本：本次激活数量"
+          ],
+          "selected": true,
+          "skipReason": null,
+          "surfaceId": "surface-P08-approve-activation"
+        },
+        {
+          "candidateId": "CAND-P08-009",
+          "pageKey": "P08",
+          "elementId": "P08-E009",
+          "selector": "[data-action=\"fx-confirm-activation\"]",
+          "strategy": "data",
+          "fallbackText": "确认通过并激活",
+          "annotationType": "R",
+          "kind": "interaction",
+          "dimension": "Surface confirm",
+          "priority": "high",
+          "reason": "确认通过并激活是当前页面需要评审或验收的功能点。",
+          "evidence": [
+            "稳定锚点：[data-action=\"fx-confirm-activation\"]",
+            "可见文本：确认通过并激活"
+          ],
+          "selected": true,
+          "skipReason": null,
+          "surfaceId": "surface-P08-approve-activation"
+        },
+        {
+          "candidateId": "CAND-P08-010",
+          "pageKey": "P08",
+          "elementId": "P08-E010",
+          "selector": ".modal",
+          "strategy": "css",
+          "fallbackText": "驳回产品资料",
+          "annotationType": "R",
+          "kind": "interaction",
+          "dimension": "Surface overview",
+          "priority": "high",
+          "reason": "驳回产品资料是当前页面需要评审或验收的功能点。",
+          "evidence": [
+            "稳定锚点：.modal",
+            "可见文本：驳回产品资料"
+          ],
+          "selected": true,
+          "skipReason": null,
+          "surfaceId": "surface-P08-reject-product"
+        },
+        {
+          "candidateId": "CAND-P08-011",
+          "pageKey": "P08",
+          "elementId": "P08-E011",
+          "selector": "#fx-reject-reason",
+          "strategy": "id",
+          "fallbackText": "驳回原因",
+          "annotationType": "C",
+          "kind": "interaction",
+          "dimension": "Surface field",
+          "priority": "high",
+          "reason": "驳回原因是当前页面需要评审或验收的功能点。",
+          "evidence": [
+            "稳定锚点：#fx-reject-reason",
+            "可见文本：驳回原因"
+          ],
+          "selected": true,
+          "skipReason": null,
+          "surfaceId": "surface-P08-reject-product"
+        },
+        {
+          "candidateId": "CAND-P08-012",
+          "pageKey": "P08",
+          "elementId": "P08-E012",
+          "selector": "[data-action=\"fx-confirm-reject\"]",
+          "strategy": "data",
+          "fallbackText": "确认驳回",
+          "annotationType": "R",
+          "kind": "interaction",
+          "dimension": "Surface confirm",
+          "priority": "high",
+          "reason": "确认驳回是当前页面需要评审或验收的功能点。",
+          "evidence": [
+            "稳定锚点：[data-action=\"fx-confirm-reject\"]",
+            "可见文本：确认驳回"
+          ],
+          "selected": true,
+          "skipReason": null,
+          "surfaceId": "surface-P08-reject-product"
+        }
+      ]
+    },
+    {
+      "pageKey": "P09",
+      "title": "绑定审核",
+      "path": "index.html",
+      "route": "#bind-requests",
+      "candidates": [
+        {
+          "candidateId": "CAND-P09-001",
+          "pageKey": "P09",
+          "elementId": "P09-E001",
+          "selector": ".page-header h1",
+          "strategy": "css",
+          "fallbackText": "绑定审核",
+          "annotationType": "P",
+          "kind": "note",
+          "dimension": "Page overview",
+          "priority": "medium",
+          "reason": "绑定审核页面说明是当前页面需要评审或验收的功能点。",
+          "evidence": [
+            "稳定锚点：.page-header h1",
+            "可见文本：绑定审核"
+          ],
+          "selected": true,
+          "skipReason": null
+        },
+        {
+          "candidateId": "CAND-P09-002",
+          "pageKey": "P09",
+          "elementId": "P09-E002",
+          "selector": "#fx-bind-request-search",
+          "strategy": "id",
+          "fallbackText": "客户、订单或产品",
+          "annotationType": "FILTER",
+          "kind": "interaction",
+          "dimension": "Primary action",
+          "priority": "high",
+          "reason": "绑定申请搜索是当前页面需要评审或验收的功能点。",
+          "evidence": [
+            "稳定锚点：#fx-bind-request-search",
+            "可见文本：客户、订单或产品"
+          ],
+          "selected": true,
+          "skipReason": null
+        },
+        {
+          "candidateId": "CAND-P09-003",
+          "pageKey": "P09",
+          "elementId": "P09-E003",
+          "selector": "[data-action=\"fx-order-detail\"]",
+          "strategy": "data",
+          "fallbackText": "ORD-",
+          "annotationType": "J",
+          "kind": "flow",
+          "dimension": "Primary action",
+          "priority": "high",
+          "reason": "查看申请订单是当前页面需要评审或验收的功能点。",
+          "evidence": [
+            "稳定锚点：[data-action=\"fx-order-detail\"]",
+            "可见文本：ORD-"
+          ],
+          "selected": true,
+          "skipReason": null
+        },
+        {
+          "candidateId": "CAND-P09-004",
+          "pageKey": "P09",
+          "elementId": "P09-E004",
+          "selector": "table tbody .table-actions",
+          "strategy": "css",
+          "fallbackText": "通过",
+          "annotationType": "R",
+          "kind": "interaction",
+          "dimension": "Primary action",
+          "priority": "high",
+          "reason": "绑定审核操作组是当前页面需要评审或验收的功能点。",
+          "evidence": [
+            "稳定锚点：table tbody .table-actions",
+            "可见文本：通过"
+          ],
+          "selected": true,
+          "skipReason": null
+        },
+        {
+          "candidateId": "CAND-P09-005",
+          "pageKey": "P09",
+          "elementId": "P09-E005",
+          "selector": ".modal",
+          "strategy": "css",
+          "fallbackText": "驳回绑定申请",
+          "annotationType": "R",
+          "kind": "interaction",
+          "dimension": "Surface overview",
+          "priority": "high",
+          "reason": "驳回绑定申请是当前页面需要评审或验收的功能点。",
+          "evidence": [
+            "稳定锚点：.modal",
+            "可见文本：驳回绑定申请"
+          ],
+          "selected": true,
+          "skipReason": null,
+          "surfaceId": "surface-P09-reject-bind-request"
+        },
+        {
+          "candidateId": "CAND-P09-006",
+          "pageKey": "P09",
+          "elementId": "P09-E006",
+          "selector": "#fx-bind-request-reason",
+          "strategy": "id",
+          "fallbackText": "绑定驳回原因",
+          "annotationType": "C",
+          "kind": "interaction",
+          "dimension": "Surface field",
+          "priority": "high",
+          "reason": "绑定驳回原因是当前页面需要评审或验收的功能点。",
+          "evidence": [
+            "稳定锚点：#fx-bind-request-reason",
+            "可见文本：绑定驳回原因"
+          ],
+          "selected": true,
+          "skipReason": null,
+          "surfaceId": "surface-P09-reject-bind-request"
+        },
+        {
+          "candidateId": "CAND-P09-007",
+          "pageKey": "P09",
+          "elementId": "P09-E007",
+          "selector": "[data-action=\"fx-confirm-bind-request-reject\"]",
+          "strategy": "data",
+          "fallbackText": "确认驳回绑定",
+          "annotationType": "R",
+          "kind": "interaction",
+          "dimension": "Surface confirm",
+          "priority": "high",
+          "reason": "确认驳回绑定是当前页面需要评审或验收的功能点。",
+          "evidence": [
+            "稳定锚点：[data-action=\"fx-confirm-bind-request-reject\"]",
+            "可见文本：确认驳回绑定"
+          ],
+          "selected": true,
+          "skipReason": null,
+          "surfaceId": "surface-P09-reject-bind-request"
+        }
+      ]
+    },
+    {
+      "pageKey": "P10",
+      "title": "撤回审核",
+      "path": "index.html",
+      "route": "#withdrawals",
+      "candidates": [
+        {
+          "candidateId": "CAND-P10-001",
+          "pageKey": "P10",
+          "elementId": "P10-E001",
+          "selector": ".page-header h1",
+          "strategy": "css",
+          "fallbackText": "撤回审核",
+          "annotationType": "P",
+          "kind": "note",
+          "dimension": "Page overview",
+          "priority": "medium",
+          "reason": "撤回审核页面说明是当前页面需要评审或验收的功能点。",
+          "evidence": [
+            "稳定锚点：.page-header h1",
+            "可见文本：撤回审核"
+          ],
+          "selected": true,
+          "skipReason": null
+        },
+        {
+          "candidateId": "CAND-P10-002",
+          "pageKey": "P10",
+          "elementId": "P10-E002",
+          "selector": "#fx-withdrawal-search",
+          "strategy": "id",
+          "fallbackText": "申请编号、产品或客户",
+          "annotationType": "FILTER",
+          "kind": "interaction",
+          "dimension": "Primary action",
+          "priority": "high",
+          "reason": "撤回申请搜索是当前页面需要评审或验收的功能点。",
+          "evidence": [
+            "稳定锚点：#fx-withdrawal-search",
+            "可见文本：申请编号、产品或客户"
+          ],
+          "selected": true,
+          "skipReason": null
+        },
+        {
+          "candidateId": "CAND-P10-003",
+          "pageKey": "P10",
+          "elementId": "P10-E003",
+          "selector": "table tbody td:last-child",
+          "strategy": "css",
+          "fallbackText": "通过",
+          "annotationType": "R",
+          "kind": "interaction",
+          "dimension": "Primary action",
+          "priority": "high",
+          "reason": "撤回审核操作组是当前页面需要评审或验收的功能点。",
+          "evidence": [
+            "稳定锚点：table tbody td:last-child",
+            "可见文本：通过"
+          ],
+          "selected": true,
+          "skipReason": null
+        },
+        {
+          "candidateId": "CAND-P10-004",
+          "pageKey": "P10",
+          "elementId": "P10-E004",
+          "selector": ".modal",
+          "strategy": "css",
+          "fallbackText": "撤回审核决策",
+          "annotationType": "R",
+          "kind": "interaction",
+          "dimension": "Surface overview",
+          "priority": "high",
+          "reason": "撤回审核决策是当前页面需要评审或验收的功能点。",
+          "evidence": [
+            "稳定锚点：.modal",
+            "可见文本：撤回审核决策"
+          ],
+          "selected": true,
+          "skipReason": null,
+          "surfaceId": "surface-P10-withdraw-decision"
+        },
+        {
+          "candidateId": "CAND-P10-005",
+          "pageKey": "P10",
+          "elementId": "P10-E005",
+          "selector": "[data-action=\"fx-confirm-withdraw-decision\"]",
+          "strategy": "data",
+          "fallbackText": "确认撤回处理",
+          "annotationType": "R",
+          "kind": "interaction",
+          "dimension": "Surface confirm",
+          "priority": "high",
+          "reason": "确认撤回处理是当前页面需要评审或验收的功能点。",
+          "evidence": [
+            "稳定锚点：[data-action=\"fx-confirm-withdraw-decision\"]",
+            "可见文本：确认撤回处理"
+          ],
+          "selected": true,
+          "skipReason": null,
+          "surfaceId": "surface-P10-withdraw-decision"
+        }
+      ]
+    },
+    {
+      "pageKey": "P11",
+      "title": "运营账号管理",
+      "path": "index.html",
+      "route": "#operators",
+      "candidates": [
+        {
+          "candidateId": "CAND-P11-001",
+          "pageKey": "P11",
+          "elementId": "P11-E001",
+          "selector": ".page-header h1",
+          "strategy": "css",
+          "fallbackText": "运营账号管理",
+          "annotationType": "P",
+          "kind": "note",
+          "dimension": "Page overview",
+          "priority": "medium",
+          "reason": "运营账号管理页面说明是当前页面需要评审或验收的功能点。",
+          "evidence": [
+            "稳定锚点：.page-header h1",
+            "可见文本：运营账号管理"
+          ],
+          "selected": true,
+          "skipReason": null
+        },
+        {
+          "candidateId": "CAND-P11-002",
+          "pageKey": "P11",
+          "elementId": "P11-E002",
+          "selector": "#fx-operator-search",
+          "strategy": "id",
+          "fallbackText": "搜索账号或姓名",
+          "annotationType": "FILTER",
+          "kind": "interaction",
+          "dimension": "Primary action",
+          "priority": "high",
+          "reason": "运营账号搜索是当前页面需要评审或验收的功能点。",
+          "evidence": [
+            "稳定锚点：#fx-operator-search",
+            "可见文本：搜索账号或姓名"
+          ],
+          "selected": true,
+          "skipReason": null
+        },
+        {
+          "candidateId": "CAND-P11-003",
+          "pageKey": "P11",
+          "elementId": "P11-E003",
+          "selector": "table tbody .table-actions",
+          "strategy": "css",
+          "fallbackText": "编辑",
+          "annotationType": "PERM",
+          "kind": "permission",
+          "dimension": "Primary action",
+          "priority": "high",
+          "reason": "运营账号行操作是当前页面需要评审或验收的功能点。",
+          "evidence": [
+            "稳定锚点：table tbody .table-actions",
+            "可见文本：编辑"
+          ],
+          "selected": true,
+          "skipReason": null
+        },
+        {
+          "candidateId": "CAND-P11-004",
+          "pageKey": "P11",
+          "elementId": "P11-E004",
+          "selector": ".modal",
+          "strategy": "css",
+          "fallbackText": "新建运营账号",
+          "annotationType": "R",
+          "kind": "interaction",
+          "dimension": "Surface overview",
+          "priority": "high",
+          "reason": "新建运营账号是当前页面需要评审或验收的功能点。",
+          "evidence": [
+            "稳定锚点：.modal",
+            "可见文本：新建运营账号"
+          ],
+          "selected": true,
+          "skipReason": null,
+          "surfaceId": "surface-P11-new-operator"
+        },
+        {
+          "candidateId": "CAND-P11-005",
+          "pageKey": "P11",
+          "elementId": "P11-E005",
+          "selector": "[data-action=\"fx-confirm-operator\"]",
+          "strategy": "data",
+          "fallbackText": "保存运营账号",
+          "annotationType": "R",
+          "kind": "interaction",
+          "dimension": "Surface confirm",
+          "priority": "high",
+          "reason": "保存运营账号是当前页面需要评审或验收的功能点。",
+          "evidence": [
+            "稳定锚点：[data-action=\"fx-confirm-operator\"]",
+            "可见文本：保存运营账号"
+          ],
+          "selected": true,
+          "skipReason": null,
+          "surfaceId": "surface-P11-new-operator"
+        }
+      ]
+    },
+    {
+      "pageKey": "P12",
+      "title": "站内信",
+      "path": "index.html",
+      "route": "#messages",
+      "candidates": [
+        {
+          "candidateId": "CAND-P12-001",
+          "pageKey": "P12",
+          "elementId": "P12-E001",
+          "selector": ".page-header h1",
+          "strategy": "css",
+          "fallbackText": "站内信",
+          "annotationType": "P",
+          "kind": "note",
+          "dimension": "Page overview",
+          "priority": "medium",
+          "reason": "站内信页面说明是当前页面需要评审或验收的功能点。",
+          "evidence": [
+            "稳定锚点：.page-header h1",
+            "可见文本：站内信"
+          ],
+          "selected": true,
+          "skipReason": null
+        },
+        {
+          "candidateId": "CAND-P12-002",
+          "pageKey": "P12",
+          "elementId": "P12-E002",
+          "selector": "#fx-message-search",
+          "strategy": "id",
+          "fallbackText": "搜索消息标题或内容摘要",
+          "annotationType": "FILTER",
+          "kind": "interaction",
+          "dimension": "Primary action",
+          "priority": "high",
+          "reason": "消息搜索与筛选是当前页面需要评审或验收的功能点。",
+          "evidence": [
+            "稳定锚点：#fx-message-search",
+            "可见文本：搜索消息标题或内容摘要"
+          ],
+          "selected": true,
+          "skipReason": null
+        },
+        {
+          "candidateId": "CAND-P12-003",
+          "pageKey": "P12",
+          "elementId": "P12-E003",
+          "selector": "#fx-message-select-all",
+          "strategy": "id",
+          "fallbackText": "勾选当前筛选的全部消息",
+          "annotationType": "A",
+          "kind": "interaction",
+          "dimension": "Primary action",
+          "priority": "high",
+          "reason": "批量选择消息是当前页面需要评审或验收的功能点。",
+          "evidence": [
+            "稳定锚点：#fx-message-select-all",
+            "可见文本：勾选当前筛选的全部消息"
+          ],
+          "selected": true,
+          "skipReason": null
+        },
+        {
+          "candidateId": "CAND-P12-004",
+          "pageKey": "P12",
+          "elementId": "P12-E004",
+          "selector": "[data-action=\"fx-delete-selected-messages\"]",
+          "strategy": "data",
+          "fallbackText": "删除",
+          "annotationType": "R",
+          "kind": "interaction",
+          "dimension": "Primary action",
+          "priority": "high",
+          "reason": "批量删除消息是当前页面需要评审或验收的功能点。",
+          "evidence": [
+            "稳定锚点：[data-action=\"fx-delete-selected-messages\"]",
+            "可见文本：删除"
+          ],
+          "selected": true,
+          "skipReason": null
+        },
+        {
+          "candidateId": "CAND-P12-005",
+          "pageKey": "P12",
+          "elementId": "P12-E005",
+          "selector": "[data-action=\"fx-read-message\"]",
+          "strategy": "data",
+          "fallbackText": "消息",
+          "annotationType": "J",
+          "kind": "flow",
+          "dimension": "Primary action",
+          "priority": "high",
+          "reason": "查看消息详情是当前页面需要评审或验收的功能点。",
+          "evidence": [
+            "稳定锚点：[data-action=\"fx-read-message\"]",
+            "可见文本：消息"
+          ],
+          "selected": true,
+          "skipReason": null
+        }
+      ]
+    },
+    {
+      "pageKey": "P13",
+      "title": "个人设置",
+      "path": "index.html",
+      "route": "#settings",
+      "candidates": [
+        {
+          "candidateId": "CAND-P13-001",
+          "pageKey": "P13",
+          "elementId": "P13-E001",
+          "selector": ".page-header h1",
+          "strategy": "css",
+          "fallbackText": "个人设置",
+          "annotationType": "P",
+          "kind": "note",
+          "dimension": "Page overview",
+          "priority": "medium",
+          "reason": "个人设置页面说明是当前页面需要评审或验收的功能点。",
+          "evidence": [
+            "稳定锚点：.page-header h1",
+            "可见文本：个人设置"
+          ],
+          "selected": true,
+          "skipReason": null
+        },
+        {
+          "candidateId": "CAND-P13-002",
+          "pageKey": "P13",
+          "elementId": "P13-E002",
+          "selector": "#fx-current-password",
+          "strategy": "id",
+          "fallbackText": "输入当前密码",
+          "annotationType": "R",
+          "kind": "interaction",
+          "dimension": "Primary action",
+          "priority": "high",
+          "reason": "密码修改字段是当前页面需要评审或验收的功能点。",
+          "evidence": [
+            "稳定锚点：#fx-current-password",
+            "可见文本：输入当前密码"
+          ],
+          "selected": true,
+          "skipReason": null
+        },
+        {
+          "candidateId": "CAND-P13-003",
+          "pageKey": "P13",
+          "elementId": "P13-E003",
+          "selector": "[data-action=\"fx-save-password\"]",
+          "strategy": "data",
+          "fallbackText": "保存新密码",
+          "annotationType": "A",
+          "kind": "interaction",
+          "dimension": "Primary action",
+          "priority": "high",
+          "reason": "保存新密码是当前页面需要评审或验收的功能点。",
+          "evidence": [
+            "稳定锚点：[data-action=\"fx-save-password\"]",
+            "可见文本：保存新密码"
+          ],
+          "selected": true,
+          "skipReason": null
+        },
+        {
+          "candidateId": "CAND-P13-004",
+          "pageKey": "P13",
+          "elementId": "P13-E004",
+          "selector": "[data-action=\"fx-logout\"]",
+          "strategy": "data",
+          "fallbackText": "退出登录",
+          "annotationType": "J",
+          "kind": "flow",
+          "dimension": "Primary action",
+          "priority": "high",
+          "reason": "退出登录是当前页面需要评审或验收的功能点。",
+          "evidence": [
+            "稳定锚点：[data-action=\"fx-logout\"]",
+            "可见文本：退出登录"
+          ],
+          "selected": true,
+          "skipReason": null
+        }
+      ]
+    },
+    {
+      "pageKey": "P21",
+      "title": "数据概览",
+      "path": "customer.html",
+      "route": "#overview",
+      "candidates": [
+        {
+          "candidateId": "CAND-P21-001",
+          "pageKey": "P21",
+          "elementId": "P21-E001",
+          "selector": ".page-header h1",
+          "strategy": "css",
+          "fallbackText": "数据概览",
+          "annotationType": "P",
+          "kind": "note",
+          "dimension": "Page overview",
+          "priority": "medium",
+          "reason": "数据概览页面说明是当前页面需要评审或验收的功能点。",
+          "evidence": [
+            "稳定锚点：.page-header h1",
+            "可见文本：数据概览"
+          ],
+          "selected": true,
+          "skipReason": null
+        },
+        {
+          "candidateId": "CAND-P21-002",
+          "pageKey": "P21",
+          "elementId": "P21-E002",
+          "selector": ".metric-strip .metric-link",
+          "strategy": "css",
+          "fallbackText": "订单总量",
+          "annotationType": "DATA",
+          "kind": "data",
+          "dimension": "Primary action",
+          "priority": "high",
+          "reason": "码量指标下钻是当前页面需要评审或验收的功能点。",
+          "evidence": [
+            "稳定锚点：.metric-strip .metric-link",
+            "可见文本：订单总量"
+          ],
+          "selected": true,
+          "skipReason": null
+        },
+        {
+          "candidateId": "CAND-P21-003",
+          "pageKey": "P21",
+          "elementId": "P21-E003",
+          "selector": "[data-action=\"fx-focus-customer-order\"]",
+          "strategy": "data",
+          "fallbackText": "在订单台账中查看订单",
+          "annotationType": "J",
+          "kind": "flow",
+          "dimension": "Primary action",
+          "priority": "high",
+          "reason": "最近订单跳转是当前页面需要评审或验收的功能点。",
+          "evidence": [
+            "稳定锚点：[data-action=\"fx-focus-customer-order\"]",
+            "可见文本：在订单台账中查看订单"
+          ],
+          "selected": true,
+          "skipReason": null
+        },
+        {
+          "candidateId": "CAND-P21-004",
+          "pageKey": "P21",
+          "elementId": "P21-E004",
+          "selector": "[data-action=\"fx-customer-product-status\"]",
+          "strategy": "data",
+          "fallbackText": "点击查看对应产品",
+          "annotationType": "J",
+          "kind": "flow",
+          "dimension": "Primary action",
+          "priority": "high",
+          "reason": "产品状态入口是当前页面需要评审或验收的功能点。",
+          "evidence": [
+            "稳定锚点：[data-action=\"fx-customer-product-status\"]",
+            "可见文本：点击查看对应产品"
+          ],
+          "selected": true,
+          "skipReason": null
+        }
+      ]
+    },
+    {
+      "pageKey": "P22",
+      "title": "订单台账",
+      "path": "customer.html",
+      "route": "#orders",
+      "candidates": [
+        {
+          "candidateId": "CAND-P22-001",
+          "pageKey": "P22",
+          "elementId": "P22-E001",
+          "selector": ".page-header h1",
+          "strategy": "css",
+          "fallbackText": "订单台账",
+          "annotationType": "P",
+          "kind": "note",
+          "dimension": "Page overview",
+          "priority": "medium",
+          "reason": "订单台账页面说明是当前页面需要评审或验收的功能点。",
+          "evidence": [
+            "稳定锚点：.page-header h1",
+            "可见文本：订单台账"
+          ],
+          "selected": true,
+          "skipReason": null
+        },
+        {
+          "candidateId": "CAND-P22-002",
+          "pageKey": "P22",
+          "elementId": "P22-E002",
+          "selector": "[data-action=\"fx-export-customer-orders\"]",
+          "strategy": "data",
+          "fallbackText": "导出台账",
+          "annotationType": "PERM",
+          "kind": "permission",
+          "dimension": "Primary action",
+          "priority": "high",
+          "reason": "导出订单台账是当前页面需要评审或验收的功能点。",
+          "evidence": [
+            "稳定锚点：[data-action=\"fx-export-customer-orders\"]",
+            "可见文本：导出台账"
+          ],
+          "selected": true,
+          "skipReason": null
+        },
+        {
+          "candidateId": "CAND-P22-003",
+          "pageKey": "P22",
+          "elementId": "P22-E003",
+          "selector": "[data-action=\"fx-open-customer-calendar\"]",
+          "strategy": "data",
+          "fallbackText": "筛选创建时间",
+          "annotationType": "FILTER",
+          "kind": "interaction",
+          "dimension": "Primary action",
+          "priority": "high",
+          "reason": "订单日期筛选是当前页面需要评审或验收的功能点。",
+          "evidence": [
+            "稳定锚点：[data-action=\"fx-open-customer-calendar\"]",
+            "可见文本：筛选创建时间"
+          ],
+          "selected": true,
+          "skipReason": null
+        },
+        {
+          "candidateId": "CAND-P22-004",
+          "pageKey": "P22",
+          "elementId": "P22-E004",
+          "selector": "[data-action=\"fx-view-order-bind-requests\"]",
+          "strategy": "data",
+          "fallbackText": "查看绑定申请中数量",
+          "annotationType": "A",
+          "kind": "interaction",
+          "dimension": "Primary action",
+          "priority": "high",
+          "reason": "查看绑定申请中是当前页面需要评审或验收的功能点。",
+          "evidence": [
+            "稳定锚点：[data-action=\"fx-view-order-bind-requests\"]",
+            "可见文本：查看绑定申请中数量"
+          ],
+          "selected": true,
+          "skipReason": null
+        },
+        {
+          "candidateId": "CAND-P22-005",
+          "pageKey": "P22",
+          "elementId": "P22-E005",
+          "selector": "tbody .table-actions",
+          "strategy": "css",
+          "fallbackText": "申请绑定产品",
+          "annotationType": "A",
+          "kind": "interaction",
+          "dimension": "Primary action",
+          "priority": "high",
+          "reason": "订单行操作组是当前页面需要评审或验收的功能点。",
+          "evidence": [
+            "稳定锚点：tbody .table-actions",
+            "可见文本：申请绑定产品"
+          ],
+          "selected": true,
+          "skipReason": null
+        },
+        {
+          "candidateId": "CAND-P22-006",
+          "pageKey": "P22",
+          "elementId": "P22-E006",
+          "selector": ".modal",
+          "strategy": "css",
+          "fallbackText": "申请绑定产品",
+          "annotationType": "R",
+          "kind": "interaction",
+          "dimension": "Surface overview",
+          "priority": "high",
+          "reason": "申请绑定产品是当前页面需要评审或验收的功能点。",
+          "evidence": [
+            "稳定锚点：.modal",
+            "可见文本：申请绑定产品"
+          ],
+          "selected": true,
+          "skipReason": null,
+          "surfaceId": "surface-P22-request-bind"
+        },
+        {
+          "candidateId": "CAND-P22-007",
+          "pageKey": "P22",
+          "elementId": "P22-E007",
+          "selector": "#fx-customer-bind-product-search",
+          "strategy": "id",
+          "fallbackText": "搜索已激活产品",
+          "annotationType": "C",
+          "kind": "interaction",
+          "dimension": "Surface field",
+          "priority": "high",
+          "reason": "搜索已激活产品是当前页面需要评审或验收的功能点。",
+          "evidence": [
+            "稳定锚点：#fx-customer-bind-product-search",
+            "可见文本：搜索已激活产品"
+          ],
+          "selected": true,
+          "skipReason": null,
+          "surfaceId": "surface-P22-request-bind"
+        },
+        {
+          "candidateId": "CAND-P22-008",
+          "pageKey": "P22",
+          "elementId": "P22-E008",
+          "selector": "#fx-customer-bind-amount",
+          "strategy": "id",
+          "fallbackText": "申请绑定数量",
+          "annotationType": "C",
+          "kind": "interaction",
+          "dimension": "Surface field",
+          "priority": "high",
+          "reason": "申请绑定数量是当前页面需要评审或验收的功能点。",
+          "evidence": [
+            "稳定锚点：#fx-customer-bind-amount",
+            "可见文本：申请绑定数量"
+          ],
+          "selected": true,
+          "skipReason": null,
+          "surfaceId": "surface-P22-request-bind"
+        },
+        {
+          "candidateId": "CAND-P22-009",
+          "pageKey": "P22",
+          "elementId": "P22-E009",
+          "selector": "[data-action=\"fx-confirm-customer-bind\"]",
+          "strategy": "data",
+          "fallbackText": "提交绑定申请",
+          "annotationType": "R",
+          "kind": "interaction",
+          "dimension": "Surface confirm",
+          "priority": "high",
+          "reason": "提交绑定申请是当前页面需要评审或验收的功能点。",
+          "evidence": [
+            "稳定锚点：[data-action=\"fx-confirm-customer-bind\"]",
+            "可见文本：提交绑定申请"
+          ],
+          "selected": true,
+          "skipReason": null,
+          "surfaceId": "surface-P22-request-bind"
+        }
+      ]
+    },
+    {
+      "pageKey": "P23",
+      "title": "订单详情",
+      "path": "customer.html",
+      "route": "#order-detail",
+      "candidates": [
+        {
+          "candidateId": "CAND-P23-001",
+          "pageKey": "P23",
+          "elementId": "P23-E001",
+          "selector": ".page-header h1",
+          "strategy": "css",
+          "fallbackText": "订单详情",
+          "annotationType": "P",
+          "kind": "note",
+          "dimension": "Page overview",
+          "priority": "medium",
+          "reason": "订单详情页面说明是当前页面需要评审或验收的功能点。",
+          "evidence": [
+            "稳定锚点：.page-header h1",
+            "可见文本：订单详情"
+          ],
+          "selected": true,
+          "skipReason": null
+        },
+        {
+          "candidateId": "CAND-P23-002",
+          "pageKey": "P23",
+          "elementId": "P23-E002",
+          "selector": "[data-action=\"fx-back-orders\"]",
+          "strategy": "data",
+          "fallbackText": "返回订单台账",
+          "annotationType": "J",
+          "kind": "flow",
+          "dimension": "Primary action",
+          "priority": "high",
+          "reason": "返回订单台账是当前页面需要评审或验收的功能点。",
+          "evidence": [
+            "稳定锚点：[data-action=\"fx-back-orders\"]",
+            "可见文本：返回订单台账"
+          ],
+          "selected": true,
+          "skipReason": null
+        },
+        {
+          "candidateId": "CAND-P23-003",
+          "pageKey": "P23",
+          "elementId": "P23-E003",
+          "selector": "[data-action=\"fx-customer-bind-order\"]",
+          "strategy": "data",
+          "fallbackText": "申请绑定产品",
+          "annotationType": "A",
+          "kind": "interaction",
+          "dimension": "Primary action",
+          "priority": "high",
+          "reason": "申请绑定产品是当前页面需要评审或验收的功能点。",
+          "evidence": [
+            "稳定锚点：[data-action=\"fx-customer-bind-order\"]",
+            "可见文本：申请绑定产品"
+          ],
+          "selected": true,
+          "skipReason": null
+        },
+        {
+          "candidateId": "CAND-P23-004",
+          "pageKey": "P23",
+          "elementId": "P23-E004",
+          "selector": "[data-action=\"fx-open-activation-product\"]",
+          "strategy": "data",
+          "fallbackText": "产品",
+          "annotationType": "J",
+          "kind": "flow",
+          "dimension": "Primary action",
+          "priority": "high",
+          "reason": "查看关联产品是当前页面需要评审或验收的功能点。",
+          "evidence": [
+            "稳定锚点：[data-action=\"fx-open-activation-product\"]",
+            "可见文本：产品"
+          ],
+          "selected": true,
+          "skipReason": null
+        }
+      ]
+    },
+    {
+      "pageKey": "P24",
+      "title": "产品信息",
+      "path": "customer.html",
+      "route": "#products",
+      "candidates": [
+        {
+          "candidateId": "CAND-P24-001",
+          "pageKey": "P24",
+          "elementId": "P24-E001",
+          "selector": ".page-header h1",
+          "strategy": "css",
+          "fallbackText": "产品信息",
+          "annotationType": "P",
+          "kind": "note",
+          "dimension": "Page overview",
+          "priority": "medium",
+          "reason": "产品信息页面说明是当前页面需要评审或验收的功能点。",
+          "evidence": [
+            "稳定锚点：.page-header h1",
+            "可见文本：产品信息"
+          ],
+          "selected": true,
+          "skipReason": null
+        },
+        {
+          "candidateId": "CAND-P24-002",
+          "pageKey": "P24",
+          "elementId": "P24-E002",
+          "selector": "#fx-customer-product-search",
+          "strategy": "id",
+          "fallbackText": "搜索产品名称或批次",
+          "annotationType": "FILTER",
+          "kind": "interaction",
+          "dimension": "Primary action",
+          "priority": "high",
+          "reason": "产品搜索与重置是当前页面需要评审或验收的功能点。",
+          "evidence": [
+            "稳定锚点：#fx-customer-product-search",
+            "可见文本：搜索产品名称或批次"
+          ],
+          "selected": true,
+          "skipReason": null
+        },
+        {
+          "candidateId": "CAND-P24-003",
+          "pageKey": "P24",
+          "elementId": "P24-E003",
+          "selector": "[data-action=\"fx-new-product\"]",
+          "strategy": "data",
+          "fallbackText": "新建产品",
+          "annotationType": "J",
+          "kind": "flow",
+          "dimension": "Primary action",
+          "priority": "high",
+          "reason": "新建产品是当前页面需要评审或验收的功能点。",
+          "evidence": [
+            "稳定锚点：[data-action=\"fx-new-product\"]",
+            "可见文本：新建产品"
+          ],
+          "selected": true,
+          "skipReason": null
+        },
+        {
+          "candidateId": "CAND-P24-004",
+          "pageKey": "P24",
+          "elementId": "P24-E004",
+          "selector": ".customer-product-table tbody .table-actions",
+          "strategy": "css",
+          "fallbackText": "编辑",
+          "annotationType": "S",
+          "kind": "state",
+          "dimension": "Primary action",
+          "priority": "high",
+          "reason": "产品行操作组是当前页面需要评审或验收的功能点。",
+          "evidence": [
+            "稳定锚点：.customer-product-table tbody .table-actions",
+            "可见文本：编辑"
+          ],
+          "selected": true,
+          "skipReason": null
+        },
+        {
+          "candidateId": "CAND-P24-005",
+          "pageKey": "P24",
+          "elementId": "P24-E005",
+          "selector": "[data-action=\"fx-submit-product-row\"]",
+          "strategy": "data",
+          "fallbackText": "草稿提交审核",
+          "annotationType": "A",
+          "kind": "interaction",
+          "dimension": "Primary action",
+          "priority": "high",
+          "reason": "草稿提交审核是当前页面需要评审或验收的功能点。",
+          "evidence": [
+            "稳定锚点：[data-action=\"fx-submit-product-row\"]",
+            "可见文本：草稿提交审核"
+          ],
+          "selected": true,
+          "skipReason": null
+        }
+      ]
+    },
+    {
+      "pageKey": "P25",
+      "title": "产品编辑与查看",
+      "path": "customer.html",
+      "route": "#editor",
+      "candidates": [
+        {
+          "candidateId": "CAND-P25-001",
+          "pageKey": "P25",
+          "elementId": "P25-E001",
+          "selector": ".page-header h1",
+          "strategy": "css",
+          "fallbackText": "产品编辑与查看",
+          "annotationType": "P",
+          "kind": "note",
+          "dimension": "Page overview",
+          "priority": "medium",
+          "reason": "产品编辑与查看页面说明是当前页面需要评审或验收的功能点。",
+          "evidence": [
+            "稳定锚点：.page-header h1",
+            "可见文本：产品编辑与查看"
+          ],
+          "selected": true,
+          "skipReason": null
+        },
+        {
+          "candidateId": "CAND-P25-002",
+          "pageKey": "P25",
+          "elementId": "P25-E002",
+          "selector": "[data-action=\"fx-back-customer-products\"]",
+          "strategy": "data",
+          "fallbackText": "返回",
+          "annotationType": "J",
+          "kind": "flow",
+          "dimension": "Primary action",
+          "priority": "high",
+          "reason": "返回产品列表是当前页面需要评审或验收的功能点。",
+          "evidence": [
+            "稳定锚点：[data-action=\"fx-back-customer-products\"]",
+            "可见文本：返回"
+          ],
+          "selected": true,
+          "skipReason": null
+        },
+        {
+          "candidateId": "CAND-P25-003",
+          "pageKey": "P25",
+          "elementId": "P25-E003",
+          "selector": ".stepper [data-action=\"product-step\"]",
+          "strategy": "css",
+          "fallbackText": "产品信息",
+          "annotationType": "A",
+          "kind": "interaction",
+          "dimension": "Primary action",
+          "priority": "high",
+          "reason": "产品资料模块是当前页面需要评审或验收的功能点。",
+          "evidence": [
+            "稳定锚点：.stepper [data-action=\"product-step\"]",
+            "可见文本：产品信息"
+          ],
+          "selected": true,
+          "skipReason": null
+        },
+        {
+          "candidateId": "CAND-P25-004",
+          "pageKey": "P25",
+          "elementId": "P25-E004",
+          "selector": ".editor-field-list",
+          "strategy": "css",
+          "fallbackText": "字段名",
+          "annotationType": "C",
+          "kind": "interaction",
+          "dimension": "Primary action",
+          "priority": "high",
+          "reason": "字段编辑与展示顺序是当前页面需要评审或验收的功能点。",
+          "evidence": [
+            "稳定锚点：.editor-field-list",
+            "可见文本：字段名"
+          ],
+          "selected": true,
+          "skipReason": null
+        },
+        {
+          "candidateId": "CAND-P25-005",
+          "pageKey": "P25",
+          "elementId": "P25-E005",
+          "selector": "[data-action=\"fx-add-custom\"]",
+          "strategy": "data",
+          "fallbackText": "新增字段",
+          "annotationType": "A",
+          "kind": "interaction",
+          "dimension": "Primary action",
+          "priority": "high",
+          "reason": "新增自定义字段是当前页面需要评审或验收的功能点。",
+          "evidence": [
+            "稳定锚点：[data-action=\"fx-add-custom\"]",
+            "可见文本：新增字段"
+          ],
+          "selected": true,
+          "skipReason": null
+        },
+        {
+          "candidateId": "CAND-P25-006",
+          "pageKey": "P25",
+          "elementId": "P25-E006",
+          "selector": ".drawer-foot",
+          "strategy": "css",
+          "fallbackText": "继续",
+          "annotationType": "A",
+          "kind": "interaction",
+          "dimension": "Primary action",
+          "priority": "high",
+          "reason": "模块上一步与继续是当前页面需要评审或验收的功能点。",
+          "evidence": [
+            "稳定锚点：.drawer-foot",
+            "可见文本：继续"
+          ],
+          "selected": true,
+          "skipReason": null
+        },
+        {
+          "candidateId": "CAND-P25-007",
+          "pageKey": "P25",
+          "elementId": "P25-E007",
+          "selector": "[data-action=\"fx-save-draft\"]",
+          "strategy": "data",
+          "fallbackText": "保存草稿",
+          "annotationType": "A",
+          "kind": "interaction",
+          "dimension": "Primary action",
+          "priority": "high",
+          "reason": "保存草稿是当前页面需要评审或验收的功能点。",
+          "evidence": [
+            "稳定锚点：[data-action=\"fx-save-draft\"]",
+            "可见文本：保存草稿"
+          ],
+          "selected": true,
+          "skipReason": null
+        },
+        {
+          "candidateId": "CAND-P25-008",
+          "pageKey": "P25",
+          "elementId": "P25-E008",
+          "selector": "[data-action=\"fx-preview-current\"]",
+          "strategy": "data",
+          "fallbackText": "预览码",
+          "annotationType": "A",
+          "kind": "interaction",
+          "dimension": "Primary action",
+          "priority": "high",
+          "reason": "预览扫码效果是当前页面需要评审或验收的功能点。",
+          "evidence": [
+            "稳定锚点：[data-action=\"fx-preview-current\"]",
+            "可见文本：预览码"
+          ],
+          "selected": true,
+          "skipReason": null
+        },
+        {
+          "candidateId": "CAND-P25-009",
+          "pageKey": "P25",
+          "elementId": "P25-E009",
+          "selector": "[data-action=\"fx-open-submit\"]",
+          "strategy": "data",
+          "fallbackText": "提交产品审核",
+          "annotationType": "A",
+          "kind": "interaction",
+          "dimension": "Primary action",
+          "priority": "high",
+          "reason": "提交产品审核是当前页面需要评审或验收的功能点。",
+          "evidence": [
+            "稳定锚点：[data-action=\"fx-open-submit\"]",
+            "可见文本：提交产品审核"
+          ],
+          "selected": true,
+          "skipReason": null
+        },
+        {
+          "candidateId": "CAND-P25-010",
+          "pageKey": "P25",
+          "elementId": "P25-E010",
+          "selector": ".modal",
+          "strategy": "css",
+          "fallbackText": "提交审核确认",
+          "annotationType": "R",
+          "kind": "interaction",
+          "dimension": "Surface overview",
+          "priority": "high",
+          "reason": "提交审核确认是当前页面需要评审或验收的功能点。",
+          "evidence": [
+            "稳定锚点：.modal",
+            "可见文本：提交审核确认"
+          ],
+          "selected": true,
+          "skipReason": null,
+          "surfaceId": "surface-P25-submit-product"
+        },
+        {
+          "candidateId": "CAND-P25-011",
+          "pageKey": "P25",
+          "elementId": "P25-E011",
+          "selector": "[data-action=\"fx-confirm-submit\"]",
+          "strategy": "data",
+          "fallbackText": "确认提交",
+          "annotationType": "R",
+          "kind": "interaction",
+          "dimension": "Surface confirm",
+          "priority": "high",
+          "reason": "确认提交是当前页面需要评审或验收的功能点。",
+          "evidence": [
+            "稳定锚点：[data-action=\"fx-confirm-submit\"]",
+            "可见文本：确认提交"
+          ],
+          "selected": true,
+          "skipReason": null,
+          "surfaceId": "surface-P25-submit-product"
+        }
+      ]
+    },
+    {
+      "pageKey": "P26",
+      "title": "撤回申请",
+      "path": "customer.html",
+      "route": "#withdrawals",
+      "candidates": [
+        {
+          "candidateId": "CAND-P26-001",
+          "pageKey": "P26",
+          "elementId": "P26-E001",
+          "selector": ".page-header h1",
+          "strategy": "css",
+          "fallbackText": "撤回申请",
+          "annotationType": "P",
+          "kind": "note",
+          "dimension": "Page overview",
+          "priority": "medium",
+          "reason": "撤回申请页面说明是当前页面需要评审或验收的功能点。",
+          "evidence": [
+            "稳定锚点：.page-header h1",
+            "可见文本：撤回申请"
+          ],
+          "selected": true,
+          "skipReason": null
+        },
+        {
+          "candidateId": "CAND-P26-002",
+          "pageKey": "P26",
+          "elementId": "P26-E002",
+          "selector": "[data-action=\"fx-open-withdraw\"]",
+          "strategy": "data",
+          "fallbackText": "发起申请",
+          "annotationType": "R",
+          "kind": "interaction",
+          "dimension": "Primary action",
+          "priority": "high",
+          "reason": "发起撤回申请是当前页面需要评审或验收的功能点。",
+          "evidence": [
+            "稳定锚点：[data-action=\"fx-open-withdraw\"]",
+            "可见文本：发起申请"
+          ],
+          "selected": true,
+          "skipReason": null
+        },
+        {
+          "candidateId": "CAND-P26-003",
+          "pageKey": "P26",
+          "elementId": "P26-E003",
+          "selector": "[data-action=\"fx-open-customer-calendar\"]",
+          "strategy": "data",
+          "fallbackText": "筛选申请时间",
+          "annotationType": "FILTER",
+          "kind": "interaction",
+          "dimension": "Primary action",
+          "priority": "high",
+          "reason": "撤回申请日期筛选是当前页面需要评审或验收的功能点。",
+          "evidence": [
+            "稳定锚点：[data-action=\"fx-open-customer-calendar\"]",
+            "可见文本：筛选申请时间"
+          ],
+          "selected": true,
+          "skipReason": null
+        },
+        {
+          "candidateId": "CAND-P26-004",
+          "pageKey": "P26",
+          "elementId": "P26-E004",
+          "selector": ".modal",
+          "strategy": "css",
+          "fallbackText": "全量撤回申请",
+          "annotationType": "R",
+          "kind": "interaction",
+          "dimension": "Surface overview",
+          "priority": "high",
+          "reason": "全量撤回申请是当前页面需要评审或验收的功能点。",
+          "evidence": [
+            "稳定锚点：.modal",
+            "可见文本：全量撤回申请"
+          ],
+          "selected": true,
+          "skipReason": null,
+          "surfaceId": "surface-P26-customer-withdraw"
+        },
+        {
+          "candidateId": "CAND-P26-005",
+          "pageKey": "P26",
+          "elementId": "P26-E005",
+          "selector": "#fx-withdraw-product-search",
+          "strategy": "id",
+          "fallbackText": "选择撤回产品",
+          "annotationType": "C",
+          "kind": "interaction",
+          "dimension": "Surface field",
+          "priority": "high",
+          "reason": "选择撤回产品是当前页面需要评审或验收的功能点。",
+          "evidence": [
+            "稳定锚点：#fx-withdraw-product-search",
+            "可见文本：选择撤回产品"
+          ],
+          "selected": true,
+          "skipReason": null,
+          "surfaceId": "surface-P26-customer-withdraw"
+        },
+        {
+          "candidateId": "CAND-P26-006",
+          "pageKey": "P26",
+          "elementId": "P26-E006",
+          "selector": "#fx-withdraw-reason",
+          "strategy": "id",
+          "fallbackText": "撤回原因",
+          "annotationType": "C",
+          "kind": "interaction",
+          "dimension": "Surface field",
+          "priority": "high",
+          "reason": "撤回原因是当前页面需要评审或验收的功能点。",
+          "evidence": [
+            "稳定锚点：#fx-withdraw-reason",
+            "可见文本：撤回原因"
+          ],
+          "selected": true,
+          "skipReason": null,
+          "surfaceId": "surface-P26-customer-withdraw"
+        },
+        {
+          "candidateId": "CAND-P26-007",
+          "pageKey": "P26",
+          "elementId": "P26-E007",
+          "selector": "[data-action=\"fx-confirm-customer-withdraw\"]",
+          "strategy": "data",
+          "fallbackText": "提交撤回申请",
+          "annotationType": "R",
+          "kind": "interaction",
+          "dimension": "Surface confirm",
+          "priority": "high",
+          "reason": "提交撤回申请是当前页面需要评审或验收的功能点。",
+          "evidence": [
+            "稳定锚点：[data-action=\"fx-confirm-customer-withdraw\"]",
+            "可见文本：提交撤回申请"
+          ],
+          "selected": true,
+          "skipReason": null,
+          "surfaceId": "surface-P26-customer-withdraw"
+        }
+      ]
+    },
+    {
+      "pageKey": "P27",
+      "title": "站内信",
+      "path": "customer.html",
+      "route": "#messages",
+      "candidates": [
+        {
+          "candidateId": "CAND-P27-001",
+          "pageKey": "P27",
+          "elementId": "P27-E001",
+          "selector": ".page-header h1",
+          "strategy": "css",
+          "fallbackText": "站内信",
+          "annotationType": "P",
+          "kind": "note",
+          "dimension": "Page overview",
+          "priority": "medium",
+          "reason": "站内信页面说明是当前页面需要评审或验收的功能点。",
+          "evidence": [
+            "稳定锚点：.page-header h1",
+            "可见文本：站内信"
+          ],
+          "selected": true,
+          "skipReason": null
+        },
+        {
+          "candidateId": "CAND-P27-002",
+          "pageKey": "P27",
+          "elementId": "P27-E002",
+          "selector": "#fx-message-search",
+          "strategy": "id",
+          "fallbackText": "搜索消息标题或内容摘要",
+          "annotationType": "FILTER",
+          "kind": "interaction",
+          "dimension": "Primary action",
+          "priority": "high",
+          "reason": "客户消息搜索是当前页面需要评审或验收的功能点。",
+          "evidence": [
+            "稳定锚点：#fx-message-search",
+            "可见文本：搜索消息标题或内容摘要"
+          ],
+          "selected": true,
+          "skipReason": null
+        },
+        {
+          "candidateId": "CAND-P27-003",
+          "pageKey": "P27",
+          "elementId": "P27-E003",
+          "selector": "[data-action=\"fx-mark-selected-read\"]",
+          "strategy": "data",
+          "fallbackText": "标记已读",
+          "annotationType": "A",
+          "kind": "interaction",
+          "dimension": "Primary action",
+          "priority": "high",
+          "reason": "批量标记已读是当前页面需要评审或验收的功能点。",
+          "evidence": [
+            "稳定锚点：[data-action=\"fx-mark-selected-read\"]",
+            "可见文本：标记已读"
+          ],
+          "selected": true,
+          "skipReason": null
+        },
+        {
+          "candidateId": "CAND-P27-004",
+          "pageKey": "P27",
+          "elementId": "P27-E004",
+          "selector": "[data-action=\"fx-delete-selected-messages\"]",
+          "strategy": "data",
+          "fallbackText": "删除",
+          "annotationType": "R",
+          "kind": "interaction",
+          "dimension": "Primary action",
+          "priority": "high",
+          "reason": "批量删除消息是当前页面需要评审或验收的功能点。",
+          "evidence": [
+            "稳定锚点：[data-action=\"fx-delete-selected-messages\"]",
+            "可见文本：删除"
+          ],
+          "selected": true,
+          "skipReason": null
+        },
+        {
+          "candidateId": "CAND-P27-005",
+          "pageKey": "P27",
+          "elementId": "P27-E005",
+          "selector": "[data-action=\"fx-read-message\"]",
+          "strategy": "data",
+          "fallbackText": "消息",
+          "annotationType": "J",
+          "kind": "flow",
+          "dimension": "Primary action",
+          "priority": "high",
+          "reason": "阅读消息是当前页面需要评审或验收的功能点。",
+          "evidence": [
+            "稳定锚点：[data-action=\"fx-read-message\"]",
+            "可见文本：消息"
+          ],
+          "selected": true,
+          "skipReason": null
+        }
+      ]
+    },
+    {
+      "pageKey": "P28",
+      "title": "个人设置",
+      "path": "customer.html",
+      "route": "#settings",
+      "candidates": [
+        {
+          "candidateId": "CAND-P28-001",
+          "pageKey": "P28",
+          "elementId": "P28-E001",
+          "selector": ".page-header h1",
+          "strategy": "css",
+          "fallbackText": "个人设置",
+          "annotationType": "P",
+          "kind": "note",
+          "dimension": "Page overview",
+          "priority": "medium",
+          "reason": "个人设置页面说明是当前页面需要评审或验收的功能点。",
+          "evidence": [
+            "稳定锚点：.page-header h1",
+            "可见文本：个人设置"
+          ],
+          "selected": true,
+          "skipReason": null
+        },
+        {
+          "candidateId": "CAND-P28-002",
+          "pageKey": "P28",
+          "elementId": "P28-E002",
+          "selector": "#fx-current-password",
+          "strategy": "id",
+          "fallbackText": "输入当前密码",
+          "annotationType": "R",
+          "kind": "interaction",
+          "dimension": "Primary action",
+          "priority": "high",
+          "reason": "客户密码规则是当前页面需要评审或验收的功能点。",
+          "evidence": [
+            "稳定锚点：#fx-current-password",
+            "可见文本：输入当前密码"
+          ],
+          "selected": true,
+          "skipReason": null
+        },
+        {
+          "candidateId": "CAND-P28-003",
+          "pageKey": "P28",
+          "elementId": "P28-E003",
+          "selector": "[data-action=\"fx-save-password\"]",
+          "strategy": "data",
+          "fallbackText": "保存客户密码",
+          "annotationType": "A",
+          "kind": "interaction",
+          "dimension": "Primary action",
+          "priority": "high",
+          "reason": "保存客户密码是当前页面需要评审或验收的功能点。",
+          "evidence": [
+            "稳定锚点：[data-action=\"fx-save-password\"]",
+            "可见文本：保存客户密码"
+          ],
+          "selected": true,
+          "skipReason": null
+        },
+        {
+          "candidateId": "CAND-P28-004",
+          "pageKey": "P28",
+          "elementId": "P28-E004",
+          "selector": "[data-action=\"fx-logout\"]",
+          "strategy": "data",
+          "fallbackText": "退出登录",
+          "annotationType": "J",
+          "kind": "flow",
+          "dimension": "Primary action",
+          "priority": "high",
+          "reason": "退出客户后台是当前页面需要评审或验收的功能点。",
+          "evidence": [
+            "稳定锚点：[data-action=\"fx-logout\"]",
+            "可见文本：退出登录"
+          ],
+          "selected": true,
+          "skipReason": null
+        }
+      ]
+    },
+    {
+      "pageKey": "P31",
+      "title": "扫码展示端",
+      "path": "scan.html",
+      "route": "/scan.html",
+      "candidates": [
+        {
+          "candidateId": "CAND-P31-001",
+          "pageKey": "P31",
+          "elementId": "P31-E001",
+          "selector": ".scan-shell .mobile-topbar h1",
+          "strategy": "css",
+          "fallbackText": "扫码展示端",
+          "annotationType": "P",
+          "kind": "note",
+          "dimension": "Page overview",
+          "priority": "medium",
+          "reason": "扫码展示端页面说明是当前页面需要评审或验收的功能点。",
+          "evidence": [
+            "稳定锚点：.scan-shell .mobile-topbar h1",
+            "可见文本：扫码展示端"
+          ],
+          "selected": true,
+          "skipReason": null
+        },
+        {
+          "candidateId": "CAND-P31-002",
+          "pageKey": "P31",
+          "elementId": "P31-E002",
+          "selector": ".product-hero[data-action=\"fx-scan-image\"]",
+          "strategy": "css",
+          "fallbackText": "产品图片",
+          "annotationType": "A",
+          "kind": "interaction",
+          "dimension": "Primary action",
+          "priority": "high",
+          "reason": "查看产品主图是当前页面需要评审或验收的功能点。",
+          "evidence": [
+            "稳定锚点：.product-hero[data-action=\"fx-scan-image\"]",
+            "可见文本：产品图片"
+          ],
+          "selected": true,
+          "skipReason": null
+        },
+        {
+          "candidateId": "CAND-P31-003",
+          "pageKey": "P31",
+          "elementId": "P31-E003",
+          "selector": ".tabs [data-action=\"scan-tab\"]",
+          "strategy": "css",
+          "fallbackText": "产品",
+          "annotationType": "A",
+          "kind": "interaction",
+          "dimension": "Primary action",
+          "priority": "high",
+          "reason": "切换溯源模块是当前页面需要评审或验收的功能点。",
+          "evidence": [
+            "稳定锚点：.tabs [data-action=\"scan-tab\"]",
+            "可见文本：产品"
+          ],
+          "selected": true,
+          "skipReason": null
+        },
+        {
+          "candidateId": "CAND-P31-004",
+          "pageKey": "P31",
+          "elementId": "P31-E004",
+          "selector": "[data-action=\"fx-toggle-scan-fields\"]",
+          "strategy": "data",
+          "fallbackText": "展开其余",
+          "annotationType": "A",
+          "kind": "interaction",
+          "dimension": "Primary action",
+          "priority": "high",
+          "reason": "展开更多字段是当前页面需要评审或验收的功能点。",
+          "evidence": [
+            "稳定锚点：[data-action=\"fx-toggle-scan-fields\"]",
+            "可见文本：展开其余"
+          ],
+          "selected": true,
+          "skipReason": null
+        },
+        {
+          "candidateId": "CAND-P31-005",
+          "pageKey": "P31",
+          "elementId": "P31-E005",
+          "selector": ".scan-ordered-media",
+          "strategy": "css",
+          "fallbackText": "图片",
+          "annotationType": "C",
+          "kind": "interaction",
+          "dimension": "Primary action",
+          "priority": "high",
+          "reason": "查看公开附件是当前页面需要评审或验收的功能点。",
+          "evidence": [
+            "稳定锚点：.scan-ordered-media",
+            "可见文本：图片"
+          ],
+          "selected": true,
+          "skipReason": null
+        },
+        {
+          "candidateId": "CAND-P31-006",
+          "pageKey": "P31",
+          "elementId": "P31-E006",
+          "selector": ".scan-prototype-links",
+          "strategy": "css",
+          "fallbackText": "已激活",
+          "annotationType": "S",
+          "kind": "state",
+          "dimension": "Primary action",
+          "priority": "high",
+          "reason": "扫码状态原型切换是当前页面需要评审或验收的功能点。",
+          "evidence": [
+            "稳定锚点：.scan-prototype-links",
+            "可见文本：已激活"
+          ],
+          "selected": true,
+          "skipReason": null
+        }
+      ]
+    }
+  ]
+}

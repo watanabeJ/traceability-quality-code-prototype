@@ -1,0 +1,51 @@
+{
+  "productName": "溯源质控码平台产品说明书",
+  "productType": "enterprise_app",
+  "productForms": [
+    "B端应用"
+  ],
+  "primaryUsers": [
+    "业务用户"
+  ],
+  "enabledAnnotationTypes": [
+    "P",
+    "E",
+    "C",
+    "A",
+    "J",
+    "S",
+    "R",
+    "PERM",
+    "DATA"
+  ],
+  "roles": [],
+  "coreObjects": [],
+  "coreFlows": [],
+  "pages": [
+    {
+      "pageKey": "P01",
+      "pageName": "溯源质控码平台 · 客户后台",
+      "purpose": "帮助用户在 溯源质控码平台产品说明书 中完成与「溯源质控码平台 · 客户后台」相关的业务操作。",
+      "primaryTasks": [],
+      "mainUser": ""
+    },
+    {
+      "pageKey": "P02",
+      "pageName": "溯源质控码平台 · 运营方后台",
+      "purpose": "帮助用户在 溯源质控码平台产品说明书 中完成与「溯源质控码平台 · 运营方后台」相关的业务操作。",
+      "primaryTasks": [],
+      "mainUser": ""
+    },
+    {
+      "pageKey": "P03",
+      "pageName": "溯源质控码平台 · 扫码展示端",
+      "purpose": "帮助用户在 溯源质控码平台产品说明书 中完成与「溯源质控码平台 · 扫码展示端」相关的业务操作。",
+      "primaryTasks": [],
+      "mainUser": ""
+    }
+  ],
+  "generatedAt": "2026-08-04T16:00:45Z",
+  "sources": [
+    "C:\\Users\\钟长鸿\\Documents\\溯源系统\\输出\\溯源质控码平台产品说明书_v1.0.md"
+  ]
+}

@@ -1,0 +1,1578 @@
+{
+  "version": 2,
+  "root": "C:\\Users\\钟长鸿\\Documents\\溯源系统\\prototype",
+  "scanMode": "source-route-index",
+  "surfaces": [
+    {
+      "id": "surface-P02-new-customer",
+      "type": "modal",
+      "name": "新建客户弹窗",
+      "pageKey": "P02",
+      "triggerSelector": "[data-action=\"fx-new-customer\"]",
+      "openSelector": ".modal-backdrop .modal",
+      "containerSelector": ".modal-body",
+      "titleText": [
+        "新建客户账号"
+      ],
+      "visibility": "on-trigger",
+      "description": "录入客户基本资料、登录凭据与证件附件。"
+    },
+    {
+      "id": "surface-P02-edit-customer",
+      "type": "modal",
+      "name": "编辑客户弹窗",
+      "pageKey": "P02",
+      "triggerSelector": "[data-action=\"fx-edit-customer\"]",
+      "openSelector": ".modal-backdrop .modal",
+      "containerSelector": ".modal-body",
+      "titleText": [
+        "编辑客户账号"
+      ],
+      "visibility": "on-trigger",
+      "description": "维护客户资料、附件和密码。"
+    },
+    {
+      "id": "surface-P05-bind-product",
+      "type": "modal",
+      "name": "运营绑定产品弹窗",
+      "pageKey": "P05",
+      "triggerSelector": "[data-action=\"fx-ops-bind-order\"]",
+      "openSelector": ".modal-backdrop .modal",
+      "containerSelector": ".modal-body",
+      "titleText": [
+        "绑定产品",
+        "绑定已激活产品"
+      ],
+      "visibility": "on-trigger",
+      "description": "为订单剩余码量直接绑定已激活产品。"
+    },
+    {
+      "id": "surface-P08-approve-activation",
+      "type": "modal",
+      "name": "审核通过并激活弹窗",
+      "pageKey": "P08",
+      "triggerSelector": "[data-action=\"fx-open-activation\"]",
+      "openSelector": ".modal-backdrop .modal",
+      "containerSelector": ".modal-body",
+      "titleText": [
+        "审核通过并激活"
+      ],
+      "visibility": "on-trigger",
+      "description": "选择订单并分配首次激活码段。"
+    },
+    {
+      "id": "surface-P08-reject-product",
+      "type": "modal",
+      "name": "驳回产品资料弹窗",
+      "pageKey": "P08",
+      "triggerSelector": "[data-action=\"fx-open-reject\"]",
+      "openSelector": ".modal-backdrop .modal",
+      "containerSelector": ".modal-body",
+      "titleText": [
+        "驳回产品资料"
+      ],
+      "visibility": "on-trigger",
+      "description": "填写明确原因并退回客户修改。"
+    },
+    {
+      "id": "surface-P09-reject-bind-request",
+      "type": "modal",
+      "name": "驳回绑定申请弹窗",
+      "pageKey": "P09",
+      "triggerSelector": "[data-action=\"fx-reject-bind-request\"]",
+      "openSelector": ".modal-backdrop .modal",
+      "containerSelector": ".modal-body",
+      "titleText": [
+        "驳回绑定申请"
+      ],
+      "visibility": "on-trigger",
+      "description": "填写处理原因并退回申请。"
+    },
+    {
+      "id": "surface-P10-withdraw-decision",
+      "type": "modal",
+      "name": "撤回审核决策弹窗",
+      "pageKey": "P10",
+      "triggerSelector": "[data-action=\"fx-approve-withdrawal\"]",
+      "openSelector": ".modal-backdrop .modal",
+      "containerSelector": ".modal-body",
+      "titleText": [
+        "通过撤回申请",
+        "驳回撤回申请"
+      ],
+      "visibility": "on-trigger",
+      "description": "确认全量重置或填写驳回原因。"
+    },
+    {
+      "id": "surface-P11-new-operator",
+      "type": "modal",
+      "name": "新建运营账号弹窗",
+      "pageKey": "P11",
+      "triggerSelector": "[data-action=\"fx-new-operator\"]",
+      "openSelector": ".modal-backdrop .modal",
+      "containerSelector": ".modal-body",
+      "titleText": [
+        "新建运营账号"
+      ],
+      "visibility": "on-trigger",
+      "description": "创建内部运营登录账号。"
+    },
+    {
+      "id": "surface-P22-request-bind",
+      "type": "modal",
+      "name": "申请绑定产品弹窗",
+      "pageKey": "P22",
+      "triggerSelector": "[data-action=\"fx-customer-bind-order\"]",
+      "openSelector": ".modal-backdrop .modal",
+      "containerSelector": ".modal-body",
+      "titleText": [
+        "申请绑定产品"
+      ],
+      "visibility": "on-trigger",
+      "description": "客户选择已激活产品并申请追加码量。"
+    },
+    {
+      "id": "surface-P25-submit-product",
+      "type": "confirm",
+      "name": "提交产品审核确认",
+      "pageKey": "P25",
+      "triggerSelector": "[data-action=\"fx-open-submit\"]",
+      "openSelector": ".modal-backdrop .modal",
+      "containerSelector": ".modal-body",
+      "titleText": [
+        "提交产品审核"
+      ],
+      "visibility": "on-trigger",
+      "description": "确认产品、批次、资料模块和附件后提交。"
+    },
+    {
+      "id": "surface-P26-customer-withdraw",
+      "type": "modal",
+      "name": "发起全量撤回申请弹窗",
+      "pageKey": "P26",
+      "triggerSelector": "[data-action=\"fx-open-withdraw\"]",
+      "openSelector": ".modal-backdrop .modal",
+      "containerSelector": ".modal-body",
+      "titleText": [
+        "发起全量撤回申请"
+      ],
+      "visibility": "on-trigger",
+      "description": "选择产品并说明撤回原因。"
+    }
+  ],
+  "pages": [
+    {
+      "pageKey": "P01",
+      "title": "运营概览",
+      "path": "index.html",
+      "route": "#overview",
+      "role": [
+        "运营人员"
+      ],
+      "elements": [
+        {
+          "elementId": "P01-E001",
+          "selector": ".page-header h1",
+          "tag": "button",
+          "type": "note",
+          "text": "运营概览",
+          "visible": true
+        },
+        {
+          "elementId": "P01-E002",
+          "selector": "[data-action=\"go-reviews\"]",
+          "tag": "button",
+          "type": "flow",
+          "text": "处理待审核",
+          "visible": true
+        },
+        {
+          "elementId": "P01-E003",
+          "selector": ".metric-strip .metric-link",
+          "tag": "button",
+          "type": "flow",
+          "text": "订单总量",
+          "visible": true
+        },
+        {
+          "elementId": "P01-E004",
+          "selector": ".section-row .panel:first-child tbody [data-action=\"fx-order-detail\"]",
+          "tag": "button",
+          "type": "flow",
+          "text": "ORD-",
+          "visible": true
+        },
+        {
+          "elementId": "P01-E005",
+          "selector": ".section-row .panel:last-child .list-button",
+          "tag": "button",
+          "type": "flow",
+          "text": "等待审核",
+          "visible": true
+        }
+      ]
+    },
+    {
+      "pageKey": "P02",
+      "title": "客户列表",
+      "path": "index.html",
+      "route": "#customers",
+      "role": [
+        "运营人员"
+      ],
+      "elements": [
+        {
+          "elementId": "P02-E001",
+          "selector": ".page-header h1",
+          "tag": "button",
+          "type": "note",
+          "text": "客户列表",
+          "visible": true
+        },
+        {
+          "elementId": "P02-E002",
+          "selector": "#fx-customer-search",
+          "tag": "input",
+          "type": "interaction",
+          "text": "搜索客户名称、账号或电话",
+          "visible": true
+        },
+        {
+          "elementId": "P02-E003",
+          "selector": "[data-action=\"fx-export-customers\"]",
+          "tag": "button",
+          "type": "interaction",
+          "text": "导出",
+          "visible": true
+        },
+        {
+          "elementId": "P02-E004",
+          "selector": ".customer-account-table tbody .table-actions",
+          "tag": "button",
+          "type": "permission",
+          "text": "详情",
+          "visible": true
+        },
+        {
+          "elementId": "P02-E005",
+          "selector": ".modal",
+          "tag": "section",
+          "type": "interaction",
+          "text": "新建客户",
+          "visible": false,
+          "surfaceId": "surface-P02-new-customer"
+        },
+        {
+          "elementId": "P02-E006",
+          "selector": "#fx-customer-account",
+          "tag": "input",
+          "type": "interaction",
+          "text": "登录账号",
+          "visible": false,
+          "surfaceId": "surface-P02-new-customer"
+        },
+        {
+          "elementId": "P02-E007",
+          "selector": "#fx-customer-license",
+          "tag": "input",
+          "type": "interaction",
+          "text": "客户证件附件",
+          "visible": false,
+          "surfaceId": "surface-P02-new-customer"
+        },
+        {
+          "elementId": "P02-E008",
+          "selector": "[data-action=\"fx-confirm-customer\"]",
+          "tag": "button",
+          "type": "interaction",
+          "text": "保存客户",
+          "visible": false,
+          "surfaceId": "surface-P02-new-customer"
+        },
+        {
+          "elementId": "P02-E009",
+          "selector": ".modal",
+          "tag": "section",
+          "type": "interaction",
+          "text": "编辑客户",
+          "visible": false,
+          "surfaceId": "surface-P02-edit-customer"
+        },
+        {
+          "elementId": "P02-E010",
+          "selector": "[data-action=\"fx-reset-customer-password\"]",
+          "tag": "button",
+          "type": "interaction",
+          "text": "重置客户密码",
+          "visible": false,
+          "surfaceId": "surface-P02-edit-customer"
+        },
+        {
+          "elementId": "P02-E011",
+          "selector": "[data-action=\"fx-confirm-customer\"]",
+          "tag": "button",
+          "type": "interaction",
+          "text": "保存客户修改",
+          "visible": false,
+          "surfaceId": "surface-P02-edit-customer"
+        }
+      ]
+    },
+    {
+      "pageKey": "P03",
+      "title": "客户详情",
+      "path": "index.html",
+      "route": "#customer-detail",
+      "role": [
+        "运营人员"
+      ],
+      "elements": [
+        {
+          "elementId": "P03-E001",
+          "selector": ".page-header h1",
+          "tag": "button",
+          "type": "note",
+          "text": "客户详情",
+          "visible": true
+        },
+        {
+          "elementId": "P03-E002",
+          "selector": "[data-action=\"fx-back-customers\"]",
+          "tag": "button",
+          "type": "flow",
+          "text": "返回客户列表",
+          "visible": true
+        },
+        {
+          "elementId": "P03-E003",
+          "selector": "[data-action=\"fx-customer-create-order\"]",
+          "tag": "button",
+          "type": "flow",
+          "text": "创建订单",
+          "visible": true
+        },
+        {
+          "elementId": "P03-E004",
+          "selector": "[data-action=\"fx-view-customer-products\"]",
+          "tag": "button",
+          "type": "flow",
+          "text": "已激活产品",
+          "visible": true
+        },
+        {
+          "elementId": "P03-E005",
+          "selector": ".customer-detail-page tbody .table-actions",
+          "tag": "button",
+          "type": "interaction",
+          "text": "绑定产品",
+          "visible": true
+        }
+      ]
+    },
+    {
+      "pageKey": "P04",
+      "title": "创建订单",
+      "path": "index.html",
+      "route": "#codes",
+      "role": [
+        "运营人员"
+      ],
+      "elements": [
+        {
+          "elementId": "P04-E001",
+          "selector": ".page-header h1",
+          "tag": "button",
+          "type": "note",
+          "text": "创建订单",
+          "visible": true
+        },
+        {
+          "elementId": "P04-E002",
+          "selector": "#fx-qr-customer-search",
+          "tag": "input",
+          "type": "interaction",
+          "text": "搜索客户名称",
+          "visible": true
+        },
+        {
+          "elementId": "P04-E003",
+          "selector": "#fx-qr-amount",
+          "tag": "input",
+          "type": "interaction",
+          "text": "生成数量",
+          "visible": true
+        },
+        {
+          "elementId": "P04-E004",
+          "selector": "#fx-qr-style",
+          "tag": "select",
+          "type": "interaction",
+          "text": "二维码样式",
+          "visible": true
+        },
+        {
+          "elementId": "P04-E005",
+          "selector": "[data-action=\"fx-create-order\"]",
+          "tag": "button",
+          "type": "interaction",
+          "text": "创建订单",
+          "visible": true
+        },
+        {
+          "elementId": "P04-E006",
+          "selector": ".wizard-actions",
+          "tag": "button",
+          "type": "interaction",
+          "text": "完成",
+          "visible": true
+        }
+      ]
+    },
+    {
+      "pageKey": "P05",
+      "title": "订单码量台账",
+      "path": "index.html",
+      "route": "#orders",
+      "role": [
+        "运营人员"
+      ],
+      "elements": [
+        {
+          "elementId": "P05-E001",
+          "selector": ".page-header h1",
+          "tag": "button",
+          "type": "note",
+          "text": "订单码量台账",
+          "visible": true
+        },
+        {
+          "elementId": "P05-E002",
+          "selector": "#fx-order-search",
+          "tag": "input",
+          "type": "interaction",
+          "text": "客户名称、订单号或备注",
+          "visible": true
+        },
+        {
+          "elementId": "P05-E003",
+          "selector": "[data-action=\"fx-open-order-calendar\"]",
+          "tag": "button",
+          "type": "interaction",
+          "text": "筛选创建时间",
+          "visible": true
+        },
+        {
+          "elementId": "P05-E004",
+          "selector": ".order-table thead [data-action^=\"fx-sort-orders\"]",
+          "tag": "button",
+          "type": "interaction",
+          "text": "未排序",
+          "visible": true
+        },
+        {
+          "elementId": "P05-E005",
+          "selector": "[data-action=\"fx-view-order-bind-requests\"]",
+          "tag": "button",
+          "type": "interaction",
+          "text": "查看绑定申请中数量",
+          "visible": true
+        },
+        {
+          "elementId": "P05-E006",
+          "selector": ".order-table tbody .table-actions",
+          "tag": "button",
+          "type": "interaction",
+          "text": "详情",
+          "visible": true
+        },
+        {
+          "elementId": "P05-E007",
+          "selector": "[data-action=\"fx-find-customer-account\"]",
+          "tag": "button",
+          "type": "flow",
+          "text": "云岭",
+          "visible": true
+        },
+        {
+          "elementId": "P05-E008",
+          "selector": ".modal",
+          "tag": "section",
+          "type": "interaction",
+          "text": "订单绑定产品",
+          "visible": false,
+          "surfaceId": "surface-P05-bind-product"
+        },
+        {
+          "elementId": "P05-E009",
+          "selector": "#fx-ops-bind-product-search",
+          "tag": "input",
+          "type": "interaction",
+          "text": "搜索绑定产品",
+          "visible": false,
+          "surfaceId": "surface-P05-bind-product"
+        },
+        {
+          "elementId": "P05-E010",
+          "selector": "#fx-ops-bind-amount",
+          "tag": "input",
+          "type": "interaction",
+          "text": "本次绑定数量",
+          "visible": false,
+          "surfaceId": "surface-P05-bind-product"
+        },
+        {
+          "elementId": "P05-E011",
+          "selector": "[data-action=\"fx-confirm-ops-bind\"]",
+          "tag": "button",
+          "type": "interaction",
+          "text": "确认绑定",
+          "visible": false,
+          "surfaceId": "surface-P05-bind-product"
+        }
+      ]
+    },
+    {
+      "pageKey": "P06",
+      "title": "订单详情",
+      "path": "index.html",
+      "route": "#order-detail",
+      "role": [
+        "运营人员"
+      ],
+      "elements": [
+        {
+          "elementId": "P06-E001",
+          "selector": ".page-header h1",
+          "tag": "button",
+          "type": "note",
+          "text": "订单详情",
+          "visible": true
+        },
+        {
+          "elementId": "P06-E002",
+          "selector": "[data-action=\"fx-back-orders\"]",
+          "tag": "button",
+          "type": "flow",
+          "text": "返回订单台账",
+          "visible": true
+        },
+        {
+          "elementId": "P06-E003",
+          "selector": "[data-action=\"fx-ops-bind-order\"]",
+          "tag": "button",
+          "type": "interaction",
+          "text": "绑定产品",
+          "visible": true
+        },
+        {
+          "elementId": "P06-E004",
+          "selector": "[data-action=\"fx-open-activation-product\"]",
+          "tag": "button",
+          "type": "flow",
+          "text": "产品",
+          "visible": true
+        },
+        {
+          "elementId": "P06-E005",
+          "selector": "[data-action=\"fx-view-activation-withdrawal\"]",
+          "tag": "button",
+          "type": "flow",
+          "text": "已重置",
+          "visible": true
+        }
+      ]
+    },
+    {
+      "pageKey": "P07",
+      "title": "产品审核",
+      "path": "index.html",
+      "route": "#reviews",
+      "role": [
+        "运营人员"
+      ],
+      "elements": [
+        {
+          "elementId": "P07-E001",
+          "selector": ".page-header h1",
+          "tag": "button",
+          "type": "note",
+          "text": "产品审核",
+          "visible": true
+        },
+        {
+          "elementId": "P07-E002",
+          "selector": "#fx-review-search",
+          "tag": "input",
+          "type": "interaction",
+          "text": "产品、客户或批次",
+          "visible": true
+        },
+        {
+          "elementId": "P07-E003",
+          "selector": "[data-table-filter=\"productCategory\"]",
+          "tag": "select",
+          "type": "interaction",
+          "text": "筛选产品大类",
+          "visible": true
+        },
+        {
+          "elementId": "P07-E004",
+          "selector": "[data-table-filter=\"reviewStatus\"]",
+          "tag": "select",
+          "type": "interaction",
+          "text": "筛选状态",
+          "visible": true
+        },
+        {
+          "elementId": "P07-E005",
+          "selector": "[data-action=\"open-review\"]",
+          "tag": "button",
+          "type": "flow",
+          "text": "审核",
+          "visible": true
+        },
+        {
+          "elementId": "P07-E006",
+          "selector": "table tbody .table-actions",
+          "tag": "button",
+          "type": "permission",
+          "text": "编辑",
+          "visible": true
+        }
+      ]
+    },
+    {
+      "pageKey": "P08",
+      "title": "产品审核详情",
+      "path": "index.html",
+      "route": "#review-detail",
+      "role": [
+        "运营人员"
+      ],
+      "elements": [
+        {
+          "elementId": "P08-E001",
+          "selector": ".page-header h1",
+          "tag": "button",
+          "type": "note",
+          "text": "产品审核详情",
+          "visible": true
+        },
+        {
+          "elementId": "P08-E002",
+          "selector": "[data-action=\"fx-back-reviews\"]",
+          "tag": "button",
+          "type": "flow",
+          "text": "返回产品审核",
+          "visible": true
+        },
+        {
+          "elementId": "P08-E003",
+          "selector": ".stepper [data-action=\"product-step\"]",
+          "tag": "button",
+          "type": "interaction",
+          "text": "产品信息",
+          "visible": true
+        },
+        {
+          "elementId": "P08-E004",
+          "selector": "[data-action=\"fx-preview-current\"]",
+          "tag": "button",
+          "type": "interaction",
+          "text": "预览码",
+          "visible": true
+        },
+        {
+          "elementId": "P08-E005",
+          "selector": "[data-action=\"fx-ops-edit-product\"]",
+          "tag": "button",
+          "type": "permission",
+          "text": "编辑材料",
+          "visible": true
+        },
+        {
+          "elementId": "P08-E006",
+          "selector": ".modal",
+          "tag": "section",
+          "type": "interaction",
+          "text": "通过并激活",
+          "visible": false,
+          "surfaceId": "surface-P08-approve-activation"
+        },
+        {
+          "elementId": "P08-E007",
+          "selector": "#fx-activation-order-search",
+          "tag": "input",
+          "type": "interaction",
+          "text": "激活订单",
+          "visible": false,
+          "surfaceId": "surface-P08-approve-activation"
+        },
+        {
+          "elementId": "P08-E008",
+          "selector": "#fx-activation-amount",
+          "tag": "input",
+          "type": "interaction",
+          "text": "本次激活数量",
+          "visible": false,
+          "surfaceId": "surface-P08-approve-activation"
+        },
+        {
+          "elementId": "P08-E009",
+          "selector": "[data-action=\"fx-confirm-activation\"]",
+          "tag": "button",
+          "type": "interaction",
+          "text": "确认通过并激活",
+          "visible": false,
+          "surfaceId": "surface-P08-approve-activation"
+        },
+        {
+          "elementId": "P08-E010",
+          "selector": ".modal",
+          "tag": "section",
+          "type": "interaction",
+          "text": "驳回产品资料",
+          "visible": false,
+          "surfaceId": "surface-P08-reject-product"
+        },
+        {
+          "elementId": "P08-E011",
+          "selector": "#fx-reject-reason",
+          "tag": "input",
+          "type": "interaction",
+          "text": "驳回原因",
+          "visible": false,
+          "surfaceId": "surface-P08-reject-product"
+        },
+        {
+          "elementId": "P08-E012",
+          "selector": "[data-action=\"fx-confirm-reject\"]",
+          "tag": "button",
+          "type": "interaction",
+          "text": "确认驳回",
+          "visible": false,
+          "surfaceId": "surface-P08-reject-product"
+        }
+      ]
+    },
+    {
+      "pageKey": "P09",
+      "title": "绑定审核",
+      "path": "index.html",
+      "route": "#bind-requests",
+      "role": [
+        "运营人员"
+      ],
+      "elements": [
+        {
+          "elementId": "P09-E001",
+          "selector": ".page-header h1",
+          "tag": "button",
+          "type": "note",
+          "text": "绑定审核",
+          "visible": true
+        },
+        {
+          "elementId": "P09-E002",
+          "selector": "#fx-bind-request-search",
+          "tag": "input",
+          "type": "interaction",
+          "text": "客户、订单或产品",
+          "visible": true
+        },
+        {
+          "elementId": "P09-E003",
+          "selector": "[data-action=\"fx-order-detail\"]",
+          "tag": "button",
+          "type": "flow",
+          "text": "ORD-",
+          "visible": true
+        },
+        {
+          "elementId": "P09-E004",
+          "selector": "table tbody .table-actions",
+          "tag": "button",
+          "type": "interaction",
+          "text": "通过",
+          "visible": true
+        },
+        {
+          "elementId": "P09-E005",
+          "selector": ".modal",
+          "tag": "section",
+          "type": "interaction",
+          "text": "驳回绑定申请",
+          "visible": false,
+          "surfaceId": "surface-P09-reject-bind-request"
+        },
+        {
+          "elementId": "P09-E006",
+          "selector": "#fx-bind-request-reason",
+          "tag": "input",
+          "type": "interaction",
+          "text": "绑定驳回原因",
+          "visible": false,
+          "surfaceId": "surface-P09-reject-bind-request"
+        },
+        {
+          "elementId": "P09-E007",
+          "selector": "[data-action=\"fx-confirm-bind-request-reject\"]",
+          "tag": "button",
+          "type": "interaction",
+          "text": "确认驳回绑定",
+          "visible": false,
+          "surfaceId": "surface-P09-reject-bind-request"
+        }
+      ]
+    },
+    {
+      "pageKey": "P10",
+      "title": "撤回审核",
+      "path": "index.html",
+      "route": "#withdrawals",
+      "role": [
+        "运营人员"
+      ],
+      "elements": [
+        {
+          "elementId": "P10-E001",
+          "selector": ".page-header h1",
+          "tag": "button",
+          "type": "note",
+          "text": "撤回审核",
+          "visible": true
+        },
+        {
+          "elementId": "P10-E002",
+          "selector": "#fx-withdrawal-search",
+          "tag": "input",
+          "type": "interaction",
+          "text": "申请编号、产品或客户",
+          "visible": true
+        },
+        {
+          "elementId": "P10-E003",
+          "selector": "table tbody td:last-child",
+          "tag": "button",
+          "type": "interaction",
+          "text": "通过",
+          "visible": true
+        },
+        {
+          "elementId": "P10-E004",
+          "selector": ".modal",
+          "tag": "section",
+          "type": "interaction",
+          "text": "撤回审核决策",
+          "visible": false,
+          "surfaceId": "surface-P10-withdraw-decision"
+        },
+        {
+          "elementId": "P10-E005",
+          "selector": "[data-action=\"fx-confirm-withdraw-decision\"]",
+          "tag": "button",
+          "type": "interaction",
+          "text": "确认撤回处理",
+          "visible": false,
+          "surfaceId": "surface-P10-withdraw-decision"
+        }
+      ]
+    },
+    {
+      "pageKey": "P11",
+      "title": "运营账号管理",
+      "path": "index.html",
+      "route": "#operators",
+      "role": [
+        "运营人员"
+      ],
+      "elements": [
+        {
+          "elementId": "P11-E001",
+          "selector": ".page-header h1",
+          "tag": "button",
+          "type": "note",
+          "text": "运营账号管理",
+          "visible": true
+        },
+        {
+          "elementId": "P11-E002",
+          "selector": "#fx-operator-search",
+          "tag": "input",
+          "type": "interaction",
+          "text": "搜索账号或姓名",
+          "visible": true
+        },
+        {
+          "elementId": "P11-E003",
+          "selector": "table tbody .table-actions",
+          "tag": "button",
+          "type": "permission",
+          "text": "编辑",
+          "visible": true
+        },
+        {
+          "elementId": "P11-E004",
+          "selector": ".modal",
+          "tag": "section",
+          "type": "interaction",
+          "text": "新建运营账号",
+          "visible": false,
+          "surfaceId": "surface-P11-new-operator"
+        },
+        {
+          "elementId": "P11-E005",
+          "selector": "[data-action=\"fx-confirm-operator\"]",
+          "tag": "button",
+          "type": "interaction",
+          "text": "保存运营账号",
+          "visible": false,
+          "surfaceId": "surface-P11-new-operator"
+        }
+      ]
+    },
+    {
+      "pageKey": "P12",
+      "title": "站内信",
+      "path": "index.html",
+      "route": "#messages",
+      "role": [
+        "运营人员"
+      ],
+      "elements": [
+        {
+          "elementId": "P12-E001",
+          "selector": ".page-header h1",
+          "tag": "button",
+          "type": "note",
+          "text": "站内信",
+          "visible": true
+        },
+        {
+          "elementId": "P12-E002",
+          "selector": "#fx-message-search",
+          "tag": "input",
+          "type": "interaction",
+          "text": "搜索消息标题或内容摘要",
+          "visible": true
+        },
+        {
+          "elementId": "P12-E003",
+          "selector": "#fx-message-select-all",
+          "tag": "input",
+          "type": "interaction",
+          "text": "勾选当前筛选的全部消息",
+          "visible": true
+        },
+        {
+          "elementId": "P12-E004",
+          "selector": "[data-action=\"fx-delete-selected-messages\"]",
+          "tag": "button",
+          "type": "interaction",
+          "text": "删除",
+          "visible": true
+        },
+        {
+          "elementId": "P12-E005",
+          "selector": "[data-action=\"fx-read-message\"]",
+          "tag": "button",
+          "type": "flow",
+          "text": "消息",
+          "visible": true
+        }
+      ]
+    },
+    {
+      "pageKey": "P13",
+      "title": "个人设置",
+      "path": "index.html",
+      "route": "#settings",
+      "role": [
+        "运营人员"
+      ],
+      "elements": [
+        {
+          "elementId": "P13-E001",
+          "selector": ".page-header h1",
+          "tag": "button",
+          "type": "note",
+          "text": "个人设置",
+          "visible": true
+        },
+        {
+          "elementId": "P13-E002",
+          "selector": "#fx-current-password",
+          "tag": "input",
+          "type": "interaction",
+          "text": "输入当前密码",
+          "visible": true
+        },
+        {
+          "elementId": "P13-E003",
+          "selector": "[data-action=\"fx-save-password\"]",
+          "tag": "button",
+          "type": "interaction",
+          "text": "保存新密码",
+          "visible": true
+        },
+        {
+          "elementId": "P13-E004",
+          "selector": "[data-action=\"fx-logout\"]",
+          "tag": "button",
+          "type": "flow",
+          "text": "退出登录",
+          "visible": true
+        }
+      ]
+    },
+    {
+      "pageKey": "P21",
+      "title": "数据概览",
+      "path": "customer.html",
+      "route": "#overview",
+      "role": [
+        "客户人员"
+      ],
+      "elements": [
+        {
+          "elementId": "P21-E001",
+          "selector": ".page-header h1",
+          "tag": "button",
+          "type": "note",
+          "text": "数据概览",
+          "visible": true
+        },
+        {
+          "elementId": "P21-E002",
+          "selector": ".metric-strip .metric-link",
+          "tag": "button",
+          "type": "data",
+          "text": "订单总量",
+          "visible": true
+        },
+        {
+          "elementId": "P21-E003",
+          "selector": "[data-action=\"fx-focus-customer-order\"]",
+          "tag": "button",
+          "type": "flow",
+          "text": "在订单台账中查看订单",
+          "visible": true
+        },
+        {
+          "elementId": "P21-E004",
+          "selector": "[data-action=\"fx-customer-product-status\"]",
+          "tag": "button",
+          "type": "flow",
+          "text": "点击查看对应产品",
+          "visible": true
+        }
+      ]
+    },
+    {
+      "pageKey": "P22",
+      "title": "订单台账",
+      "path": "customer.html",
+      "route": "#orders",
+      "role": [
+        "客户人员"
+      ],
+      "elements": [
+        {
+          "elementId": "P22-E001",
+          "selector": ".page-header h1",
+          "tag": "button",
+          "type": "note",
+          "text": "订单台账",
+          "visible": true
+        },
+        {
+          "elementId": "P22-E002",
+          "selector": "[data-action=\"fx-export-customer-orders\"]",
+          "tag": "button",
+          "type": "permission",
+          "text": "导出台账",
+          "visible": true
+        },
+        {
+          "elementId": "P22-E003",
+          "selector": "[data-action=\"fx-open-customer-calendar\"]",
+          "tag": "button",
+          "type": "interaction",
+          "text": "筛选创建时间",
+          "visible": true
+        },
+        {
+          "elementId": "P22-E004",
+          "selector": "[data-action=\"fx-view-order-bind-requests\"]",
+          "tag": "button",
+          "type": "interaction",
+          "text": "查看绑定申请中数量",
+          "visible": true
+        },
+        {
+          "elementId": "P22-E005",
+          "selector": "tbody .table-actions",
+          "tag": "button",
+          "type": "interaction",
+          "text": "申请绑定产品",
+          "visible": true
+        },
+        {
+          "elementId": "P22-E006",
+          "selector": ".modal",
+          "tag": "section",
+          "type": "interaction",
+          "text": "申请绑定产品",
+          "visible": false,
+          "surfaceId": "surface-P22-request-bind"
+        },
+        {
+          "elementId": "P22-E007",
+          "selector": "#fx-customer-bind-product-search",
+          "tag": "input",
+          "type": "interaction",
+          "text": "搜索已激活产品",
+          "visible": false,
+          "surfaceId": "surface-P22-request-bind"
+        },
+        {
+          "elementId": "P22-E008",
+          "selector": "#fx-customer-bind-amount",
+          "tag": "input",
+          "type": "interaction",
+          "text": "申请绑定数量",
+          "visible": false,
+          "surfaceId": "surface-P22-request-bind"
+        },
+        {
+          "elementId": "P22-E009",
+          "selector": "[data-action=\"fx-confirm-customer-bind\"]",
+          "tag": "button",
+          "type": "interaction",
+          "text": "提交绑定申请",
+          "visible": false,
+          "surfaceId": "surface-P22-request-bind"
+        }
+      ]
+    },
+    {
+      "pageKey": "P23",
+      "title": "订单详情",
+      "path": "customer.html",
+      "route": "#order-detail",
+      "role": [
+        "客户人员"
+      ],
+      "elements": [
+        {
+          "elementId": "P23-E001",
+          "selector": ".page-header h1",
+          "tag": "button",
+          "type": "note",
+          "text": "订单详情",
+          "visible": true
+        },
+        {
+          "elementId": "P23-E002",
+          "selector": "[data-action=\"fx-back-orders\"]",
+          "tag": "button",
+          "type": "flow",
+          "text": "返回订单台账",
+          "visible": true
+        },
+        {
+          "elementId": "P23-E003",
+          "selector": "[data-action=\"fx-customer-bind-order\"]",
+          "tag": "button",
+          "type": "interaction",
+          "text": "申请绑定产品",
+          "visible": true
+        },
+        {
+          "elementId": "P23-E004",
+          "selector": "[data-action=\"fx-open-activation-product\"]",
+          "tag": "button",
+          "type": "flow",
+          "text": "产品",
+          "visible": true
+        }
+      ]
+    },
+    {
+      "pageKey": "P24",
+      "title": "产品信息",
+      "path": "customer.html",
+      "route": "#products",
+      "role": [
+        "客户人员"
+      ],
+      "elements": [
+        {
+          "elementId": "P24-E001",
+          "selector": ".page-header h1",
+          "tag": "button",
+          "type": "note",
+          "text": "产品信息",
+          "visible": true
+        },
+        {
+          "elementId": "P24-E002",
+          "selector": "#fx-customer-product-search",
+          "tag": "input",
+          "type": "interaction",
+          "text": "搜索产品名称或批次",
+          "visible": true
+        },
+        {
+          "elementId": "P24-E003",
+          "selector": "[data-action=\"fx-new-product\"]",
+          "tag": "button",
+          "type": "flow",
+          "text": "新建产品",
+          "visible": true
+        },
+        {
+          "elementId": "P24-E004",
+          "selector": ".customer-product-table tbody .table-actions",
+          "tag": "button",
+          "type": "state",
+          "text": "编辑",
+          "visible": true
+        },
+        {
+          "elementId": "P24-E005",
+          "selector": "[data-action=\"fx-submit-product-row\"]",
+          "tag": "button",
+          "type": "interaction",
+          "text": "草稿提交审核",
+          "visible": true
+        }
+      ]
+    },
+    {
+      "pageKey": "P25",
+      "title": "产品编辑与查看",
+      "path": "customer.html",
+      "route": "#editor",
+      "role": [
+        "客户人员"
+      ],
+      "elements": [
+        {
+          "elementId": "P25-E001",
+          "selector": ".page-header h1",
+          "tag": "button",
+          "type": "note",
+          "text": "产品编辑与查看",
+          "visible": true
+        },
+        {
+          "elementId": "P25-E002",
+          "selector": "[data-action=\"fx-back-customer-products\"]",
+          "tag": "button",
+          "type": "flow",
+          "text": "返回",
+          "visible": true
+        },
+        {
+          "elementId": "P25-E003",
+          "selector": ".stepper [data-action=\"product-step\"]",
+          "tag": "button",
+          "type": "interaction",
+          "text": "产品信息",
+          "visible": true
+        },
+        {
+          "elementId": "P25-E004",
+          "selector": ".editor-field-list",
+          "tag": "div",
+          "type": "interaction",
+          "text": "字段名",
+          "visible": true
+        },
+        {
+          "elementId": "P25-E005",
+          "selector": "[data-action=\"fx-add-custom\"]",
+          "tag": "button",
+          "type": "interaction",
+          "text": "新增字段",
+          "visible": true
+        },
+        {
+          "elementId": "P25-E006",
+          "selector": ".drawer-foot",
+          "tag": "button",
+          "type": "interaction",
+          "text": "继续",
+          "visible": true
+        },
+        {
+          "elementId": "P25-E007",
+          "selector": "[data-action=\"fx-save-draft\"]",
+          "tag": "button",
+          "type": "interaction",
+          "text": "保存草稿",
+          "visible": true
+        },
+        {
+          "elementId": "P25-E008",
+          "selector": "[data-action=\"fx-preview-current\"]",
+          "tag": "button",
+          "type": "interaction",
+          "text": "预览码",
+          "visible": true
+        },
+        {
+          "elementId": "P25-E009",
+          "selector": "[data-action=\"fx-open-submit\"]",
+          "tag": "button",
+          "type": "interaction",
+          "text": "提交产品审核",
+          "visible": true
+        },
+        {
+          "elementId": "P25-E010",
+          "selector": ".modal",
+          "tag": "section",
+          "type": "interaction",
+          "text": "提交审核确认",
+          "visible": false,
+          "surfaceId": "surface-P25-submit-product"
+        },
+        {
+          "elementId": "P25-E011",
+          "selector": "[data-action=\"fx-confirm-submit\"]",
+          "tag": "button",
+          "type": "interaction",
+          "text": "确认提交",
+          "visible": false,
+          "surfaceId": "surface-P25-submit-product"
+        }
+      ]
+    },
+    {
+      "pageKey": "P26",
+      "title": "撤回申请",
+      "path": "customer.html",
+      "route": "#withdrawals",
+      "role": [
+        "客户人员"
+      ],
+      "elements": [
+        {
+          "elementId": "P26-E001",
+          "selector": ".page-header h1",
+          "tag": "button",
+          "type": "note",
+          "text": "撤回申请",
+          "visible": true
+        },
+        {
+          "elementId": "P26-E002",
+          "selector": "[data-action=\"fx-open-withdraw\"]",
+          "tag": "button",
+          "type": "interaction",
+          "text": "发起申请",
+          "visible": true
+        },
+        {
+          "elementId": "P26-E003",
+          "selector": "[data-action=\"fx-open-customer-calendar\"]",
+          "tag": "button",
+          "type": "interaction",
+          "text": "筛选申请时间",
+          "visible": true
+        },
+        {
+          "elementId": "P26-E004",
+          "selector": ".modal",
+          "tag": "section",
+          "type": "interaction",
+          "text": "全量撤回申请",
+          "visible": false,
+          "surfaceId": "surface-P26-customer-withdraw"
+        },
+        {
+          "elementId": "P26-E005",
+          "selector": "#fx-withdraw-product-search",
+          "tag": "input",
+          "type": "interaction",
+          "text": "选择撤回产品",
+          "visible": false,
+          "surfaceId": "surface-P26-customer-withdraw"
+        },
+        {
+          "elementId": "P26-E006",
+          "selector": "#fx-withdraw-reason",
+          "tag": "input",
+          "type": "interaction",
+          "text": "撤回原因",
+          "visible": false,
+          "surfaceId": "surface-P26-customer-withdraw"
+        },
+        {
+          "elementId": "P26-E007",
+          "selector": "[data-action=\"fx-confirm-customer-withdraw\"]",
+          "tag": "button",
+          "type": "interaction",
+          "text": "提交撤回申请",
+          "visible": false,
+          "surfaceId": "surface-P26-customer-withdraw"
+        }
+      ]
+    },
+    {
+      "pageKey": "P27",
+      "title": "站内信",
+      "path": "customer.html",
+      "route": "#messages",
+      "role": [
+        "客户人员"
+      ],
+      "elements": [
+        {
+          "elementId": "P27-E001",
+          "selector": ".page-header h1",
+          "tag": "button",
+          "type": "note",
+          "text": "站内信",
+          "visible": true
+        },
+        {
+          "elementId": "P27-E002",
+          "selector": "#fx-message-search",
+          "tag": "input",
+          "type": "interaction",
+          "text": "搜索消息标题或内容摘要",
+          "visible": true
+        },
+        {
+          "elementId": "P27-E003",
+          "selector": "[data-action=\"fx-mark-selected-read\"]",
+          "tag": "button",
+          "type": "interaction",
+          "text": "标记已读",
+          "visible": true
+        },
+        {
+          "elementId": "P27-E004",
+          "selector": "[data-action=\"fx-delete-selected-messages\"]",
+          "tag": "button",
+          "type": "interaction",
+          "text": "删除",
+          "visible": true
+        },
+        {
+          "elementId": "P27-E005",
+          "selector": "[data-action=\"fx-read-message\"]",
+          "tag": "button",
+          "type": "flow",
+          "text": "消息",
+          "visible": true
+        }
+      ]
+    },
+    {
+      "pageKey": "P28",
+      "title": "个人设置",
+      "path": "customer.html",
+      "route": "#settings",
+      "role": [
+        "客户人员"
+      ],
+      "elements": [
+        {
+          "elementId": "P28-E001",
+          "selector": ".page-header h1",
+          "tag": "button",
+          "type": "note",
+          "text": "个人设置",
+          "visible": true
+        },
+        {
+          "elementId": "P28-E002",
+          "selector": "#fx-current-password",
+          "tag": "input",
+          "type": "interaction",
+          "text": "输入当前密码",
+          "visible": true
+        },
+        {
+          "elementId": "P28-E003",
+          "selector": "[data-action=\"fx-save-password\"]",
+          "tag": "button",
+          "type": "interaction",
+          "text": "保存客户密码",
+          "visible": true
+        },
+        {
+          "elementId": "P28-E004",
+          "selector": "[data-action=\"fx-logout\"]",
+          "tag": "button",
+          "type": "flow",
+          "text": "退出登录",
+          "visible": true
+        }
+      ]
+    },
+    {
+      "pageKey": "P31",
+      "title": "扫码展示端",
+      "path": "scan.html",
+      "route": "/scan.html",
+      "role": [
+        "消费者"
+      ],
+      "elements": [
+        {
+          "elementId": "P31-E001",
+          "selector": ".scan-shell .mobile-topbar h1",
+          "tag": "h1",
+          "type": "note",
+          "text": "扫码展示端",
+          "visible": true
+        },
+        {
+          "elementId": "P31-E002",
+          "selector": ".product-hero[data-action=\"fx-scan-image\"]",
+          "tag": "button",
+          "type": "interaction",
+          "text": "产品图片",
+          "visible": true
+        },
+        {
+          "elementId": "P31-E003",
+          "selector": ".tabs [data-action=\"scan-tab\"]",
+          "tag": "button",
+          "type": "interaction",
+          "text": "产品",
+          "visible": true
+        },
+        {
+          "elementId": "P31-E004",
+          "selector": "[data-action=\"fx-toggle-scan-fields\"]",
+          "tag": "button",
+          "type": "interaction",
+          "text": "展开其余",
+          "visible": true
+        },
+        {
+          "elementId": "P31-E005",
+          "selector": ".scan-ordered-media",
+          "tag": "button",
+          "type": "interaction",
+          "text": "图片",
+          "visible": true
+        },
+        {
+          "elementId": "P31-E006",
+          "selector": ".scan-prototype-links",
+          "tag": "a",
+          "type": "state",
+          "text": "已激活",
+          "visible": true
+        }
+      ]
+    }
+  ]
+}
