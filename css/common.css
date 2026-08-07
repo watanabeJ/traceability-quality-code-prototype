@@ -347,7 +347,7 @@ a { color: inherit; }
   margin-bottom: 12px;
 }
 .filters { display: flex; align-items: center; gap: 8px; flex-wrap: wrap; }
-.search-field { position: relative; width: 240px; }
+.search-field { position: relative; width: 140px; }
 .search-field .icon { position: absolute; left: 10px; top: 8px; color: var(--text-muted); pointer-events: none; }
 .search-field input { width: 100%; padding-left: 34px; }
 .message-toolbar { align-items: center; justify-content: space-between; }
@@ -668,7 +668,8 @@ tbody tr:last-child td { border-bottom: 0; }
 .field-action-row { display: flex; align-items: center; justify-content: flex-start; }
 .required::after { content: " *"; color: var(--danger); }
 .field-help { color: var(--text-muted); font-size: 11px; }
-.list-reset-button { flex: 0 0 auto; }
+.list-reset-button,
+.button.small.list-reset-button { flex: 0 0 auto; height: 35px; min-height: 35px; }
 .file-input-hidden { display: none; }
 .attachment-existing {
   min-height: 38px;
@@ -962,5 +963,3 @@ input.immutable-input { width: 100%; color: var(--text); background: var(--surfa
 .scan-state-meta span { color: var(--text-muted); }
 .scan-state-meta strong { color: var(--text-strong); font-weight: 500; }
 .asset-credit { width: min(100%, 430px); margin: 9px auto 0; color: var(--text-muted); font-size: 10px; text-align: center; }
-
-

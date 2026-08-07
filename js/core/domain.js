@@ -541,19 +541,23 @@ const fxToday = "2026-07-27";
   Object.assign(state, {
     authenticated: entryPortal === "scan" || fxStore.sessionGet(`trace-auth-${entryPortal}`, "0") === "1",
     currentAccount: fxStore.sessionGet(`trace-account-${entryPortal}`, entryPortal === "customer" ? customers[0].account : fxOperators[0].account),
-    operatorFilter: "", operatorStatus: "全部状态",
+    operatorNameFilter: "", operatorAccountFilter: "", operatorStatus: "全部状态",
     operatorDateFrom: "", operatorDateTo: "", operatorDateDraftFrom: "", operatorDateDraftTo: "",
     operatorCalendarOpen: false, operatorCalendarLeftMonth: "2026-06-01", operatorCalendarRightMonth: "2026-07-01",
-    customerFilter: "", customerStatus: "全部状态", customerSortKey: "", customerSortDirection: "asc",
-    orderFilter: "", orderFrom: "", orderTo: "", orderSortKey: "", orderSortDirection: "asc",
+    customerNameFilter: "", customerAccountFilter: "", customerPhoneFilter: "", customerStatus: "全部状态", customerSortKey: "", customerSortDirection: "asc",
+    orderCustomerFilter: "", orderNumberFilter: "", orderFrom: "", orderTo: "", orderSortKey: "", orderSortDirection: "asc",
     orderDateDraftFrom: "", orderDateDraftTo: "", orderCalendarOpen: false,
     orderCalendarLeftMonth: "2026-06-01", orderCalendarRightMonth: "2026-07-01",
-    bindRequestFilter: "", bindRequestStatus: "全部状态", bindRequestCategory: "全部大类",
+    bindRequestCustomerFilter: "", bindRequestOrderFilter: "", bindRequestProductFilter: "", bindRequestBatchFilter: "", bindRequestStatus: "全部状态", bindRequestCategory: "全部大类",
     bindRequestSortKey: "", bindRequestSortDirection: "asc",
     bindRequestDateFrom: "", bindRequestDateTo: "", bindRequestDateDraftFrom: "", bindRequestDateDraftTo: "",
+    orderBindingProductFilter: "", orderBindingBatchFilter: "", orderBindingCategory: "全部大类", orderBindingStatus: "全部状态",
+    orderBindingSortKey: "", orderBindingSortDirection: "asc",
+    orderBindingRequestedDateFrom: "", orderBindingRequestedDateTo: "", orderBindingRequestedDateDraftFrom: "", orderBindingRequestedDateDraftTo: "",
+    orderBindingProcessedDateFrom: "", orderBindingProcessedDateTo: "", orderBindingProcessedDateDraftFrom: "", orderBindingProcessedDateDraftTo: "",
     productCategory: "全部大类",
     reviewDateFrom: "", reviewDateTo: "", reviewDateDraftFrom: "", reviewDateDraftTo: "",
-    withdrawalFilter: "", withdrawalStatus: "全部状态",
+    withdrawalNoFilter: "", withdrawalProductFilter: "", withdrawalCustomerFilter: "", withdrawalStatus: "全部状态",
     withdrawalDateFrom: "", withdrawalDateTo: "", withdrawalDateDraftFrom: "", withdrawalDateDraftTo: "",
     customerOrderSortKey: "", customerOrderSortDirection: "asc",
     customerProductFilter: "", customerProductStatus: "全部状态", customerProductCategory: "全部大类",
@@ -563,7 +567,7 @@ const fxToday = "2026-07-27";
     customerProductDateFrom: "", customerProductDateTo: "", customerProductDateDraftFrom: "", customerProductDateDraftTo: "",
     customerWithdrawalDateFrom: "", customerWithdrawalDateTo: "", customerWithdrawalDateDraftFrom: "", customerWithdrawalDateDraftTo: "",
     customerCalendarOpen: false, customerCalendarContext: "", customerCalendarLeftMonth: "2026-06-01", customerCalendarRightMonth: "2026-07-01",
-    messageSearch: "", messageReadFilter: "全部阅读状态", messageRecipientFilter: "全部接收方",
+    messageTitleSearch: "", messageContentSearch: "", messageReadFilter: "全部阅读状态", messageRecipientFilter: "全部接收方",
     messageTimeFilter: "全部发送时间", messageTypeFilter: "全部消息类型",
     messageDateFrom: "", messageDateTo: "", messageDateDraftFrom: "", messageDateDraftTo: "",
     messageCalendarOpen: false, messageCalendarLeftMonth: "2026-06-01", messageCalendarRightMonth: "2026-07-01",
@@ -598,8 +602,9 @@ const fxToday = "2026-07-27";
     return (!state.operatorDateFrom || loginDate >= state.operatorDateFrom) && (!state.operatorDateTo || loginDate <= state.operatorDateTo);
   }
   function fxFilteredOperators() {
-    const term = state.operatorFilter.trim().toLowerCase();
-    return fxNewestRows(fxOperators.filter(item => (!term || `${item.name} ${item.account}`.toLowerCase().includes(term)) && (state.operatorStatus === "全部状态" || item.status === state.operatorStatus) && fxOperatorMatchesLoginTime(item)), item => item.lastLogin);
+    const nameTerm = state.operatorNameFilter.trim().toLowerCase();
+    const accountTerm = state.operatorAccountFilter.trim().toLowerCase();
+    return fxNewestRows(fxOperators.filter(item => (!nameTerm || String(item.name || "").toLowerCase().includes(nameTerm)) && (!accountTerm || String(item.account || "").toLowerCase().includes(accountTerm)) && (state.operatorStatus === "全部状态" || item.status === state.operatorStatus) && fxOperatorMatchesLoginTime(item)), item => item.lastLogin);
   }
   function fxAddMessage(message) { messages.unshift({ id: Date.now(), time: fxNow(), unread: true, ...message }); }
   function fxIsApplicationSubmissionMessage(message) { return ["产品审核申请", "产品撤回申请", "绑定申请"].includes(message.type); }
@@ -617,9 +622,11 @@ const fxToday = "2026-07-27";
     return (!state.messageDateFrom || sentDate >= state.messageDateFrom) && (!state.messageDateTo || sentDate <= state.messageDateTo);
   }
   function fxFilteredOpsMessages() {
-    const term = state.messageSearch.trim().toLowerCase();
+    const titleTerm = state.messageTitleSearch.trim().toLowerCase();
+    const contentTerm = state.messageContentSearch.trim().toLowerCase();
     return fxNewestRows(fxCustomerMessages().filter(item =>
-      (!term || `${item.title} ${item.detail}`.toLowerCase().includes(term)) &&
+      (!titleTerm || String(item.title || "").toLowerCase().includes(titleTerm)) &&
+      (!contentTerm || String(item.detail || "").toLowerCase().includes(contentTerm)) &&
       (state.messageReadFilter === "全部阅读状态" || (state.messageReadFilter === "未读" ? item.unread : !item.unread)) &&
       (state.messageRecipientFilter === "全部接收方" || item.recipient === state.messageRecipientFilter) &&
       (state.messageTypeFilter === "全部消息类型" || item.type === state.messageTypeFilter) &&
@@ -627,9 +634,11 @@ const fxToday = "2026-07-27";
     ), item => item.time);
   }
   function fxFilteredCustomerMessages() {
-    const term = state.messageSearch.trim().toLowerCase();
+    const titleTerm = state.messageTitleSearch.trim().toLowerCase();
+    const contentTerm = state.messageContentSearch.trim().toLowerCase();
     return fxNewestRows(messages.filter(item => item.recipient === fxCurrentCustomer().name && !fxIsApplicationSubmissionMessage(item) &&
-      (!term || `${item.title} ${item.detail}`.toLowerCase().includes(term)) &&
+      (!titleTerm || String(item.title || "").toLowerCase().includes(titleTerm)) &&
+      (!contentTerm || String(item.detail || "").toLowerCase().includes(contentTerm)) &&
       (state.messageReadFilter === "全部阅读状态" || (state.messageReadFilter === "未读" ? item.unread : !item.unread)) &&
       (state.messageTypeFilter === "全部消息类型" || item.type === state.messageTypeFilter) &&
       fxMessageMatchesTime(item)

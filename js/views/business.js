@@ -326,6 +326,7 @@ function customerOrders() {
       return {
         type: request.applicationType,
         product: activation?.product || request.product,
+        category: recordProduct?.category || "—",
         batch: activation?.batch || request.batch,
         range: requestedRange,
         amount: Number(activation?.amount || request.amount || 0),
@@ -350,6 +351,7 @@ function customerOrders() {
       return {
         type: "直接绑定",
         product: item.product || "—",
+        category: product?.category || "—",
         batch: product?.batch || item.batch || "—",
         range: item.range || "—",
         amount: Number(item.amount || 0),
@@ -363,7 +365,19 @@ function customerOrders() {
         action: `${productAction}${withdrawalAction}`,
       };
     });
-    const bindingRecords = fxNewestRows([...applicationRecords, ...activationRecords], item => item.processedAt || item.requestedAt);
+    const allBindingRecords = [...applicationRecords, ...activationRecords];
+    const bindingRecords = state.portal === "ops"
+      ? fxSortedRows(allBindingRecords.filter(record => {
+        const productTerm = state.orderBindingProductFilter.trim().toLowerCase();
+        const batchTerm = state.orderBindingBatchFilter.trim().toLowerCase();
+        return (!productTerm || String(record.product || "").toLowerCase().includes(productTerm))
+          && (!batchTerm || String(record.batch || "").toLowerCase().includes(batchTerm))
+          && (state.orderBindingCategory === "全部大类" || record.category === state.orderBindingCategory)
+          && (state.orderBindingStatus === "全部状态" || record.status === state.orderBindingStatus)
+          && fxMatchesCustomerDate(record.requestedAt, "orderBindingRequested")
+          && fxMatchesCustomerDate(record.processedAt, "orderBindingProcessed");
+      }), "orderBinding", item => item.processedAt || item.requestedAt)
+      : fxNewestRows(allBindingRecords, item => item.processedAt || item.requestedAt);
     const bindingRows = bindingRecords.length ? bindingRecords.map(record => {
       const bindingContext = `data-id="${record.productId || ""}" data-order-no="${fxEscape(order.no)}" data-range="${fxEscape(record.range || "")}" data-amount="${Number(record.amount || 0)}" data-request-id="${fxEscape(record.requestId || "")}" data-request-source="${fxEscape(record.requestSource || "")}"`;
       const previewAction = record.productId
@@ -386,13 +400,17 @@ function customerOrders() {
         customerActions = `<button class="text-action" data-action="fx-edit-binding-product" ${bindingContext}>编辑</button>${previewAction}`;
       }
       const actions = state.portal === "customer" ? customerActions : record.action;
-      return `<tr><td>${fxEscape(record.product)}</td><td class="mono">${fxEscape(record.batch || "—")}</td><td class="mono">${fxEscape(record.range || "—")}</td><td>${formatNumber(record.amount)}</td><td>${fxEscape(record.requestedAt || "—")}</td><td>${status(record.status)}</td><td>${fxEscape(record.processedAt || "—")}</td><td>${fxEscape(record.operator || "—")}</td><td class="action-column">${actions ? `<div class="table-actions">${actions}</div>` : "—"}</td></tr>`;
-    }).join("") : `<tr><td colspan="9">暂无产品绑定记录</td></tr>`;
+      return `<tr><td>${fxEscape(record.product)}</td>${state.portal === "ops" ? `<td>${fxEscape(record.category || "—")}</td>` : ""}<td class="mono">${fxEscape(record.batch || "—")}</td><td class="mono">${fxEscape(record.range || "—")}</td><td>${formatNumber(record.amount)}</td><td>${fxEscape(record.requestedAt || "—")}</td><td>${status(record.status)}</td><td>${fxEscape(record.processedAt || "—")}</td><td>${fxEscape(record.operator || "—")}</td><td class="action-column">${actions ? `<div class="table-actions">${actions}</div>` : "—"}</td></tr>`;
+    }).join("") : `<tr><td colspan="${state.portal === "ops" ? 10 : 9}">暂无产品绑定记录</td></tr>`;
     const bindAction = availableAmount > 0 ? state.portal === "customer"
       ? `<button class="button primary" data-action="fx-customer-bind-order" data-no="${fxEscape(order.no)}">申请绑定产品</button>`
       : `<button class="button primary" data-action="fx-ops-bind-order" data-no="${fxEscape(order.no)}">绑定产品</button>` : "";
     const actions = `${backAction}${bindAction}`;
-    return `<div class="page order-detail-page">${pageHeader("订单详情", "", actions)}<section class="detail-section"><h3>订单信息</h3><dl class="detail-grid"><div class="detail-item"><dt>订单号</dt><dd class="mono">${fxEscape(order.no)}</dd></div><div class="detail-item"><dt>客户名称</dt><dd>${fxEscape(order.customer)}</dd></div><div class="detail-item"><dt>创建时间</dt><dd>${fxEscape(order.createdAt || order.created || "—")}</dd></div><div class="detail-item"><dt>序列号范围</dt><dd class="mono">${fxEscape(order.range)}</dd></div><div class="detail-item"><dt>订单码量</dt><dd>${formatNumber(order.total)}</dd></div><div class="detail-item"><dt>已激活</dt><dd>${formatNumber(order.active)}</dd></div><div class="detail-item"><dt>绑定申请中</dt><dd>${formatNumber(pendingAmount)}</dd></div><div class="detail-item"><dt>剩余可用</dt><dd>${formatNumber(availableAmount)}</dd></div><div class="detail-item"><dt>订单备注</dt><dd class="order-note-detail">${fxEscape(order.note || "—")}</dd></div></dl></section><section class="detail-section"><div class="detail-title-row"><h3>产品绑定记录</h3></div><div class="table-shell"><div class="table-scroll"><table data-sequence="off"><thead><tr><th>产品名称</th><th>产品批次</th><th>绑定码段</th><th>数量</th><th>申请时间</th><th>状态</th><th>处理时间</th><th>操作人</th><th class="action-column">操作</th></tr></thead><tbody>${bindingRows}</tbody></table></div></div></section></div>`;
+    const bindingToolbar = state.portal === "ops" ? `<div class="toolbar order-binding-toolbar"><div class="filters compact-search-filters order-binding-search-filters">${fxFilterInput("fx-order-binding-product-search", state.orderBindingProductFilter, "搜索产品名称")}${fxFilterInput("fx-order-binding-batch-search", state.orderBindingBatchFilter, "搜索产品批次")}<button type="button" class="button small list-reset-button" data-action="fx-reset-list" data-reset-context="order-bindings">${icon("rotate-ccw", "↻")}重置</button></div></div>` : "";
+    const bindingHeader = state.portal === "ops"
+      ? `<tr><th>产品名称</th><th>${fxTableSelectHeader("产品大类", "orderBindingCategory", ["全部大类", "农产品", "养殖品", "加工食品", "工业品", "医疗卫生用品"], state.orderBindingCategory)}</th><th>产品批次</th><th>绑定码段</th><th>${fxSortHeader("数量", "orderBinding", "amount")}</th><th>${fxCustomerDateHeader("申请时间", "orderBindingRequested")}</th><th>${fxTableSelectHeader("状态", "orderBindingStatus", ["全部状态", "待提交", "待审批", "已激活", "已驳回", "已重置"], state.orderBindingStatus)}</th><th>${fxCustomerDateHeader("处理时间", "orderBindingProcessed")}</th><th>操作人</th><th class="action-column">操作</th></tr>`
+      : `<tr><th>产品名称</th><th>产品批次</th><th>绑定码段</th><th>数量</th><th>申请时间</th><th>状态</th><th>处理时间</th><th>操作人</th><th class="action-column">操作</th></tr>`;
+    return `<div class="page order-detail-page">${pageHeader("订单详情", "", actions)}<section class="detail-section"><h3>订单信息</h3><dl class="detail-grid"><div class="detail-item"><dt>订单号</dt><dd class="mono">${fxEscape(order.no)}</dd></div><div class="detail-item"><dt>客户名称</dt><dd>${fxEscape(order.customer)}</dd></div><div class="detail-item"><dt>创建时间</dt><dd>${fxEscape(order.createdAt || order.created || "—")}</dd></div><div class="detail-item"><dt>序列号范围</dt><dd class="mono">${fxEscape(order.range)}</dd></div><div class="detail-item"><dt>订单码量</dt><dd>${formatNumber(order.total)}</dd></div><div class="detail-item"><dt>已激活</dt><dd>${formatNumber(order.active)}</dd></div><div class="detail-item"><dt>绑定申请中</dt><dd>${formatNumber(pendingAmount)}</dd></div><div class="detail-item"><dt>剩余可用</dt><dd>${formatNumber(availableAmount)}</dd></div><div class="detail-item"><dt>订单备注</dt><dd class="order-note-detail">${fxEscape(order.note || "—")}</dd></div></dl></section><section class="detail-section"><div class="detail-title-row"><h3>产品绑定记录</h3></div>${bindingToolbar}<div class="table-shell"><div class="table-scroll"><table class="order-binding-table" data-sequence="off"><thead>${bindingHeader}</thead><tbody>${bindingRows}</tbody></table></div></div></section></div>`;
   }
 
   function fxCustomerFileField(id, label, item, key) {
