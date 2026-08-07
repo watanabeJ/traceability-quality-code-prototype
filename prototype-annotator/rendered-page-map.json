@@ -1,7 +1,7 @@
 {
   "version": 2,
-  "root": "C:\\Users\\钟长鸿\\Documents\\溯源系统\\prototype",
-  "scanMode": "source-route-index",
+  "root": "C:\\Users\\钟长鸿\\Documents\\溯源系统\\prototype-multipage",
+  "scanMode": "multipage-page-key",
   "surfaces": [
     {
       "id": "surface-P02-new-customer",
@@ -151,8 +151,8 @@
     {
       "pageKey": "P02",
       "title": "客户列表",
-      "path": "index.html",
-      "route": "#customers",
+      "path": "pages/ops/customers.html",
+      "route": "/prototype-multipage/pages/ops/customers.html",
       "role": [
         "运营人员"
       ],
@@ -167,10 +167,10 @@
         },
         {
           "elementId": "P02-E002",
-          "selector": "#fx-customer-search",
-          "tag": "input",
+          "selector": ".customer-search-filters",
+          "tag": "button",
           "type": "interaction",
-          "text": "搜索客户名称、账号或电话",
+          "text": "客户名称",
           "visible": true
         },
         {
@@ -257,8 +257,8 @@
     {
       "pageKey": "P03",
       "title": "客户详情",
-      "path": "index.html",
-      "route": "#customer-detail",
+      "path": "pages/ops/customer-detail.html",
+      "route": "/prototype-multipage/pages/ops/customer-detail.html",
       "role": [
         "运营人员"
       ],
@@ -300,8 +300,8 @@
     {
       "pageKey": "P04",
       "title": "创建订单",
-      "path": "index.html",
-      "route": "#codes",
+      "path": "pages/ops/create-order.html",
+      "route": "/prototype-multipage/pages/ops/create-order.html",
       "role": [
         "运营人员"
       ],
@@ -319,7 +319,7 @@
           "selector": "#fx-qr-customer-search",
           "tag": "input",
           "type": "interaction",
-          "text": "搜索客户名称",
+          "text": "客户名称",
           "visible": true
         },
         {
@@ -359,8 +359,8 @@
     {
       "pageKey": "P05",
       "title": "订单码量台账",
-      "path": "index.html",
-      "route": "#orders",
+      "path": "pages/ops/orders.html",
+      "route": "/prototype-multipage/pages/ops/orders.html",
       "role": [
         "运营人员"
       ],
@@ -375,10 +375,10 @@
         },
         {
           "elementId": "P05-E002",
-          "selector": "#fx-order-search",
-          "tag": "input",
+          "selector": ".order-search-filters",
+          "tag": "button",
           "type": "interaction",
-          "text": "客户名称、订单号或备注",
+          "text": "客户名称",
           "visible": true
         },
         {
@@ -435,7 +435,7 @@
           "selector": "#fx-ops-bind-product-search",
           "tag": "input",
           "type": "interaction",
-          "text": "搜索绑定产品",
+          "text": "绑定产品",
           "visible": false,
           "surfaceId": "surface-P05-bind-product"
         },
@@ -456,14 +456,22 @@
           "text": "确认绑定",
           "visible": false,
           "surfaceId": "surface-P05-bind-product"
+        },
+        {
+          "elementId": "P05-E012",
+          "selector": ".order-table",
+          "tag": "div",
+          "type": "data",
+          "text": "订单码量台账",
+          "visible": true
         }
       ]
     },
     {
       "pageKey": "P06",
       "title": "订单详情",
-      "path": "index.html",
-      "route": "#order-detail",
+      "path": "pages/ops/order-detail.html",
+      "route": "/prototype-multipage/pages/ops/order-detail.html",
       "role": [
         "运营人员"
       ],
@@ -507,14 +515,38 @@
           "type": "flow",
           "text": "已重置",
           "visible": true
+        },
+        {
+          "elementId": "P06-E006",
+          "selector": ".order-binding-toolbar",
+          "tag": "button",
+          "type": "interaction",
+          "text": "产品名称",
+          "visible": true
+        },
+        {
+          "elementId": "P06-E007",
+          "selector": ".order-binding-table thead",
+          "tag": "button",
+          "type": "interaction",
+          "text": "产品大类",
+          "visible": true
+        },
+        {
+          "elementId": "P06-E008",
+          "selector": ".order-binding-table",
+          "tag": "div",
+          "type": "data",
+          "text": "产品绑定记录",
+          "visible": true
         }
       ]
     },
     {
       "pageKey": "P08",
       "title": "绑定审核详情",
-      "path": "index.html",
-      "route": "#review-detail",
+      "path": "pages/ops/bind-request-detail.html",
+      "route": "/prototype-multipage/pages/ops/bind-request-detail.html",
       "role": [
         "运营人员"
       ],
@@ -624,8 +656,8 @@
     {
       "pageKey": "P09",
       "title": "绑定审核",
-      "path": "index.html",
-      "route": "#bind-requests",
+      "path": "pages/ops/bind-requests.html",
+      "route": "/prototype-multipage/pages/ops/bind-requests.html",
       "role": [
         "运营人员"
       ],
@@ -640,10 +672,10 @@
         },
         {
           "elementId": "P09-E002",
-          "selector": "#fx-bind-request-search",
-          "tag": "input",
+          "selector": ".bind-request-search-filters",
+          "tag": "button",
           "type": "interaction",
-          "text": "客户、订单或产品",
+          "text": "客户名称",
           "visible": true
         },
         {
@@ -693,14 +725,22 @@
           "type": "interaction",
           "text": "状态",
           "visible": true
+        },
+        {
+          "elementId": "P09-E009",
+          "selector": "tbody .table-actions",
+          "tag": "div",
+          "type": "permission",
+          "text": "审核操作",
+          "visible": true
         }
       ]
     },
     {
       "pageKey": "P10",
       "title": "撤回审核",
-      "path": "index.html",
-      "route": "#withdrawals",
+      "path": "pages/ops/withdrawals.html",
+      "route": "/prototype-multipage/pages/ops/withdrawals.html",
       "role": [
         "运营人员"
       ],
@@ -715,10 +755,10 @@
         },
         {
           "elementId": "P10-E002",
-          "selector": "#fx-withdrawal-search",
-          "tag": "input",
+          "selector": ".withdrawal-search-filters",
+          "tag": "button",
           "type": "interaction",
-          "text": "申请编号、产品或客户",
+          "text": "申请编号",
           "visible": true
         },
         {
@@ -763,14 +803,22 @@
           "text": "驳回原因",
           "visible": false,
           "surfaceId": "surface-P10-withdraw-decision"
+        },
+        {
+          "elementId": "P10-E008",
+          "selector": "[data-action=\"fx-approve-withdrawal\"]",
+          "tag": "div",
+          "type": "interaction",
+          "text": "通过",
+          "visible": true
         }
       ]
     },
     {
       "pageKey": "P11",
       "title": "运营账号管理",
-      "path": "index.html",
-      "route": "#operators",
+      "path": "pages/ops/operators.html",
+      "route": "/prototype-multipage/pages/ops/operators.html",
       "role": [
         "运营人员"
       ],
@@ -785,10 +833,10 @@
         },
         {
           "elementId": "P11-E002",
-          "selector": "#fx-operator-search",
-          "tag": "input",
+          "selector": ".operator-search-filters",
+          "tag": "button",
           "type": "interaction",
-          "text": "搜索账号或姓名",
+          "text": "姓名",
           "visible": true
         },
         {
@@ -822,8 +870,8 @@
     {
       "pageKey": "P12",
       "title": "站内信",
-      "path": "index.html",
-      "route": "#messages",
+      "path": "pages/ops/messages.html",
+      "route": "/prototype-multipage/pages/ops/messages.html",
       "role": [
         "运营人员"
       ],
@@ -838,10 +886,10 @@
         },
         {
           "elementId": "P12-E002",
-          "selector": "#fx-message-search",
-          "tag": "input",
+          "selector": ".message-search-fields",
+          "tag": "button",
           "type": "interaction",
-          "text": "搜索消息标题或内容摘要",
+          "text": "消息标题",
           "visible": true
         },
         {
@@ -867,14 +915,22 @@
           "type": "flow",
           "text": "消息",
           "visible": true
+        },
+        {
+          "elementId": "P12-E006",
+          "selector": ".message-table",
+          "tag": "div",
+          "type": "data",
+          "text": "消息列表",
+          "visible": true
         }
       ]
     },
     {
       "pageKey": "P13",
       "title": "个人设置",
-      "path": "index.html",
-      "route": "#settings",
+      "path": "pages/ops/settings.html",
+      "route": "/prototype-multipage/pages/ops/settings.html",
       "role": [
         "运营人员"
       ],
@@ -916,8 +972,8 @@
     {
       "pageKey": "P21",
       "title": "数据概览",
-      "path": "customer.html",
-      "route": "#overview",
+      "path": "pages/customer/overview.html",
+      "route": "/prototype-multipage/pages/customer/overview.html",
       "role": [
         "客户人员"
       ],
@@ -959,8 +1015,8 @@
     {
       "pageKey": "P22",
       "title": "订单台账",
-      "path": "customer.html",
-      "route": "#orders",
+      "path": "pages/customer/orders.html",
+      "route": "/prototype-multipage/pages/customer/orders.html",
       "role": [
         "客户人员"
       ],
@@ -1019,7 +1075,7 @@
           "selector": "#fx-customer-bind-product-search",
           "tag": "input",
           "type": "interaction",
-          "text": "搜索已激活产品",
+          "text": "已激活产品",
           "visible": false,
           "surfaceId": "surface-P22-existing-bind"
         },
@@ -1075,14 +1131,22 @@
           "type": "interaction",
           "text": "总量",
           "visible": true
+        },
+        {
+          "elementId": "P22-E014",
+          "selector": ".order-table",
+          "tag": "div",
+          "type": "data",
+          "text": "订单台账",
+          "visible": true
         }
       ]
     },
     {
       "pageKey": "P23",
       "title": "订单详情",
-      "path": "customer.html",
-      "route": "#order-detail",
+      "path": "pages/customer/order-detail.html",
+      "route": "/prototype-multipage/pages/customer/order-detail.html",
       "role": [
         "客户人员"
       ],
@@ -1134,14 +1198,22 @@
           "type": "interaction",
           "text": "撤回产品",
           "visible": true
+        },
+        {
+          "elementId": "P23-E007",
+          "selector": ".order-binding-table tbody .table-actions",
+          "tag": "div",
+          "type": "permission",
+          "text": "绑定记录操作",
+          "visible": true
         }
       ]
     },
     {
       "pageKey": "P25",
       "title": "产品编辑与查看",
-      "path": "customer.html",
-      "route": "#editor",
+      "path": "pages/customer/editor.html",
+      "route": "/prototype-multipage/pages/customer/editor.html",
       "role": [
         "客户人员"
       ],
@@ -1267,14 +1339,22 @@
           "type": "interaction",
           "text": "上传附件",
           "visible": true
+        },
+        {
+          "elementId": "P25-E016",
+          "selector": ".binding-settings",
+          "tag": "div",
+          "type": "data",
+          "text": "绑定设置",
+          "visible": true
         }
       ]
     },
     {
       "pageKey": "P26",
       "title": "撤回申请",
-      "path": "customer.html",
-      "route": "#withdrawals",
+      "path": "pages/customer/withdrawals.html",
+      "route": "/prototype-multipage/pages/customer/withdrawals.html",
       "role": [
         "客户人员"
       ],
@@ -1347,14 +1427,22 @@
           "text": "已绑码段",
           "visible": false,
           "surfaceId": "surface-P26-customer-withdraw"
+        },
+        {
+          "elementId": "P26-E009",
+          "selector": ".modal .withdrawal-range-list, .bound-range-options",
+          "tag": "div",
+          "type": "interaction",
+          "text": "已绑码段",
+          "visible": true
         }
       ]
     },
     {
       "pageKey": "P27",
       "title": "站内信",
-      "path": "customer.html",
-      "route": "#messages",
+      "path": "pages/customer/messages.html",
+      "route": "/prototype-multipage/pages/customer/messages.html",
       "role": [
         "客户人员"
       ],
@@ -1369,10 +1457,10 @@
         },
         {
           "elementId": "P27-E002",
-          "selector": "#fx-message-search",
-          "tag": "input",
+          "selector": ".message-search-fields",
+          "tag": "button",
           "type": "interaction",
-          "text": "搜索消息标题或内容摘要",
+          "text": "消息标题",
           "visible": true
         },
         {
@@ -1398,14 +1486,22 @@
           "type": "flow",
           "text": "消息",
           "visible": true
+        },
+        {
+          "elementId": "P27-E006",
+          "selector": ".message-table",
+          "tag": "div",
+          "type": "data",
+          "text": "消息列表",
+          "visible": true
         }
       ]
     },
     {
       "pageKey": "P28",
       "title": "个人设置",
-      "path": "customer.html",
-      "route": "#settings",
+      "path": "pages/customer/settings.html",
+      "route": "/prototype-multipage/pages/customer/settings.html",
       "role": [
         "客户人员"
       ],
@@ -1447,8 +1543,8 @@
     {
       "pageKey": "P31",
       "title": "扫码展示端",
-      "path": "scan.html",
-      "route": "/scan.html",
+      "path": "pages/scan/active.html",
+      "route": "/prototype-multipage/pages/scan/active.html",
       "role": [
         "消费者"
       ],
@@ -1500,7 +1596,29 @@
           "type": "state",
           "text": "已激活",
           "visible": true
+        },
+        {
+          "elementId": "P31-E007",
+          "selector": ".scan-shell",
+          "tag": "div",
+          "type": "permission",
+          "text": "扫码展示端",
+          "visible": true
+        },
+        {
+          "elementId": "P31-E008",
+          "selector": ".scan-prototype-links, .scan-state",
+          "tag": "div",
+          "type": "state",
+          "text": "扫码状态",
+          "visible": true
         }
+      ],
+      "variants": [
+        "pages/scan/preview.html",
+        "pages/scan/active.html",
+        "pages/scan/inactive.html",
+        "pages/scan/reset.html"
       ]
     }
   ]
