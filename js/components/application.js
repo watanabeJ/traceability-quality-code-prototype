@@ -45,7 +45,8 @@ function fxLoginPage(portal) {
 
   function fxFilterInput(id, value, placeholder, resetContext = "") {
     const context = resetContext || ({ "fx-customer-search": "customers", "fx-review-search": "reviews", "fx-customer-product-search": "customer-products" })[id] || "";
-    return `<div class="search-field">${icon("search", "⌕")}<input id="${id}" value="${fxEscape(value)}" placeholder="${placeholder}"></div>${context ? `<button type="button" class="button small list-reset-button" data-action="fx-reset-list" data-reset-context="${context}">${icon("rotate-ccw", "↻")}重置</button>` : ""}`;
+    const label = String(placeholder || "").replace(/^搜索/, "");
+    return `<div class="search-field"><label class="filter-field-label" for="${id}">${fxEscape(label)}</label><input id="${id}" value="${fxEscape(value)}" placeholder="请输入" aria-label="${fxEscape(label)}"></div>${context ? `<button type="button" class="button small list-reset-button" data-action="fx-reset-list" data-reset-context="${context}">${icon("rotate-ccw", "↻")}重置</button>` : ""}`;
   }
   function fxEmpty(colspan, text) { return `<tr><td colspan="${colspan}"><div class="empty"><div><div class="empty-icon">${icon("search-x", "×")}</div><h3>${text}</h3><p>调整筛选条件后重试。</p></div></div></td></tr>`; }
 
@@ -194,7 +195,7 @@ function fxLoginPage(portal) {
   }
   function fxCustomerPicker(prefix, selectedId = null) {
     const selected = customers.find(item => item.id === Number(selectedId) && item.status === "启用");
-    return `<div class="field full customer-picker"><label class="required" for="${prefix}-search">客户名称</label><div class="customer-picker-control"><input id="${prefix}-search" class="customer-picker-search" type="search" value="${fxEscape(selected ? fxCustomerPickerLabel(selected) : "")}" placeholder="搜索客户名称" autocomplete="off" role="combobox" aria-autocomplete="list" aria-controls="${prefix}-options" aria-expanded="false"><div id="${prefix}-options" class="customer-picker-options" role="listbox">${fxCustomerPickerOptions(prefix)}</div></div><input id="${prefix}" type="hidden" value="${selected?.id || ""}"></div>`;
+    return `<div class="field full customer-picker"><label class="required" for="${prefix}-search">客户名称</label><div class="customer-picker-control"><input id="${prefix}-search" class="customer-picker-search" type="search" value="${fxEscape(selected ? fxCustomerPickerLabel(selected) : "")}" placeholder="请输入客户名称" autocomplete="off" role="combobox" aria-autocomplete="list" aria-controls="${prefix}-options" aria-expanded="false"><div id="${prefix}-options" class="customer-picker-options" role="listbox">${fxCustomerPickerOptions(prefix)}</div></div><input id="${prefix}" type="hidden" value="${selected?.id || ""}"></div>`;
   }
   function fxQrRangeData(rawAmount = state.qrDraft.amount) {
     const customer = customers.find(item => item.id === Number(state.qrDraft.customerId) && item.status === "启用");
@@ -293,7 +294,7 @@ function fxLoginPage(portal) {
   }
   function fxBindProductPicker(prefix, activated, allowCreate = false, selectedId = null) {
     const selected = activated.find(item => item.id === Number(selectedId));
-    return `<div class="field full bind-product-picker" data-allow-create="${allowCreate}"><label class="required" for="${prefix}-search">产品名称</label><input id="${prefix}-search" class="bind-product-search" type="search" value="${fxEscape(selected?.name || "")}" placeholder="搜索产品名称或产品批次" autocomplete="off" role="combobox" aria-autocomplete="list" aria-controls="${prefix}-options" aria-expanded="false"><div id="${prefix}-options" class="bind-product-options" role="listbox">${fxBindProductPickerOptions(prefix, activated, "", allowCreate)}</div><input id="${prefix}" type="hidden" value="${selected?.id || ""}"></div><div class="field full"><label for="${prefix}-batch">产品批次</label><input id="${prefix}-batch" class="immutable-input" value="${fxEscape(selected?.batch || "")}" placeholder="选择产品后自动获取" readonly aria-readonly="true"></div>`;
+    return `<div class="field full bind-product-picker" data-allow-create="${allowCreate}"><label class="required" for="${prefix}-search">产品名称</label><input id="${prefix}-search" class="bind-product-search" type="search" value="${fxEscape(selected?.name || "")}" placeholder="请输入产品名称或产品批次" autocomplete="off" role="combobox" aria-autocomplete="list" aria-controls="${prefix}-options" aria-expanded="false"><div id="${prefix}-options" class="bind-product-options" role="listbox">${fxBindProductPickerOptions(prefix, activated, "", allowCreate)}</div><input id="${prefix}" type="hidden" value="${selected?.id || ""}"></div><div class="field full"><label for="${prefix}-batch">产品批次</label><input id="${prefix}-batch" class="immutable-input" value="${fxEscape(selected?.batch || "")}" placeholder="选择产品后自动获取" readonly aria-readonly="true"></div>`;
   }
   function fxBindProductPickerOptions(prefix, activated, rawTerm = "", allowCreate = false) {
     const term = String(rawTerm || "").trim().toLowerCase();
