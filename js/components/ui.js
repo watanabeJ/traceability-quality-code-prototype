@@ -9,8 +9,8 @@ function formatNumber(value) {
 }
 
 function statusClass(value) {
-  if (["已激活", "已通过", "启用", "已完成", "有效"].includes(value)) return "success";
-  if (["待审核", "待审批", "生成中"].includes(value)) return "warning";
+  if (["已激活", "已通过", "启用", "已完成", "有效", "已分配"].includes(value)) return "success";
+  if (["待审核", "待审批", "生成中", "部分分配"].includes(value)) return "warning";
   if (["已驳回", "已退回", "禁用", "失败"].includes(value)) return "danger";
   if (["已重置"].includes(value)) return "info";
   return "neutral";
@@ -21,8 +21,11 @@ function status(value) {
 }
 
 function globalBar() {
-  const accountName = state.portal === "customer" ? "云岭" : "运营";
-  const currentCustomer = customers.find(item => item.account === state.currentAccount) || customers[0];
+  const currentUser = state.portal === "customer"
+    ? customers.find(item => item.account === state.currentAccount)
+    : fxOperators.find(item => item.account === state.currentAccount);
+  const accountName = currentUser?.name?.slice(0, 2) || "账号";
+  const currentCustomer = state.portal === "customer" ? currentUser : null;
   const unread = state.portal === "customer" ? messages.filter(item => item.unread && (!item.recipient || item.recipient === currentCustomer?.name)).length : messages.filter(item => item.unread).length;
   const unreadBadge = unread ? `<span class="notification-badge" aria-label="${unread} 条未读消息">${unread > 99 ? "99+" : unread}</span>` : "";
   const accountActions = state.portal === "scan" ? "" : `
@@ -56,6 +59,9 @@ function portalSwitcher() {
 
 function sidebar(portal) {
   const pageKey = portal === "ops" ? state.opsPage : state.customerPage;
+  const customer = portal === "customer" ? customers.find(item => item.account === state.currentAccount) : null;
+  const sidebarName = portal === "ops" ? "平台运营中心" : customer?.name || "客户后台";
+  const sidebarMeta = portal === "ops" ? "全量运营权限" : customer?.account || "未登录";
   return `
     <aside class="sidebar ${state.sidebarCollapsed ? "is-collapsed" : ""}" aria-label="${portalLabels[portal]}导航">
       <div class="sidebar-head"><div class="nav-label">工作台</div><button type="button" class="sidebar-toggle" data-action="toggle-sidebar" aria-label="${state.sidebarCollapsed ? "展开侧边栏" : "收起侧边栏"}" title="${state.sidebarCollapsed ? "展开侧边栏" : "收起侧边栏"}">${icon(state.sidebarCollapsed ? "panel-left-open" : "panel-left-close", state.sidebarCollapsed ? "›" : "‹")}</button></div>
@@ -66,7 +72,7 @@ function sidebar(portal) {
             <span>${label}</span>
           </button>`).join("")}
       </nav>
-      <div class="sidebar-foot"><strong>${portal === "ops" ? "平台运营中心" : "云岭生态农业"}</strong>${portal === "ops" ? "全量运营权限" : "客户编号 C-0186"}</div>
+      <div class="sidebar-foot"><strong>${sidebarName}</strong>${sidebarMeta}</div>
     </aside>`;
 }
 

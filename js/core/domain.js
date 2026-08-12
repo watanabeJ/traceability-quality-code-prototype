@@ -24,10 +24,10 @@ const fxToday = "2026-07-27";
   const fxQualityFieldSchemaVersion = 1;
   const fxStandardFieldDefs = {
     product: [
+      { key: "category", label: "产品大类", scan: false },
+      { key: "subcategory", label: "产品子类", scan: false },
       { key: "productName", label: "产品名称", required: true },
       { key: "brand", label: "产品品牌", required: true, mediaKey: "brand", mediaLabel: "品牌图片" },
-      { key: "category", label: "产品大类", type: "select", options: ["农产品", "养殖品", "加工食品", "工业品", "医疗卫生用品"], scan: false },
-      { key: "subcategory", label: "产品子类", scan: false },
       { key: "trademark", label: "产品商标", mediaKey: "trademark", mediaLabel: "商标图片" },
       { key: "productImages", label: "产品图片", mediaKey: "productImages", mediaLabel: "产品图片" },
       { key: "intro", label: "产品介绍", type: "textarea" },
@@ -65,7 +65,7 @@ const fxToday = "2026-07-27";
     ],
     trace: [],
   };
-  const fxSingleMediaKeys = new Set(["brand", "trademark", "productImages", "businessLicense", "productInspectionReport"]);
+  const fxSingleMediaKeys = new Set(["brand", "trademark", "businessLicense", "productInspectionReport"]);
   const fxCustomMediaLimit = 10;
   function fxStandardMediaLimit(mediaKey) { return fxSingleMediaKeys.has(mediaKey) ? 1 : 10; }
 
@@ -149,13 +149,14 @@ const fxToday = "2026-07-27";
   messages.splice(0, messages.length,
     { id: 1, type: "产品审核申请", title: "云岭高山绿茶等待审核", detail: "客户已提交五个资料模块，请及时处理。", time: "2026-07-27 10:32", unread: true, recipient: "运营方", customer: "云岭生态农业有限公司" },
     { id: 2, type: "产品撤回申请", title: "有机稻花香米发起全量撤回", detail: "涉及 20,000 枚已激活码，等待运营方审批。", time: "2026-07-27 09:18", unread: true, recipient: "运营方", customer: "北辰农产有限公司" },
-    { id: 3, type: "绑定审核结果", title: "云岭春芽红茶（批次：YL20260724）绑定审核已通过", detail: "关联订单：ORD-202607-024；绑定数量：18,000 枚；绑定码段：YL00060001–YL00078000。", time: "2026-07-24 15:18", unread: false, recipient: "云岭生态农业有限公司", customer: "云岭生态农业有限公司" },
+    { id: 3, type: "绑定审核结果", title: "云岭春芽红茶（批次：YL20260724）绑定审核已通过", detail: "分配记录：ORD-202607-024；绑定数量：18,000 枚；绑定码段：YL00060001–YL00078000。", time: "2026-07-24 15:18", unread: false, recipient: "云岭生态农业有限公司", customer: "云岭生态农业有限公司" },
     { id: 4, type: "撤回审核结果", title: "古树晒青毛茶（批次：YL20260618）产品撤回审核已驳回", detail: "申请码段：YL00893001–YL00909000；驳回原因：请联系运营方直接修改产品信息。", time: "2026-06-18 13:06", unread: true, recipient: "云岭生态农业有限公司", customer: "云岭生态农业有限公司" }
   );
 
   const fxBusinessStorage = {
     customers: "trace-customers-v3",
     orders: "trace-orders-v3",
+    codeBatches: "trace-code-batches-v1",
     bindRequests: "trace-bind-requests-v2",
     products: "trace-products-v3",
     withdrawals: "trace-withdrawals-v3",
@@ -173,15 +174,208 @@ const fxToday = "2026-07-27";
   function fxRestoreList(name, list) {
     let saved = fxStore.get(fxBusinessStorage[name], null);
     if (!Array.isArray(saved)) {
-      saved = fxStore.get(fxLegacyBusinessStorage[name], null);
+      const legacyKey = fxLegacyBusinessStorage[name];
+      saved = legacyKey ? fxStore.get(legacyKey, null) : null;
       if (name === "products") fxProductsMigratedFromLegacy = true;
     }
     if (Array.isArray(saved)) list.splice(0, list.length, ...saved);
   }
   Object.keys(fxBusinessStorage).forEach(name => {
-    const list = { customers, orders, bindRequests, products, withdrawals, messages }[name];
+    const list = { customers, orders, codeBatches, bindRequests, products, withdrawals, messages }[name];
     fxRestoreList(name, list);
   });
+
+  function fxNormalizeContinuousCodeRange(range, total) {
+    const [startCode, endCode] = String(range || "").split("–");
+    const start = fxParseCode(startCode); const end = fxParseCode(endCode); const amount = Number(total || 0);
+    if (!start || !end || start.prefix !== end.prefix || !Number.isSafeInteger(amount) || amount < 1) return String(range || "");
+    return `${fxCodeAt(start, start.number)}–${fxCodeAt(start, start.number + amount - 1)}`;
+  }
+  function fxNormalizeCodeBatch(item, index = 0) {
+    const created = item.created || fxToday;
+    const total = Math.max(0, Math.trunc(Number(item.total || 0)));
+    return Object.assign(item, {
+      id: item.id || `code-batch-${index + 1}`,
+      no: item.no || `BATCH-${String(index + 1).padStart(3, "0")}`,
+      recordType: "codeBatch",
+      range: fxNormalizeContinuousCodeRange(item.range, total),
+      total,
+      created,
+      createdAt: item.createdAt || `${created} 09:00`,
+      style: item.style || "二维码核心区块",
+      size: item.size || "25 × 25 mm",
+      note: item.note || "",
+    });
+  }
+  function fxIsLegacyInventoryOrder(item) {
+    const customerName = String(item?.customer || "").trim();
+    return ["codeBatch", "inventory"].includes(item?.recordType)
+      || item?.allocationStatus === "库存中"
+      || !customerName
+      || customerName === "未分配";
+  }
+  let fxActivationIdsChanged = false;
+  let fxWithdrawalActivationIdsChanged = false;
+  function fxActivationIdHash(value) {
+    let hash = 0x811c9dc5;
+    for (const character of String(value || "")) {
+      hash ^= character.codePointAt(0);
+      hash = Math.imul(hash, 0x01000193);
+    }
+    return (hash >>> 0).toString(36).toUpperCase().padStart(7, "0");
+  }
+  function fxActivationIdSeed(order, activation, hint = "") {
+    return JSON.stringify([
+      order?.no || order?.id || "allocation",
+      activation?.bindRequestNo || "",
+      activation?.productId || activation?.product || "",
+      activation?.batch || "",
+      activation?.range || "",
+      Number(activation?.amount || 0),
+      activation?.time || "",
+      activation?.status || "有效",
+      activation?.withdrawalNo || "",
+      activation?.resetTime || "",
+      hint,
+    ]);
+  }
+  function fxActivationIdInUse(id, excludedActivation = null) {
+    return Boolean(id) && orders.some(order => (order.activations || []).some(activation => activation !== excludedActivation && activation.activationId === id));
+  }
+  function fxCreateActivationId(order, activation, hint = "") {
+    const seed = fxActivationIdSeed(order, activation, hint);
+    let attempt = 0;
+    let candidate = "";
+    do {
+      candidate = `ACT-${fxActivationIdHash(`${seed}:${attempt}`)}`;
+      attempt += 1;
+    } while (fxActivationIdInUse(candidate, activation));
+    return candidate;
+  }
+  function fxEnsureActivationId(order, activation, hint = "") {
+    if (!activation) return "";
+    const current = String(activation.activationId || "").trim();
+    if (current && !fxActivationIdInUse(current, activation)) return current;
+    activation.activationId = fxCreateActivationId(order, activation, hint);
+    fxActivationIdsChanged = true;
+    return activation.activationId;
+  }
+  function fxRenewActivationId(order, activation, hint = "") {
+    if (!activation) return "";
+    activation.activationId = fxCreateActivationId(order, activation, hint || "derived");
+    fxActivationIdsChanged = true;
+    return activation.activationId;
+  }
+  function fxNormalizeActivationIds(order) {
+    const activations = order?.activations || [];
+    const existingGroups = new Map();
+    activations.forEach(activation => {
+      const id = String(activation.activationId || "").trim();
+      if (!id) return;
+      if (!existingGroups.has(id)) existingGroups.set(id, []);
+      existingGroups.get(id).push(activation);
+    });
+    existingGroups.forEach(group => {
+      if (group.length < 2) return;
+      const keeper = group.find(activation => activation.status === "已重置" || activation.withdrawalNo) || group[0];
+      group.filter(activation => activation !== keeper).forEach((activation, index) => fxRenewActivationId(order, activation, `derived-${index + 1}`));
+    });
+    activations.forEach((activation, index) => fxEnsureActivationId(order, activation, `legacy-${index + 1}`));
+  }
+  function fxNormalizeAllocationOrder(item, index = 0) {
+    const created = item.created || fxToday;
+    const linkedCustomer = customers.find(customer => Number(customer.id) === Number(item.customerId))
+      || customers.find(customer => customer.name === item.customer);
+    Object.assign(item, {
+      id: item.id || index + 1,
+      created,
+      createdAt: item.createdAt || `${created} ${["10:19", "09:42", "15:06", "11:28"][index] || "09:00"}`,
+      activations: Array.isArray(item.activations) ? item.activations : [],
+      recordType: "allocation",
+      allocationStatus: item.allocationStatus === "已撤销" ? "已撤销" : "已分配",
+      sourceBatchNo: item.sourceBatchNo || "",
+      allocatedAt: item.allocatedAt || item.createdAt || `${created} 09:00`,
+      allocatedBy: item.allocatedBy || "历史数据",
+      customerId: linkedCustomer?.id || item.customerId || null,
+    });
+    fxNormalizeActivationIds(item);
+    return item;
+  }
+  function fxRecordBelongsToCustomer(record, customer) {
+    if (!record || !customer) return false;
+    if (record.customerId !== undefined && record.customerId !== null && record.customerId !== "") {
+      const linkedCustomer = customers.find(item => Number(item.id) === Number(record.customerId));
+      if (linkedCustomer) return Number(linkedCustomer.id) === Number(customer.id);
+    }
+    return [record.customer, record.company, record.recipient].includes(customer.name);
+  }
+  function fxCustomerForRecord(record) {
+    if (!record) return null;
+    const linkedCustomer = record.customerId !== undefined && record.customerId !== null && record.customerId !== ""
+      ? customers.find(item => Number(item.id) === Number(record.customerId))
+      : null;
+    if (linkedCustomer) return linkedCustomer;
+    return customers.find(item => [record.customer, record.company, record.recipient].includes(item.name)) || null;
+  }
+  function fxProductForRecord(record) {
+    if (!record) return null;
+    const customer = fxCustomerForRecord(record);
+    const hasProductId = record.productId !== undefined && record.productId !== null && record.productId !== "";
+    if (hasProductId) {
+      const productId = Number(record.productId);
+      const byId = Number.isFinite(productId) ? products.find(item => Number(item.id) === productId) : null;
+      return byId && (!customer || fxRecordBelongsToCustomer(byId, customer)) ? byId : null;
+    }
+    const productName = record.product || record.name;
+    const candidates = products.filter(item => (!productName || item.name === productName)
+      && (!record.batch || item.batch === record.batch)
+      && (!customer || fxRecordBelongsToCustomer(item, customer)));
+    return candidates.length === 1 ? candidates[0] : null;
+  }
+  function fxMigrateWithdrawalActivationIds() {
+    withdrawals.forEach(withdrawal => {
+      const product = fxProductForRecord(withdrawal);
+      (withdrawal.segments || []).forEach(segment => {
+        const order = orders.find(item => item.no === segment.orderNo);
+        if (!order) return;
+        let activation = (order.activations || []).find(item => item.activationId && [segment.activationId, segment.key].includes(item.activationId));
+        if (!activation) {
+          const candidates = (order.activations || []).filter(item => item.range === segment.range
+            && (!segment.time || item.time === segment.time)
+            && (!product || fxActivationBelongsToProduct(item, product)));
+          if (candidates.length === 1) activation = candidates[0];
+        }
+        if (!activation?.activationId) return;
+        if (segment.activationId !== activation.activationId || segment.key !== activation.activationId) {
+          segment.activationId = activation.activationId;
+          segment.key = activation.activationId;
+          fxWithdrawalActivationIdsChanged = true;
+        }
+      });
+    });
+  }
+  function fxCodeRangesOverlap(leftRange, rightRange) {
+    const [leftStartCode, leftEndCode] = String(leftRange || "").split("–");
+    const [rightStartCode, rightEndCode] = String(rightRange || "").split("–");
+    const leftStart = fxParseCode(leftStartCode); const leftEnd = fxParseCode(leftEndCode);
+    const rightStart = fxParseCode(rightStartCode); const rightEnd = fxParseCode(rightEndCode);
+    if (!leftStart || !leftEnd || !rightStart || !rightEnd || leftStart.prefix !== leftEnd.prefix || rightStart.prefix !== rightEnd.prefix || leftStart.prefix !== rightStart.prefix) return false;
+    return leftStart.number <= rightEnd.number && rightStart.number <= leftEnd.number;
+  }
+  let fxCodeBatchMigrationChanged = false;
+  const fxLegacyInventoryOrders = orders.filter(fxIsLegacyInventoryOrder);
+  fxLegacyInventoryOrders.forEach(item => {
+    const existing = codeBatches.find(batch => batch.no === item.no);
+    const { customer, active, activations, allocationStatus, sourceBatchNo, allocatedAt, allocatedBy, ...batchData } = item;
+    if (existing) fxNormalizeCodeBatch(Object.assign(existing, batchData), codeBatches.indexOf(existing));
+    else codeBatches.unshift(fxNormalizeCodeBatch(batchData, codeBatches.length));
+    fxCodeBatchMigrationChanged = true;
+  });
+  if (fxLegacyInventoryOrders.length) {
+    const migrated = new Set(fxLegacyInventoryOrders);
+    orders.splice(0, orders.length, ...orders.filter(item => !migrated.has(item)));
+  }
+  codeBatches.forEach(fxNormalizeCodeBatch);
   function fxRemoveRequestedProducts() {
     const removed = products.filter(item => ["健康", "发额"].some(prefix => String(item.name || "").startsWith(prefix)));
     if (removed.length) {
@@ -200,12 +394,11 @@ const fxToday = "2026-07-27";
     license: item.license || "已上传",
     legalId: item.legalId || "已上传",
   }));
-  orders.forEach((item, index) => Object.assign(item, {
-    id: item.id || index + 1,
-    created: item.created || fxToday,
-    createdAt: item.createdAt || `${item.created || fxToday} ${["10:19", "09:42", "15:06", "11:28"][index] || "09:00"}`,
-    activations: Array.isArray(item.activations) ? item.activations : [],
-  }));
+  orders.forEach(fxNormalizeAllocationOrder);
+  if (fxCodeBatchMigrationChanged) {
+    fxStore.set(fxBusinessStorage.codeBatches, codeBatches);
+    fxStore.set(fxBusinessStorage.orders, orders);
+  }
   products.forEach(product => { if (!product.details) product.details = fxDefaultDetails(product); fxNormalizeDetails(product.details); if (product.status === "草稿") product.submitted = ""; });
   orders.forEach(order => {
     let allocated = 0; const start = fxParseCode(String(order.range || "").split("–")[0]);
@@ -219,12 +412,26 @@ const fxToday = "2026-07-27";
     }
     Object.assign(item, { id: item.id || index + 1, rejectReason: item.rejectReason || "" });
   });
+  fxMigrateWithdrawalActivationIds();
+  products.forEach(product => {
+    const customer = fxCustomerForRecord(product);
+    if (customer) product.customerId = customer.id;
+  });
   bindRequests.forEach((item, index) => Object.assign(item, {
     id: item.id || `BR-${Date.now()}-${index}`,
     no: item.no || `BR-202608-${String(index + 1).padStart(3, "0")}`,
     status: item.status || "待审批",
     time: item.time || fxNow(),
+    customerId: fxCustomerForRecord(item)?.id || null,
   }));
+  withdrawals.forEach(item => {
+    const customer = fxCustomerForRecord(item);
+    if (customer) item.customerId = customer.id;
+  });
+  messages.forEach(item => {
+    const customer = fxCustomerForRecord(item);
+    if (customer) item.customerId = customer.id;
+  });
   const fxLegacyMessageTypes = {
     审核提醒: "产品审核申请",
     撤回申请: "产品撤回申请",
@@ -264,12 +471,13 @@ const fxToday = "2026-07-27";
       type: "绑定审核结果",
       title: `${fxMessageProductSubject(data.product, data.batch)}绑定审核${approved ? "已通过" : "已驳回"}`,
       detail: fxMessageDetail([
-        orderNo ? `关联订单：${orderNo}` : "",
+        orderNo ? `分配记录：${orderNo}` : "",
         amount ? `${approved ? "绑定数量" : "申请数量"}：${formatNumber(amount)} 枚` : "",
         range ? `${approved ? "绑定码段" : "申请码段"}：${range}` : "",
         !approved ? `驳回原因：${reason || "请根据审核意见修改后重新提交"}` : "",
       ]),
       productId: data.productId || null,
+      customerId: data.customerId || null,
       orderNo,
       batch: data.batch || "",
       bindRequestNo: data.bindRequestNo || "",
@@ -283,6 +491,7 @@ const fxToday = "2026-07-27";
       || activationRows.sort((left, right) => String(right.row.time || "").localeCompare(String(left.row.time || "")))[0];
     return fxBindingResultMessage({
       productId: product?.id,
+      customerId: product?.customerId || null,
       product: product?.name,
       batch: product?.batch,
       orderNo: options.orderNo || product?.requestedOrderNo || activation?.order.no,
@@ -292,7 +501,8 @@ const fxToday = "2026-07-27";
     }, approved);
   }
   function fxWithdrawalResultMessage(withdrawal, approved) {
-    const product = products.find(item => item.name === withdrawal?.product && item.company === withdrawal?.customer && (!withdrawal?.batch || item.batch === withdrawal.batch));
+    const product = fxProductForRecord(withdrawal);
+    const customer = fxCustomerForRecord(withdrawal) || fxCustomerForRecord(product);
     const segments = Array.isArray(withdrawal?.segments) && withdrawal.segments.length
       ? withdrawal.segments
       : Array.isArray(withdrawal?.resetRanges) ? withdrawal.resetRanges.map(range => ({ range })) : [];
@@ -310,6 +520,7 @@ const fxToday = "2026-07-27";
         approved ? `处理说明：${segmentMode ? "所选码段已重置" : "产品关联码段已重置"}` : `驳回原因：${reason || "请根据审核意见处理"}`,
       ]),
       productId: product?.id || null,
+      customerId: customer?.id || null,
       withdrawalNo: withdrawal?.no || "",
       batch: withdrawal?.batch || product?.batch || "",
     };
@@ -338,7 +549,8 @@ const fxToday = "2026-07-27";
       const request = matchingRequests.find(row => row.decidedAt === item.time) || matchingRequests.find(row => String(item.detail).includes(row.orderNo)) || matchingRequests[0];
       if (request) {
         const order = orders.find(row => row.no === request.orderNo);
-        const activation = order?.activations?.find(row => row.bindRequestNo === request.no) || order?.activations?.find(row => row.product === request.product && Number(row.amount || 0) === Number(request.amount || 0));
+      const activation = order?.activations?.find(row => row.bindRequestNo === request.no)
+        || order?.activations?.find(row => row.product === request.product && row.batch === request.batch && request.range && row.range === request.range);
         Object.assign(item, fxBindingResultMessage({ productId: request.productId, product: request.product, batch: request.batch, orderNo: request.orderNo, amount: request.amount || activation?.amount, range: request.range || activation?.range, reason: request.rejectReason || item.detail, bindRequestNo: request.no }, !rejected));
       }
       else {
@@ -348,7 +560,7 @@ const fxToday = "2026-07-27";
           : {};
         if (product) Object.assign(item, fxReviewMessageCopy(product, !rejected, {
           ...legacyOptions,
-          orderNo: item.orderNo || fxMessageDetailValue(item.detail, "关联订单") || legacyOptions.orderNo,
+          orderNo: item.orderNo || fxMessageDetailValue(item.detail, "分配记录") || fxMessageDetailValue(item.detail, "关联订单") || legacyOptions.orderNo,
           amount: Number(String(fxMessageDetailValue(item.detail, rejected ? "申请数量" : "绑定数量")).replace(/[^\d]/g, "")) || legacyOptions.amount,
           range: fxMessageDetailValue(item.detail, rejected ? "申请码段" : "绑定码段") || legacyOptions.range,
           reason: item.detail,
@@ -367,7 +579,7 @@ const fxToday = "2026-07-27";
       else if (String(item.title).includes("古树晒青毛茶")) Object.assign(item, fxWithdrawalResultMessage({ product: "古树晒青毛茶", batch: "YL20260618", customer: item.recipient || item.customer, scope: "product", segments: [{ range: "YL00893001–YL00909000", amount: 16000 }], rejectReason: item.detail }, !rejected));
     }
   });
-  const fxDemoCaseVersion = 8;
+  const fxDemoCaseVersion = 12;
   function fxCompleteDemoDetails() {
     return fxNormalizeDetails({
       productName: "云岭高山有机绿茶",
@@ -466,23 +678,184 @@ const fxToday = "2026-07-27";
     let order = orders.find(item => item.demoCase === "complete-tea");
     let withdrawal = withdrawals.find(item => item.demoCase === "complete-tea");
     if (marker < fxDemoCaseVersion || !product || !order || !withdrawal) {
-      const productData = { id: 1001, demoCase: "complete-tea", name: "云岭高山有机绿茶", company: "云岭生态农业有限公司", category: "农产品", batch: "YL20260726", status: "已激活", submitted: "2026-07-26 10:32", amount: 12000, details: fxCompleteDemoDetails() };
+      const demoCustomer = customers.find(item => item.name === "云岭生态农业有限公司");
+      const productData = { id: 1001, demoCase: "complete-tea", customerId: demoCustomer?.id || null, name: "云岭高山有机绿茶", company: "云岭生态农业有限公司", category: "农产品", batch: "YL20260726", status: "已激活", submitted: "2026-07-26 10:32", amount: 12000, details: fxCompleteDemoDetails() };
       if (product) Object.assign(product, productData); else { product = productData; products.unshift(product); }
-      const orderData = { id: 1001, demoCase: "complete-tea", no: "ORD-202607-088", customer: "云岭生态农业有限公司", range: "YL00880001–YL00910000", total: 30000, active: 12000, created: "2026-07-26", createdAt: "2026-07-26 10:18", style: "标准方形 · 黑白", size: "30 × 30 mm", note: "完整案例：春季特级有机绿茶首批包装赋码", activations: [{ batch: "YL20260726", range: "YL00880001–YL00892000", amount: 12000, time: "2026-07-26 10:32", product: "云岭高山有机绿茶", operator: "平台管理员", status: "有效" }] };
+      const orderData = { id: 1001, demoCase: "complete-tea", customerId: demoCustomer?.id || null, no: "ORD-202607-088", sourceBatchNo: "BATCH-202607-088", customer: "云岭生态农业有限公司", range: "YL00880001–YL00910000", total: 30000, active: 12000, created: "2026-07-26", createdAt: "2026-07-26 10:18", allocatedAt: "2026-07-26 10:18", allocatedBy: "平台管理员", allocationStatus: "已分配", style: "二维码核心区块", size: "30 × 30 mm", note: "完整案例：春季特级有机绿茶首批包装赋码", activations: [{ productId: product.id, customerId: demoCustomer?.id || null, batch: "YL20260726", range: "YL00880001–YL00892000", amount: 12000, time: "2026-07-26 10:32", product: "云岭高山有机绿茶", operator: "平台管理员", status: "有效" }] };
       if (order) Object.assign(order, orderData); else { order = orderData; orders.unshift(order); }
-      const withdrawalData = { id: 1001, demoCase: "complete-tea", no: "WD-202607-018", product: "云岭高山有机绿茶", batch: "YL20260726", customer: "云岭生态农业有限公司", scope: "segments", segments: [{ key: "ORD-202607-088::YL00880001–YL00892000::2026-07-26 10:32", orderNo: "ORD-202607-088", range: "YL00880001–YL00892000", amount: 12000, time: "2026-07-26 10:32" }], requestedAmount: 12000, reason: "演示撤回审批流程并核对附件版本", status: "已驳回", time: "2026-07-27 09:06", decidedAt: "2026-07-27 09:28", rejectReason: "当前产品资料和质检附件均为最新版本，无需撤回或重置关联码" };
+      const withdrawalData = { id: 1001, demoCase: "complete-tea", customerId: demoCustomer?.id || null, productId: product.id, no: "WD-202607-018", product: "云岭高山有机绿茶", batch: "YL20260726", customer: "云岭生态农业有限公司", scope: "segments", segments: [{ key: "ORD-202607-088::YL00880001–YL00892000::2026-07-26 10:32", orderNo: "ORD-202607-088", range: "YL00880001–YL00892000", amount: 12000, time: "2026-07-26 10:32" }], requestedAmount: 12000, reason: "演示撤回审批流程并核对附件版本", status: "已驳回", time: "2026-07-27 09:06", decidedAt: "2026-07-27 09:28", rejectReason: "当前产品资料和质检附件均为最新版本，无需撤回或重置关联码" };
       if (withdrawal) Object.assign(withdrawal, withdrawalData); else { withdrawal = withdrawalData; withdrawals.unshift(withdrawal); }
       const demoMessages = [
-        { id: 1001, demoCase: "complete-tea-approval", ...fxBindingResultMessage({ productId: product.id, product: product.name, batch: product.batch, orderNo: order.no, amount: 12000, range: "YL00880001–YL00892000" }, true), time: "2026-07-26 10:32", unread: false, recipient: "云岭生态农业有限公司", customer: "云岭生态农业有限公司" },
-        { id: 1002, demoCase: "complete-tea-withdrawal", ...fxWithdrawalResultMessage(withdrawalData, false), time: "2026-07-27 09:28", unread: true, recipient: "云岭生态农业有限公司", customer: "云岭生态农业有限公司" },
+        { id: 1001, demoCase: "complete-tea-approval", ...fxBindingResultMessage({ productId: product.id, customerId: demoCustomer?.id || null, product: product.name, batch: product.batch, orderNo: order.no, amount: 12000, range: "YL00880001–YL00892000" }, true), time: "2026-07-26 10:32", unread: false, recipient: "云岭生态农业有限公司", customer: "云岭生态农业有限公司", customerId: demoCustomer?.id || null },
+        { id: 1002, demoCase: "complete-tea-withdrawal", ...fxWithdrawalResultMessage(withdrawalData, false), time: "2026-07-27 09:28", unread: true, recipient: "云岭生态农业有限公司", customer: "云岭生态农业有限公司", customerId: demoCustomer?.id || null },
       ];
       demoMessages.reverse().forEach(message => { const existing = messages.find(item => item.demoCase === message.demoCase); if (existing) Object.assign(existing, message); else messages.unshift(message); });
       const customer = customers.find(item => item.name === "云岭生态农业有限公司");
-      if (customer) { const ownOrders = orders.filter(item => item.customer === customer.name); customer.total = ownOrders.reduce((sum, item) => sum + Number(item.total || 0), 0); customer.active = ownOrders.reduce((sum, item) => sum + Number(item.active || 0), 0); }
+      if (customer) { const ownOrders = orders.filter(item => fxRecordBelongsToCustomer(item, customer)); customer.total = ownOrders.reduce((sum, item) => sum + Number(item.total || 0), 0); customer.active = ownOrders.reduce((sum, item) => sum + Number(item.active || 0), 0); }
       fxStore.set("trace-complete-demo-case-version", fxDemoCaseVersion);
     }
   }
   fxEnsureCompleteDemoCase();
+  orders.forEach(fxNormalizeAllocationOrder);
+  fxMigrateWithdrawalActivationIds();
+  const completeDemoOrder = orders.find(item => item.demoCase === "complete-tea");
+  if (completeDemoOrder?.sourceBatchNo && !codeBatches.some(batch => batch.no === completeDemoOrder.sourceBatchNo)) {
+    codeBatches.unshift(fxNormalizeCodeBatch({
+      id: "demo-complete-batch",
+      no: completeDemoOrder.sourceBatchNo,
+      range: completeDemoOrder.range,
+      total: completeDemoOrder.total,
+      created: completeDemoOrder.created,
+      createdAt: completeDemoOrder.createdAt,
+      style: completeDemoOrder.style,
+      size: completeDemoOrder.size,
+      note: "完整案例对应的历史库存批次",
+    }, codeBatches.length));
+    fxStore.set(fxBusinessStorage.codeBatches, codeBatches);
+  }
+  const fxPendingBindingDemoVersion = 1;
+  function fxEnsurePendingBindingDemoCase() {
+    const markerKey = "trace-pending-binding-demo-version";
+    const marker = Number(fxStore.get(markerKey, 0));
+    const product = products.find(item => item.demoCase === "pending-bind-review")
+      || products.find(item => item.name === "云岭高山绿茶" && item.batch === "YL20260718" && item.company === "云岭生态农业有限公司");
+    const order = orders.find(item => item.no === "ORD-202607-031");
+    const customer = customers.find(item => item.name === "云岭生态农业有限公司");
+    const validExistingRequest = product && order && customer
+      && product.status === "待审核"
+      && product.applicationType === "新建产品并绑定"
+      && product.requestedOrderNo === order.no
+      && Number(product.requestedAmount || 0) > 0
+      && String(product.requestedRange || "");
+    if (validExistingRequest) {
+      fxStore.set(markerKey, fxPendingBindingDemoVersion);
+      return;
+    }
+    if (!product || !order || !customer || product.status !== "待审核") return;
+    const [startCode, endCode] = String(order.range || "").split("–");
+    const start = fxParseCode(startCode); const end = fxParseCode(endCode);
+    if (!start || !end || start.prefix !== end.prefix) return;
+    const occupied = [
+      ...(order.activations || []).filter(item => item.status !== "已重置"),
+      ...bindRequests.filter(item => item.orderNo === order.no && item.status === "待审批"),
+    ].map(item => {
+      const [occupiedStartCode, occupiedEndCode] = String(item.range || "").split("–");
+      const occupiedStart = fxParseCode(occupiedStartCode); const occupiedEnd = fxParseCode(occupiedEndCode);
+      return occupiedStart && occupiedEnd && occupiedStart.prefix === start.prefix && occupiedEnd.prefix === start.prefix
+        ? { first: Math.max(start.number, occupiedStart.number), last: Math.min(end.number, occupiedEnd.number) }
+        : null;
+    }).filter(item => item && item.first <= item.last).sort((left, right) => left.first - right.first);
+    let first = start.number; let freeInterval = null;
+    for (const interval of occupied) {
+      if (interval.first > first) { freeInterval = { first, last: interval.first - 1 }; break; }
+      first = Math.max(first, interval.last + 1);
+    }
+    if (!freeInterval && first <= end.number) freeInterval = { first, last: end.number };
+    if (!freeInterval) return;
+    const sourceRange = `${fxCodeAt(start, freeInterval.first)}–${fxCodeAt(start, freeInterval.last)}`;
+    const requestedAmount = Math.min(10000, freeInterval.last - freeInterval.first + 1);
+    Object.assign(product, {
+      demoCase: "pending-bind-review",
+      customerId: customer.id,
+      amount: 0,
+      applicationType: "新建产品并绑定",
+      requestedOrderNo: order.no,
+      requestedSourceRange: sourceRange,
+      requestedRange: `${fxCodeAt(start, freeInterval.first)}–${fxCodeAt(start, freeInterval.first + requestedAmount - 1)}`,
+      requestedAmount,
+    });
+    fxStore.set(markerKey, fxPendingBindingDemoVersion);
+    fxStore.set(fxBusinessStorage.products, products);
+  }
+  fxEnsurePendingBindingDemoCase();
+  let fxLegacyBatchLinksChanged = false;
+  orders.forEach((order, index) => {
+    let batch = codeBatches.find(item => item.no === order.sourceBatchNo && fxCodeRangeContains(item.range, order.range));
+    if (!batch) batch = codeBatches.find(item => item.range === order.range && Number(item.total || 0) === Number(order.total || 0));
+    if (!batch) {
+      const containingBatches = codeBatches.filter(item => fxCodeRangeContains(item.range, order.range));
+      if (containingBatches.length) {
+        batch = [...containingBatches].sort((left, right) => Number(left.total || 0) - Number(right.total || 0) || String(left.createdAt || "").localeCompare(String(right.createdAt || "")))[0];
+        if (containingBatches.length > 1) order.migrationNote = "历史来源批次存在重叠，已按最小包含范围归属";
+      }
+    }
+    if (!batch) {
+      const overlappingBatches = codeBatches.filter(item => fxCodeRangesOverlap(item.range, order.range));
+      if (overlappingBatches.length) {
+        order.sourceBatchNo = "";
+        order.migrationStatus = "待核对";
+        order.migrationNote = `历史分配码段与库存批次 ${overlappingBatches.map(item => item.no).join("、")} 部分重叠`;
+        fxLegacyBatchLinksChanged = true;
+        return;
+      }
+      const baseNo = String(order.no || `${index + 1}`).replace(/^ORD-/, "").replace(/[^A-Za-z0-9-]/g, "-");
+      let no = `BATCH-${baseNo}`;
+      let suffix = 2;
+      while (codeBatches.some(item => item.no === no)) { no = `BATCH-${baseNo}-${suffix}`; suffix += 1; }
+      batch = fxNormalizeCodeBatch({
+        id: `legacy-batch-${order.id || index + 1}`,
+        no,
+        range: order.range,
+        total: order.total,
+        created: order.created,
+        createdAt: order.createdAt,
+        style: order.style || "二维码核心区块",
+        size: order.size || "25 × 25 mm",
+        customWidth: order.customWidth,
+        customHeight: order.customHeight,
+        note: order.note || "历史码段批次",
+      }, codeBatches.length);
+      codeBatches.push(batch);
+      fxLegacyBatchLinksChanged = true;
+    }
+    if (order.sourceBatchNo !== batch.no) {
+      order.sourceBatchNo = batch.no;
+      order.migrationStatus = "已归属";
+      fxLegacyBatchLinksChanged = true;
+    }
+  });
+  let fxActivationIdentityChanged = false;
+  orders.forEach(order => {
+    const orderCustomer = fxCustomerForRecord(order);
+    (order.activations || []).forEach(activation => {
+      if (orderCustomer && Number(activation.customerId) !== Number(orderCustomer.id)) {
+        activation.customerId = orderCustomer.id;
+        fxActivationIdentityChanged = true;
+      }
+      if (activation.productId !== undefined && activation.productId !== null && activation.productId !== "") return;
+      if (!activation.batch) return;
+      const exactCandidates = products.filter(product => (!orderCustomer || fxRecordBelongsToCustomer(product, orderCustomer))
+        && product.name === activation.product
+        && activation.batch === product.batch);
+      if (exactCandidates.length !== 1) return;
+      const product = exactCandidates[0];
+      Object.assign(activation, { productId: product.id, customerId: orderCustomer?.id || product.customerId || null, product: product.name, batch: product.batch });
+      fxActivationIdentityChanged = true;
+    });
+  });
+  const fxActivationStatisticsChanged = fxReconcileActivationStatistics();
+  if (fxLegacyBatchLinksChanged || fxActivationIdsChanged || fxWithdrawalActivationIdsChanged || fxActivationIdentityChanged || fxActivationStatisticsChanged) {
+    fxStore.set(fxBusinessStorage.codeBatches, codeBatches);
+    fxStore.set(fxBusinessStorage.orders, orders);
+    fxStore.set(fxBusinessStorage.products, products);
+    fxStore.set(fxBusinessStorage.customers, customers);
+  }
+  const reserveBatchNo = "BATCH-202608-001";
+  const reserveBatch = codeBatches.find(item => item.no === reserveBatchNo);
+  if (!reserveBatch) {
+    codeBatches.unshift(fxNormalizeCodeBatch({
+      id: "demo-unallocated-batch",
+      no: reserveBatchNo,
+      range: "QR00000001–QR00010000",
+      total: 10000,
+      created: fxToday,
+      createdAt: `${fxToday} 13:40`,
+      style: "二维码核心区块",
+      size: "25 × 25 mm",
+      note: "待运营分配的演示库存",
+    }, 0));
+    fxStore.set(fxBusinessStorage.codeBatches, codeBatches);
+  }
   const fxDemoWithdrawal = withdrawals.find(item => item.demoCase === "complete-tea" || item.no === "WD-202607-018");
   if (fxDemoWithdrawal && (!Array.isArray(fxDemoWithdrawal.segments) || !fxDemoWithdrawal.segments.length)) {
     Object.assign(fxDemoWithdrawal, {
@@ -493,8 +866,11 @@ const fxToday = "2026-07-27";
     });
   }
   function fxSaveBusiness() {
+    orders.forEach(fxNormalizeAllocationOrder);
+    fxMigrateWithdrawalActivationIds();
     fxStore.set(fxBusinessStorage.customers, customers);
     fxStore.set(fxBusinessStorage.orders, orders);
+    fxStore.set(fxBusinessStorage.codeBatches, codeBatches);
     fxStore.set(fxBusinessStorage.bindRequests, bindRequests);
     fxStore.set(fxBusinessStorage.products, products);
     fxStore.set(fxBusinessStorage.withdrawals, withdrawals);
@@ -515,11 +891,26 @@ const fxToday = "2026-07-27";
       }
     });
   }
+  window.addEventListener("storage", event => {
+    if (![fxBusinessStorage.orders, fxBusinessStorage.codeBatches].includes(event.key) || !event.newValue) return;
+    try {
+      const syncedItems = JSON.parse(event.newValue);
+      if (!Array.isArray(syncedItems)) return;
+      if (event.key === fxBusinessStorage.orders) {
+        orders.splice(0, orders.length, ...syncedItems);
+        orders.forEach(fxNormalizeAllocationOrder);
+      } else {
+        codeBatches.splice(0, codeBatches.length, ...syncedItems);
+        codeBatches.forEach(fxNormalizeCodeBatch);
+      }
+      fxRenderFromStorage();
+    } catch (_) {}
+  });
   function fxCurrentCustomer() {
-    return customers.find(item => item.account === state.currentAccount) || customers[0];
+    return customers.find(item => item.account === state.currentAccount) || null;
   }
   function fxCurrentOperator() {
-    return fxOperators.find(item => item.account === state.currentAccount) || fxOperators[0];
+    return fxOperators.find(item => item.account === state.currentAccount) || null;
   }
   function fxIsCurrentOperator(item) {
     return Boolean(item && item.account === state.currentAccount);
@@ -527,6 +918,7 @@ const fxToday = "2026-07-27";
 
   nav.ops.splice(0, nav.ops.length,
     ["customers", "building-2", "客户列表"],
+    ["inventory", "qr-code", "码段库存"],
     ["orders", "receipt-text", "订单台账"],
     ["bind-requests", "clipboard-check", "绑定审核"],
     ["withdrawals", "rotate-ccw", "撤回审核"],
@@ -540,11 +932,13 @@ const fxToday = "2026-07-27";
   if (fxCustomerOrderNav) fxCustomerOrderNav[2] = "订单台账";
   Object.assign(state, {
     authenticated: entryPortal === "scan" || fxStore.sessionGet(`trace-auth-${entryPortal}`, "0") === "1",
-    currentAccount: fxStore.sessionGet(`trace-account-${entryPortal}`, entryPortal === "customer" ? customers[0].account : fxOperators[0].account),
+    currentAccount: fxStore.sessionGet(`trace-account-${entryPortal}`, ""),
     operatorNameFilter: "", operatorAccountFilter: "", operatorStatus: "全部状态",
     operatorDateFrom: "", operatorDateTo: "", operatorDateDraftFrom: "", operatorDateDraftTo: "",
     operatorCalendarOpen: false, operatorCalendarLeftMonth: "2026-06-01", operatorCalendarRightMonth: "2026-07-01",
     customerNameFilter: "", customerAccountFilter: "", customerPhoneFilter: "", customerStatus: "全部状态", customerSortKey: "", customerSortDirection: "asc",
+    inventoryRangeFilter: "", inventoryStatus: "全部状态", inventoryAllocationCustomerFilter: "", inventoryAllocationOrderFilter: "", inventoryAllocationSortKey: "", inventoryAllocationSortDirection: "asc",
+    inventoryAllocationDateFrom: "", inventoryAllocationDateTo: "", inventoryAllocationDateDraftFrom: "", inventoryAllocationDateDraftTo: "",
     orderCustomerFilter: "", orderNumberFilter: "", orderFrom: "", orderTo: "", orderSortKey: "", orderSortDirection: "asc",
     orderDateDraftFrom: "", orderDateDraftTo: "", orderCalendarOpen: false,
     orderCalendarLeftMonth: "2026-06-01", orderCalendarRightMonth: "2026-07-01",
@@ -572,11 +966,11 @@ const fxToday = "2026-07-27";
     messageDateFrom: "", messageDateTo: "", messageDateDraftFrom: "", messageDateDraftTo: "",
     messageCalendarOpen: false, messageCalendarLeftMonth: "2026-06-01", messageCalendarRightMonth: "2026-07-01",
     selectedMessageIds: [],
-    selectedOperatorId: null, selectedCustomerId: null, selectedOrderNo: null, highlightOrderNo: null,
+    selectedOperatorId: null, selectedCustomerId: null, selectedOrderNo: null, selectedCodeBatchNo: null, allocationCustomerId: null, allocationSourceRange: "", highlightOrderNo: null,
     selectedWithdrawalIndex: null, selectedMessageId: null, selectedBindRequestId: null,
     editorProductId: null, editorDraft: null, editorReadonly: false, editorOwner: "customer", editorTargetOrderNo: null, editorBindRequestId: null,
     editorRequestedSourceRange: "", editorRequestedRange: "", editorRequestedAmount: 0, reviewEditing: false,
-    qrDraft: { customerId: null, style: "标准方形 · 黑白", size: "25 × 25 mm", amount: 500, note: "" },
+    qrDraft: { customerId: null, prefix: "QR", size: "25 × 25 mm", customWidth: 25, customHeight: 25, amount: 500, note: "" },
     generatedOrderNo: null, previewVersion: 1,
     scanExpandedModules: {},
   });
@@ -586,6 +980,11 @@ const fxToday = "2026-07-27";
     if (state.customerPage === "editor") state.editorTargetOrderNo = fxDirectPageParams.get("order");
   }
   if (fxDirectPageParams.get("customer")) state.selectedCustomerId = Number(fxDirectPageParams.get("customer"));
+  if (fxDirectPageParams.get("range") && state.opsPage === "inventory-detail") {
+    const routeRange = fxDirectPageParams.get("range");
+    const batch = codeBatches.find(item => item.range === routeRange || item.no === routeRange);
+    state.selectedCodeBatchNo = batch?.no || null;
+  }
   if (fxDirectPageParams.get("product")) {
     const productId = Number(fxDirectPageParams.get("product"));
     if (state.opsPage === "review-detail") state.drawerProductId = productId;
@@ -608,10 +1007,10 @@ const fxToday = "2026-07-27";
   }
   function fxAddMessage(message) { messages.unshift({ id: Date.now(), time: fxNow(), unread: true, ...message }); }
   function fxIsApplicationSubmissionMessage(message) { return ["产品审核申请", "产品撤回申请", "绑定申请"].includes(message.type); }
-  function fxIsCustomerMessage(message) { return customers.some(customer => customer.name === message.recipient); }
+  function fxIsCustomerMessage(message) { return customers.some(customer => fxRecordBelongsToCustomer(message, customer)); }
   function fxCustomerMessages() { return messages.filter(item => fxIsCustomerMessage(item) && !fxIsApplicationSubmissionMessage(item)); }
   function fxVisibleMessages(portal = state.portal) {
-    if (portal === "customer") return messages.filter(item => item.recipient === fxCurrentCustomer().name && !fxIsApplicationSubmissionMessage(item));
+    if (portal === "customer") return messages.filter(item => fxRecordBelongsToCustomer(item, fxCurrentCustomer()) && !fxIsApplicationSubmissionMessage(item));
     if (portal === "ops") return fxCustomerMessages();
     return [];
   }
@@ -636,7 +1035,7 @@ const fxToday = "2026-07-27";
   function fxFilteredCustomerMessages() {
     const titleTerm = state.messageTitleSearch.trim().toLowerCase();
     const contentTerm = state.messageContentSearch.trim().toLowerCase();
-    return fxNewestRows(messages.filter(item => item.recipient === fxCurrentCustomer().name && !fxIsApplicationSubmissionMessage(item) &&
+    return fxNewestRows(messages.filter(item => fxRecordBelongsToCustomer(item, fxCurrentCustomer()) && !fxIsApplicationSubmissionMessage(item) &&
       (!titleTerm || String(item.title || "").toLowerCase().includes(titleTerm)) &&
       (!contentTerm || String(item.detail || "").toLowerCase().includes(contentTerm)) &&
       (state.messageReadFilter === "全部阅读状态" || (state.messageReadFilter === "未读" ? item.unread : !item.unread)) &&
@@ -678,6 +1077,166 @@ const fxToday = "2026-07-27";
     const value = fxParseCode(code); const [startCode, endCode] = String(range).split("–"); const start = fxParseCode(startCode); const end = fxParseCode(endCode);
     return Boolean(value && start && end && value.prefix === start.prefix && value.prefix === end.prefix && value.number >= start.number && value.number <= end.number);
   }
+  function fxCodeRangeContains(containerRange = "", childRange = "") {
+    const [containerStartCode, containerEndCode] = String(containerRange).split("–");
+    const [childStartCode, childEndCode] = String(childRange).split("–");
+    const containerStart = fxParseCode(containerStartCode); const containerEnd = fxParseCode(containerEndCode);
+    const childStart = fxParseCode(childStartCode); const childEnd = fxParseCode(childEndCode);
+    return Boolean(containerStart && containerEnd && childStart && childEnd
+      && containerStart.prefix === containerEnd.prefix
+      && containerStart.prefix === childStart.prefix
+      && containerStart.prefix === childEnd.prefix
+      && childStart.number >= containerStart.number
+      && childEnd.number <= containerEnd.number);
+  }
+  function fxEffectiveActivationIntervals(orderOrOrders, predicate = null) {
+    const scopedOrders = Array.isArray(orderOrOrders) ? orderOrOrders : orderOrOrders ? [orderOrOrders] : [];
+    const intervals = scopedOrders.flatMap(order => {
+      const [orderStartCode, orderEndCode] = String(order?.range || "").split("–");
+      const orderStart = fxParseCode(orderStartCode); const orderEnd = fxParseCode(orderEndCode);
+      if (!orderStart || !orderEnd || orderStart.prefix !== orderEnd.prefix) return [];
+      return (order.activations || []).flatMap(activation => {
+        if (activation?.status === "已重置" || (predicate && !predicate(activation, order))) return [];
+        const [activationStartCode, activationEndCode] = String(activation?.range || "").split("–");
+        const activationStart = fxParseCode(activationStartCode); const activationEnd = fxParseCode(activationEndCode);
+        if (!activationStart || !activationEnd || activationStart.prefix !== orderStart.prefix || activationEnd.prefix !== orderStart.prefix) return [];
+        const first = Math.max(orderStart.number, activationStart.number);
+        const last = Math.min(orderEnd.number, activationEnd.number);
+        return first <= last ? [{ prefix: orderStart.prefix, width: orderStart.width, first, last }] : [];
+      });
+    }).sort((left, right) => left.prefix.localeCompare(right.prefix) || left.first - right.first || left.last - right.last);
+    const merged = [];
+    intervals.forEach(interval => {
+      const previous = merged[merged.length - 1];
+      if (previous && previous.prefix === interval.prefix && interval.first <= previous.last + 1) {
+        previous.last = Math.max(previous.last, interval.last);
+        previous.width = Math.max(previous.width, interval.width);
+      } else {
+        merged.push({ ...interval });
+      }
+    });
+    return merged.map(interval => ({
+      ...interval,
+      amount: interval.last - interval.first + 1,
+      range: `${interval.prefix}${String(interval.first).padStart(interval.width, "0")}–${interval.prefix}${String(interval.last).padStart(interval.width, "0")}`,
+    }));
+  }
+  function fxEffectiveActivationAmount(orderOrOrders, predicate = null) {
+    return fxEffectiveActivationIntervals(orderOrOrders, predicate).reduce((sum, interval) => sum + interval.amount, 0);
+  }
+  function fxActivationBelongsToProduct(activation, product) {
+    if (!activation || !product) return false;
+    if (activation.productId !== undefined && activation.productId !== null && activation.productId !== "") {
+      return Number(activation.productId) === Number(product.id);
+    }
+    return activation.product === product.name
+      && (product.batch ? activation.batch === product.batch : !activation.batch);
+  }
+  function fxReconcileActivationStatistics() {
+    let changed = false;
+    orders.forEach(order => {
+      const active = fxEffectiveActivationAmount(order);
+      if (Number(order.active || 0) !== active) {
+        order.active = active;
+        changed = true;
+      }
+    });
+    products.forEach(product => {
+      const customer = fxCustomerForRecord(product);
+      const customerOrders = customer
+        ? orders.filter(order => order.allocationStatus !== "已撤销" && fxRecordBelongsToCustomer(order, customer))
+        : [];
+      const amount = fxEffectiveActivationAmount(customerOrders, activation => fxActivationBelongsToProduct(activation, product));
+      if (Number(product.amount || 0) !== amount) {
+        product.amount = amount;
+        changed = true;
+      }
+    });
+    customers.forEach(customer => {
+      const customerOrders = orders.filter(order => order.allocationStatus !== "已撤销" && fxRecordBelongsToCustomer(order, customer));
+      const active = fxEffectiveActivationAmount(customerOrders);
+      if (Number(customer.active || 0) !== active) {
+        customer.active = active;
+        changed = true;
+      }
+    });
+    return changed;
+  }
+  function fxResolveCodeBatch(batchOrNo) {
+    if (batchOrNo && typeof batchOrNo === "object") return batchOrNo;
+    return codeBatches.find(batch => batch.no === batchOrNo) || null;
+  }
+  function fxCodeBatchAllocations(batchOrNo) {
+    const batch = fxResolveCodeBatch(batchOrNo);
+    if (!batch) return [];
+    return orders.filter(order => order.sourceBatchNo === batch.no
+      && order.allocationStatus !== "已撤销"
+      && fxCodeRangeContains(batch.range, order.range));
+  }
+  function fxCodeBatchFreeRanges(batchOrNo) {
+    const batch = fxResolveCodeBatch(batchOrNo);
+    const [startCode, endCode] = String(batch?.range || "").split("–");
+    const start = fxParseCode(startCode); const end = fxParseCode(endCode);
+    if (!batch || !start || !end || start.prefix !== end.prefix) return [];
+    const occupied = fxCodeBatchAllocations(batch).map(order => {
+      const [allocatedStartCode, allocatedEndCode] = String(order.range || "").split("–");
+      const allocatedStart = fxParseCode(allocatedStartCode); const allocatedEnd = fxParseCode(allocatedEndCode);
+      return allocatedStart && allocatedEnd && allocatedStart.prefix === start.prefix && allocatedEnd.prefix === start.prefix
+        ? { first: Math.max(start.number, allocatedStart.number), last: Math.min(end.number, allocatedEnd.number) }
+        : null;
+    }).filter(interval => interval && interval.first <= interval.last).sort((left, right) => left.first - right.first);
+    const merged = [];
+    occupied.forEach(interval => {
+      const previous = merged[merged.length - 1];
+      if (previous && interval.first <= previous.last + 1) previous.last = Math.max(previous.last, interval.last);
+      else merged.push({ ...interval });
+    });
+    const free = []; let first = start.number;
+    merged.forEach(interval => {
+      if (interval.first > first) free.push({ first, last: interval.first - 1 });
+      first = Math.max(first, interval.last + 1);
+    });
+    if (first <= end.number) free.push({ first, last: end.number });
+    return free.map(range => ({
+      range: `${fxCodeAt(start, range.first)}–${fxCodeAt(start, range.last)}`,
+      first: fxCodeAt(start, range.first),
+      last: fxCodeAt(start, range.last),
+      amount: range.last - range.first + 1,
+      start,
+      firstNumber: range.first,
+      lastNumber: range.last,
+    }));
+  }
+  function fxCodeBatchAvailableAmount(batchOrNo) {
+    return fxCodeBatchFreeRanges(batchOrNo).reduce((sum, range) => sum + range.amount, 0);
+  }
+  function fxCodeBatchAllocatedAmount(batchOrNo) {
+    const batch = fxResolveCodeBatch(batchOrNo);
+    return batch ? Math.max(0, Number(batch.total || 0) - fxCodeBatchAvailableAmount(batch)) : 0;
+  }
+  function fxCodeBatchAllocationStatus(batchOrNo) {
+    const batch = fxResolveCodeBatch(batchOrNo);
+    if (!batch) return "未分配";
+    const allocated = fxCodeBatchAllocatedAmount(batch);
+    if (!allocated) return "未分配";
+    return fxCodeBatchAvailableAmount(batch) > 0 ? "部分分配" : "已分配";
+  }
+  function fxCodeBatchAllocationRange(batchOrNo, amount, sourceRange = "") {
+    const requestedAmount = Number(amount || 0);
+    if (!Number.isSafeInteger(requestedAmount) || requestedAmount < 1) return "";
+    const free = fxCodeBatchFreeRanges(batchOrNo);
+    const source = sourceRange ? free.find(item => item.range === sourceRange) : free.find(item => item.amount >= requestedAmount);
+    return source && source.amount >= requestedAmount ? fxRequestedRange(source.range, requestedAmount) : "";
+  }
+  function fxCodeSerialUpperBound(prefix = "QR") {
+    const normalizedPrefix = String(prefix || "QR").trim().toUpperCase();
+    const sources = [...codeBatches, ...orders.filter(order => !order.sourceBatchNo)];
+    return sources.reduce((maximum, item) => {
+      const end = fxParseCode(String(item.range || "").split("–")[1]);
+      return end?.prefix === normalizedPrefix ? Math.max(maximum, end.number) : maximum;
+    }, 0);
+  }
+  function fxNextCodeSerialNumber(prefix = "QR") { return fxCodeSerialUpperBound(prefix) + 1; }
   function fxActivationRange(order, amount, excludeProductId = null, excludeBindRequestId = null) {
     const [startCode, endCode] = String(order.range || "").split("–");
     const start = fxParseCode(startCode); const end = fxParseCode(endCode); const needed = Number(amount || 0);
@@ -700,13 +1259,13 @@ const fxToday = "2026-07-27";
     }
     return end.number - first + 1 >= needed ? `${fxCodeAt(start, first)}–${fxCodeAt(start, first + needed - 1)}` : "";
   }
-  function fxOrderFreeRanges(order, excludeProductId = null) {
+  function fxOrderFreeRanges(order, excludeProductId = null, excludeBindRequestId = null) {
     const [startCode, endCode] = String(order?.range || "").split("–");
     const start = fxParseCode(startCode); const end = fxParseCode(endCode);
     if (!start || !end || start.prefix !== end.prefix) return [];
     const reservedRows = [
       ...fxCombinedPendingProducts(order.no, excludeProductId).map(product => ({ range: product.requestedRange, status: "有效" })),
-      ...bindRequests.filter(request => request.orderNo === order.no && request.status === "待审批" && request.range).map(request => ({ range: request.range, status: "有效" })),
+      ...bindRequests.filter(request => request.orderNo === order.no && request.status === "待审批" && request.range && Number(request.id) !== Number(excludeBindRequestId)).map(request => ({ range: request.range, status: "有效" })),
     ];
     const occupied = [...(order.activations || []), ...reservedRows].filter(row => row.status !== "已重置" && row.range).map(row => {
       const [rowStartCode, rowEndCode] = String(row.range).split("–");
@@ -744,11 +1303,19 @@ const fxToday = "2026-07-27";
     if (!start || !end || start.prefix !== end.prefix || !Number.isSafeInteger(requestedAmount) || requestedAmount < 1 || requestedAmount > end.number - start.number + 1) return "";
     return `${fxCodeAt(start, start.number)}–${fxCodeAt(start, start.number + requestedAmount - 1)}`;
   }
-  function fxRequestedRangeIsAvailable(order, sourceRange, requestedRange, amount, excludeProductId = null) {
+  function fxRequestedRangeIsAvailable(order, sourceRange, requestedRange, amount, excludeProductId = null, excludeBindRequestId = null) {
     const availableAmount = fxOrderAvailableAmount(order, excludeProductId);
     if (!Number.isSafeInteger(Number(amount)) || Number(amount) < 1 || Number(amount) > availableAmount) return false;
-    const source = fxOrderFreeRanges(order, excludeProductId).find(item => item.range === sourceRange);
+    const source = fxOrderFreeRanges(order, excludeProductId, excludeBindRequestId).find(item => item.range === sourceRange);
     return Boolean(source && Number(amount) <= source.amount && fxRequestedRange(source.range, Number(amount)) === requestedRange);
+  }
+  function fxBindingRequestRangeIsAvailable(order, request) {
+    if (!order || order.allocationStatus === "已撤销" || !request) return false;
+    const requestedRange = String(request.range || "");
+    const amount = Number(request.amount || 0);
+    return fxOrderFreeRanges(order, null, request.id).some(source =>
+      amount > 0 && amount <= source.amount && fxRequestedRange(source.range, amount) === requestedRange
+    );
   }
   function fxReviewActivationRange(order, amount, product = null) {
     const combined = product?.applicationType === "新建产品并绑定";
@@ -937,19 +1504,27 @@ const fxToday = "2026-07-27";
       const qr = window.qrcode(0, "M");
       qr.addData(payload);
       qr.make();
-      const count = qr.getModuleCount(); const cells = []; const rounded = String(options.style || "").includes("圆角"); const sizeMm = Number.parseFloat(options.size) || 25; const label = String(options.style || "").includes("产品名称留白") ? (options.label || "产品名称：____________") : code;
-      for (let row = 0; row < count; row++) for (let col = 0; col < count; col++) if (qr.isDark(row, col)) cells.push(`<rect x="${col + 4}" y="${row + 4}" width="1" height="1"${rounded ? ' rx="0.28"' : ""}/>`);
-      return `<svg xmlns="http://www.w3.org/2000/svg" width="${sizeMm}mm" height="${Math.round(sizeMm * (count + 13) / (count + 8) * 10) / 10}mm" viewBox="0 0 ${count + 8} ${count + 13}"><rect width="100%" height="100%" fill="white"/><g fill="black">${cells.join("")}</g><text x="${(count + 8) / 2}" y="${count + 11}" text-anchor="middle" font-family="sans-serif" font-size="1.8">${fxEscape(label)}</text></svg>`;
+      const count = qr.getModuleCount(); const cells = []; const widthMm = Number(options.width) || Number.parseFloat(options.size) || 25; const heightMm = Number(options.height) || widthMm; const viewSize = count + 8;
+      for (let row = 0; row < count; row++) for (let col = 0; col < count; col++) if (qr.isDark(row, col)) cells.push(`<rect x="${col + 4}" y="${row + 4}" width="1" height="1"/>`);
+      return `<svg xmlns="http://www.w3.org/2000/svg" width="${widthMm}mm" height="${heightMm}mm" viewBox="0 0 ${viewSize} ${viewSize}" preserveAspectRatio="xMidYMid meet" style="background:#fff"><rect width="100%" height="100%" fill="white"/><g fill="black">${cells.join("")}</g></svg>`;
     }
     throw new Error("标准二维码组件未加载，无法生成可扫码二维码");
   }
+
   function fxDownloadQrPackage(order) {
     const [startCode] = order.range.split("–"); const prefix = startCode.match(/^[A-Z]+/)?.[0] || "QR"; const start = Number(startCode.replace(/\D/g, ""));
-    const manifest = ["序列号,订单号,客户,状态", ...Array.from({ length: order.total }, (_, i) => `${fxSerial(prefix, start + i)},${order.no},${order.customer},未激活`)].join("\n");
+    const width = Number(order.customWidth) || Number.parseFloat(order.size) || 25; const height = Number(order.customHeight) || width; const sizeLabel = order.size || `${width} × ${height} mm`;
+    const allocations = fxCodeBatchAllocations(order);
+    const allocationStatus = fxCodeBatchAllocationStatus(order);
+    const manifest = ["序列号,批次号,分配状态,分配记录号,客户", ...Array.from({ length: order.total }, (_, i) => {
+      const serial = fxSerial(prefix, start + i);
+      const allocation = allocations.find(item => fxCodeInRange(serial, item.range));
+      return `${serial},${order.no},${allocation ? "已分配" : "未分配"},${allocation?.no || ""},${allocation?.customer || ""}`;
+    })].join("\n");
     const samples = order.total; const entries = [
       { name: "manifest.csv", data: `\ufeff${manifest}` },
-      { name: "README.txt", data: `订单：${order.no}\n客户：${order.customer}\n码量：${order.total}\n序列范围：${order.range}\n压缩包包含完整序列清单和全部 ${samples} 张可扫描 SVG 二维码。` },
-      ...Array.from({ length: samples }, (_, i) => { const code = fxSerial(prefix, start + i); return { name: `codes/${code}.svg`, data: fxQrSvg(code, undefined, { style: order.style, size: order.size }) }; }),
+      { name: "README.txt", data: `码段批次：${order.no}\n分配状态：${allocationStatus}\n已分配：${fxCodeBatchAllocatedAmount(order)}\n剩余库存：${fxCodeBatchAvailableAmount(order)}\n码量：${order.total}\n序列范围：${order.range}\n输出尺寸：${sizeLabel}\n压缩包仅包含二维码核心矩阵 SVG 和完整序列清单，不包含标签模板或额外码样式。序列号保存在 SVG 文件名和 manifest.csv 中，不绘制在二维码图形内。` },
+      ...Array.from({ length: samples }, (_, i) => { const code = fxSerial(prefix, start + i); return { name: `codes/${code}.svg`, data: fxQrSvg(code, undefined, { width, height, size: order.size }) }; }),
     ];
-    fxDownloadBlob(`${order.no}_二维码压缩包.zip`, new Blob([fxZip(entries)], { type: "application/zip" }));
+    fxDownloadBlob(`${order.no}_二维码核心区块.zip`, new Blob([fxZip(entries)], { type: "application/zip" }));
   }

@@ -1,5 +1,5 @@
 const projectRoot = new URL("../", import.meta.url);
-const assetVersion = "msifh61e";
+const assetVersion = "v6q9x3ct";
 let bootPromise = null;
 
 function assetUrl(relativePath) {

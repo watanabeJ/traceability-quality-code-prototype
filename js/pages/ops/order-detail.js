@@ -1,8 +1,8 @@
-import { bootstrapPage } from "../../bootstrap.js?v=msie3l5v";
+import { bootstrapPage } from "../../bootstrap.js?v=v6q9x3ct";
 
 bootstrapPage({
   "portal": "ops",
   "page": "order-detail",
-  "title": "订单详情",
+  "title": "码段分配详情",
   "pageKey": "P06"
 });

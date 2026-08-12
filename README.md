@@ -2,11 +2,21 @@
 
 本目录是从单文件 `app.js + features.js` 原型重构出的真正多页面项目。每个业务模块有独立 HTML 和独立页面入口 JS，公共状态、组件、视图和样式按职责复用。目录内不引用原 `prototype/app.js` 或 `prototype/features.js`。
 
+当前主流程为：运营端先生成连续的库存码段批次，再从库存中按需分配给启用客户；客户只能查看运营端已分配给自己的码段，并基于这些码段发起产品绑定申请。客户不具备生成码段或向其他客户分配码段的能力。
+
+完整状态流转：`平台库存批次（未分配/部分分配/已分配） → 客户码段分配记录（已分配） → 产品绑定申请（待提交/待审核/已驳回） → 运营审核并激活 → 客户发起码段撤回 → 运营审批后重置`。产品资料与绑定设置在同一审核中处理，分配和激活是两个独立步骤。
+
+原型约束：单个库存批次最多生成 100,000 枚；浏览器端同步打包下载最多 5,000 枚，较大批次应按分配记录分批导出或由正式后端异步生成。
+
 ## 运行
 
 在工作区根目录启动静态服务器，然后访问：
 
 `http://127.0.0.1:4318/prototype-multipage/pages/ops/orders.html`
+
+## 业务流程图
+
+当前系统的全链路业务流程见 [`docs/end-to-end-business-flow.md`](docs/end-to-end-business-flow.md)，Mermaid 可编辑源文件见 [`docs/end-to-end-business-flow.mmd`](docs/end-to-end-business-flow.mmd)。
 
 ## 目录结构
 
@@ -95,9 +105,9 @@ prototype-multipage/
 |---|---|---|---|
 | ops | 客户列表 | `pages/ops/customers.html` | `js/pages/ops/customers.js` |
 | ops | 客户详情 | `pages/ops/customer-detail.html` | `js/pages/ops/customer-detail.js` |
-| ops | 创建订单 | `pages/ops/create-order.html` | `js/pages/ops/create-order.js` |
-| ops | 订单台账 | `pages/ops/orders.html` | `js/pages/ops/orders.js` |
-| ops | 订单详情 | `pages/ops/order-detail.html` | `js/pages/ops/order-detail.js` |
+| ops | 生成码段批次 | `pages/ops/create-order.html` | `js/pages/ops/create-order.js` |
+| ops | 码段库存 | `pages/ops/orders.html` | `js/pages/ops/orders.js` |
+| ops | 码段分配详情 | `pages/ops/order-detail.html` | `js/pages/ops/order-detail.js` |
 | ops | 绑定审核详情 | `pages/ops/bind-request-detail.html` | `js/pages/ops/bind-request-detail.js` |
 | ops | 绑定审核 | `pages/ops/bind-requests.html` | `js/pages/ops/bind-requests.js` |
 | ops | 撤回审核 | `pages/ops/withdrawals.html` | `js/pages/ops/withdrawals.js` |
@@ -105,8 +115,8 @@ prototype-multipage/
 | ops | 站内信 | `pages/ops/messages.html` | `js/pages/ops/messages.js` |
 | ops | 个人设置 | `pages/ops/settings.html` | `js/pages/ops/settings.js` |
 | customer | 数据概览 | `pages/customer/overview.html` | `js/pages/customer/overview.js` |
-| customer | 订单台账 | `pages/customer/orders.html` | `js/pages/customer/orders.js` |
-| customer | 订单详情 | `pages/customer/order-detail.html` | `js/pages/customer/order-detail.js` |
+| customer | 我的码段 | `pages/customer/orders.html` | `js/pages/customer/orders.js` |
+| customer | 码段分配详情 | `pages/customer/order-detail.html` | `js/pages/customer/order-detail.js` |
 | customer | 产品编辑与查看 | `pages/customer/editor.html` | `js/pages/customer/editor.js` |
 | customer | 撤回申请 | `pages/customer/withdrawals.html` | `js/pages/customer/withdrawals.js` |
 | customer | 站内信 | `pages/customer/messages.html` | `js/pages/customer/messages.js` |

@@ -5,26 +5,68 @@ const fxScanParams = new URLSearchParams(location.search);
   const fxScanIsPreview = fxScanParams.get("preview") === "1" || fxBodyScanStatus === "preview";
   const fxPreviewPayload = fxStore.get("trace-preview-draft-v2", null);
   const fxRequestedSerial = String(fxScanParams.get("serial") || "").trim().toUpperCase();
-  const fxForcedStatus = fxScanParams.get("status") || (["active", "inactive", "reset"].includes(fxBodyScanStatus) ? fxBodyScanStatus : null);
+  const fxRequestedStatus = fxScanParams.get("status");
+  const fxForcedStatus = ["active", "inactive", "reset"].includes(fxRequestedStatus)
+    ? fxRequestedStatus
+    : !fxRequestedSerial && ["active", "inactive", "reset"].includes(fxBodyScanStatus)
+      ? fxBodyScanStatus
+      : null;
   const fxMatchedOrder = fxRequestedSerial ? orders.find(order => fxCodeInRange(fxRequestedSerial, order.range)) : null;
   const fxMatchedActivation = fxMatchedOrder?.activations?.find(row => row.status !== "已重置" && row.range && fxCodeInRange(fxRequestedSerial, row.range));
   const fxResetWithdrawal = fxRequestedSerial ? withdrawals.filter(item => item.status === "已通过" && (item.resetRanges || []).some(range => fxCodeInRange(fxRequestedSerial, range))).sort((a, b) => String(b.decidedAt || b.time || "").localeCompare(String(a.decidedAt || a.time || "")))[0] : null;
-  const fxActivationIsNewer = Boolean(fxMatchedActivation && (!fxResetWithdrawal || String(fxMatchedActivation.time || "") > String(fxResetWithdrawal.decidedAt || fxResetWithdrawal.time || "")));
+  function fxScanActivationProduct(activation, order) {
+    if (!activation) return null;
+    const hasProductId = activation.productId !== undefined && activation.productId !== null && activation.productId !== "";
+    const hasCustomerId = activation.customerId !== undefined && activation.customerId !== null && activation.customerId !== "";
+    const activationCustomer = hasCustomerId ? customers.find(item => Number(item.id) === Number(activation.customerId)) : null;
+    const orderCustomer = order ? fxCustomerForRecord(order) : null;
+    const matchesCustomer = product => {
+      if (!product) return false;
+      if (hasCustomerId) {
+        if (order?.customerId !== undefined && order.customerId !== null && order.customerId !== "" && Number(order.customerId) !== Number(activation.customerId)) return false;
+        if (product.customerId !== undefined && product.customerId !== null && product.customerId !== "" && Number(product.customerId) !== Number(activation.customerId)) return false;
+        if (activationCustomer && !fxRecordBelongsToCustomer(product, activationCustomer)) return false;
+      }
+      return !orderCustomer || fxRecordBelongsToCustomer(product, orderCustomer);
+    };
+    if (hasProductId) {
+      const product = products.find(item => Number(item.id) === Number(activation.productId));
+      return matchesCustomer(product) ? product : null;
+    }
+    if (!activation.batch) return null;
+    const candidates = products.filter(item => item.name === activation.product
+      && item.batch === activation.batch
+      && matchesCustomer(item));
+    return candidates.length === 1 ? candidates[0] : null;
+  }
+  const fxActivatedProduct = fxScanActivationProduct(fxMatchedActivation, fxMatchedOrder);
+  const fxActivationIsNewer = Boolean(fxActivatedProduct && (!fxResetWithdrawal || String(fxMatchedActivation.time || "") > String(fxResetWithdrawal.decidedAt || fxResetWithdrawal.time || "")));
   const fxResolvedScanStatus = fxScanIsPreview
     ? "active"
-    : ["active", "inactive", "reset"].includes(fxForcedStatus)
-      ? fxForcedStatus
-      : fxActivationIsNewer
-        ? "active"
-        : fxResetWithdrawal
-          ? "reset"
-          : fxRequestedSerial
-            ? "inactive"
-            : "active";
+    : fxResetWithdrawal && !fxActivationIsNewer
+      ? "reset"
+      : fxForcedStatus === "reset" || fxForcedStatus === "inactive"
+        ? fxForcedStatus
+        : fxForcedStatus === "active"
+          ? fxRequestedSerial && !fxActivationIsNewer ? "inactive" : "active"
+          : fxActivationIsNewer
+            ? "active"
+            : fxRequestedSerial
+              ? "inactive"
+              : "active";
+  const fxResetProduct = fxResetWithdrawal
+    ? fxProductForRecord({
+        productId: fxResetWithdrawal.productId,
+        product: fxResetWithdrawal.product,
+        batch: fxResetWithdrawal.batch,
+        customerId: fxResetWithdrawal.customerId,
+        customer: fxResetWithdrawal.customer,
+      })
+    : null;
   const fxScanProduct = fxScanIsPreview && fxPreviewPayload?.details
     ? { id: "preview", name: fxPreviewPayload.details.productName || "未命名产品", company: fxPreviewPayload.company || fxPreviewPayload.details.companyName || "", batch: fxPreviewPayload.details.batch || "PREVIEW", status: "预览", amount: 0, details: fxNormalizeDetails(fxPreviewPayload.details) }
-    : products.find(item => item.name === fxMatchedActivation?.product && (!fxMatchedActivation?.batch || item.batch === fxMatchedActivation.batch) && (!fxMatchedOrder || item.company === fxMatchedOrder.customer))
-      || products.find(item => item.name === fxResetWithdrawal?.product && item.company === fxResetWithdrawal?.customer)
+    : fxActivatedProduct
+      || fxResetProduct
       || (!fxRequestedSerial ? products.find(item => item.demoCase === "complete-tea" && item.status === "已激活") : null)
       || (!fxRequestedSerial ? products.find(item => item.status === "已激活") : null)
       || products[0];
@@ -118,10 +160,10 @@ const fxScanParams = new URLSearchParams(location.search);
     const heroSrc = fxFileSrc(heroFile, "assets/tea-product.jpg");
     const statusMeta = fxScanIsPreview ? `<div class="verified-row"><span class="status warning">预览资料</span></div>` : "";
     const scanMeta = fxScanIsPreview
-      ? `<div class="scan-preview-note">预览码不计入扫码次数，也不占用订单额度。</div>`
+      ? `<div class="scan-preview-note">预览码不计入扫码次数，也不占用分配记录码量。</div>`
       : fxRequestedSerial
         ? `<div class="scan-meta"><div><span>总查询次数</span><strong>${formatNumber(state.scanCount || 1)}</strong></div><div><span>溯源质控码</span><strong class="mono">${fxEscape(fxRequestedSerial)}</strong></div></div>`
-        : `<div class="scan-preview-note">当前为扫码端演示入口；扫描订单二维码后将按单码记录查询次数。</div>`;
+        : `<div class="scan-preview-note">当前为扫码端演示入口；扫描溯源质控码后将按单码记录查询次数。</div>`;
     return `<div class="scan-shell"><div class="mobile-topbar"><span></span><h1>溯源质控码</h1><span></span></div><button class="product-hero hero-button" data-action="fx-scan-image" data-src="${fxEscape(heroSrc)}"><img src="${fxEscape(heroSrc)}" alt="${fxEscape(fxScanDetails.productName || "产品图片")}"></button><div class="product-summary">${statusMeta}<h2>${fxEscape(fxScanDetails.productName || "未命名产品")}</h2>${scanMeta}</div><nav class="tabs" aria-label="溯源内容模块">${tabs.map(([key, label]) => `<button type="button" class="tab ${state.scanTab === key ? "active" : ""}" data-action="scan-tab" data-tab="${key}">${label}</button>`).join("")}</nav><div class="scan-content">${active ? active[2]() : `<section class="content-section"><div class="empty"><h3>暂无公开资料</h3><p>当前产品尚未配置可展示内容。</p></div></section>`}</div></div>`;
   };
   scanStateMarkup = function (type) {

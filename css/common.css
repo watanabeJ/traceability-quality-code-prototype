@@ -65,7 +65,8 @@ button:focus-visible, input:focus-visible, select:focus-visible, textarea:focus-
 }
 img { max-width: 100%; display: block; }
 a { color: inherit; }
-.hidden { display: none !important; }
+.hidden,
+.is-hidden { display: none !important; }
 .muted { color: var(--text-muted); }
 .danger-text { color: var(--danger) !important; }
 .success-text { color: var(--success) !important; }
@@ -346,6 +347,22 @@ a { color: inherit; }
   gap: 12px;
   margin-bottom: 12px;
 }
+.allocation-target-banner {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 16px;
+  margin-bottom: 12px;
+  padding: 12px 14px;
+  color: var(--info);
+  background: var(--info-bg);
+  border: 1px solid color-mix(in srgb, var(--info) 22%, transparent);
+  border-radius: var(--r-md);
+}
+.allocation-target-banner strong,
+.allocation-target-banner span { display: block; }
+.allocation-target-banner strong { margin-bottom: 3px; color: var(--text-strong); font-size: 13px; }
+.allocation-target-banner span { font-size: 12px; line-height: 1.5; }
 .filters { display: flex; align-items: center; gap: 8px; flex-wrap: wrap; }
 .search-field { display: inline-flex; align-items: center; gap: 8px; width: auto; }
 .filter-field-label { flex: 0 0 auto; color: var(--text); font-size: 13px; font-weight: 600; white-space: nowrap; }

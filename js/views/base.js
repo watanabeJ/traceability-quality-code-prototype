@@ -5,7 +5,7 @@ function opsOverview() {
     ${pageHeader("运营概览", "2026 年 7 月 27 日 · 平台实时业务状态", `<button class="button primary" data-action="go-reviews">${icon("clipboard-check", "✓")}处理待审核</button>`)}
     ${metricStrip([
       { label: "客户账号", value: "42", note: "本月新增 6 个", icon: "building-2", up: true },
-      { label: "订单码量", value: "680,000", note: "31 张订单", icon: "qr-code" },
+      { label: "码段库存", value: "680,000", note: "31 个批次", icon: "qr-code" },
       { label: "已激活码", value: "462,800", note: "激活率 68.1%", icon: "circle-check", up: true },
       { label: "待处理事项", value: "4", note: "3 项审核 · 1 项撤回", icon: "inbox" },
     ])}
@@ -18,38 +18,42 @@ function opsOverview() {
 
 function opsCustomers() {
   return `<div class="page">
-    ${pageHeader("客户列表", "管理客户资料、登录状态与订单码量", `<button class="button primary" data-action="new-customer">${icon("plus", "+")}新建客户</button>`)}
+    ${pageHeader("客户列表", "管理客户资料、账号状态与码段使用概况", `<button class="button primary" data-action="new-customer">${icon("plus", "+")}新建客户</button>`)}
     <div class="toolbar"><div class="filters"><div class="search-field"><label class="filter-field-label" for="customer-search">客户名称或账号</label><input id="customer-search" placeholder="请输入" aria-label="客户名称或账号"></div><select aria-label="账号状态"><option>全部状态</option><option>启用</option><option>禁用</option></select><button class="button small" data-action="refresh">重置</button></div><button class="button" data-action="export">${icon("download", "↓")}导出</button></div>
     <div class="table-shell"><div class="table-scroll"><table><colgroup><col style="width:25%"><col style="width:13%"><col style="width:16%"><col style="width:10%"><col style="width:12%"><col style="width:12%"><col style="width:12%"></colgroup><thead><tr><th>客户</th><th>账号</th><th>联系电话</th><th>状态</th><th>总量</th><th>已激活</th><th>操作</th></tr></thead><tbody>${customers.map(c => `<tr><td><div class="cell-main">${c.name}</div><div class="cell-sub">${c.total / 10000} 个码段批次</div></td><td class="mono">${c.account}</td><td>${c.phone}</td><td>${status(c.status)}</td><td>${formatNumber(c.total)}</td><td>${formatNumber(c.active)}</td><td><div class="table-actions"><button class="text-action" data-action="edit-customer">编辑</button><button class="icon-button" title="更多" aria-label="更多">${icon("ellipsis", "⋯")}</button></div></td></tr>`).join("")}</tbody></table></div>${pagination(customers.length)}</div>
   </div>`;
 }
 
 function qrStepper() {
-  const steps = ["客户与样式", "订单与数量", "确认生成", "生成结果"];
+  const steps = ["批次信息", "输出尺寸", "确认生成", "生成结果"];
   return `<div class="stepper" style="grid-template-columns:repeat(4,minmax(0,1fr))">${steps.map((label, idx) => `<div class="step ${state.qrStep === idx + 1 ? "active" : ""} ${state.qrStep > idx + 1 ? "done" : ""}"><span class="step-number">${state.qrStep > idx + 1 ? icon("check", "✓") : idx + 1}</span><span class="step-label">${label}</span></div>`).join("")}</div>`;
 }
 
 function qrStepContent() {
-  if (state.qrStep === 1) return `<div class="form-grid"><div class="field full"><label class="required">客户账号</label><select id="qr-customer"><option>云岭生态农业有限公司</option><option>北辰农产有限公司</option><option>松野食品科技有限公司</option></select></div><div class="field"><label class="required">二维码样式</label><select><option>标准方形 · 黑白</option><option>圆角方形 · 黑白</option><option>带产品名称留白</option></select></div><div class="field"><label class="required">印刷尺寸</label><select><option>25 × 25 mm</option><option>30 × 30 mm</option><option>40 × 40 mm</option></select></div></div>`;
-  if (state.qrStep === 2) return `<div class="form-grid"><div class="field"><label class="required">本次生成数量</label><input id="qr-amount" type="number" min="1" value="50000"></div><div class="field"><label>订单备注</label><input placeholder="例如：7 月第二批包装"></div><div class="field full"><label>序列号预览</label><input class="mono" value="YL00060001 – YL00110000" readonly><span class="field-help">序列范围将在提交时由系统最终确认。</span></div></div>`;
-  if (state.qrStep === 3) return `<div class="confirm-list"><div class="confirm-row"><span>客户账号</span><strong>云岭生态农业有限公司</strong></div><div class="confirm-row"><span>样式与尺寸</span><strong>标准方形 · 黑白 · 25 × 25 mm</strong></div><div class="confirm-row"><span>生成数量</span><strong>50,000 枚</strong></div><div class="confirm-row"><span>新订单号</span><strong class="mono">ORD-202607-032</strong></div><div class="confirm-row"><span>预计文件</span><strong>50,000 张 PNG · ZIP 压缩包</strong></div></div>`;
-  return `<div style="text-align:center;padding:12px 0 4px"><div class="success-mark">${icon("check", "✓", "icon-lg")}</div><h2 style="margin:0;font-size:18px">二维码已生成</h2><p class="muted" style="margin:6px 0 0">订单 ORD-202607-032 已创建，共 50,000 枚。</p>${qrMarkup("generated")}</div>`;
+  if (state.qrStep === 1) return `<div class="form-grid"><div class="field"><label class="required">生成数量</label><input id="qr-amount" type="number" min="1" value="50000"></div><div class="field"><label>批次备注</label><input placeholder="例如：8 月备货码段"></div><div class="field full"><label>序列号预览</label><input class="mono" value="QR00060001 – QR00110000" readonly><span class="field-help">生成后进入平台码段库存，后续再按需分配。</span></div></div>`;
+  if (state.qrStep === 2) return `<div class="form-grid"><div class="field"><label class="required">输出尺寸</label><select><option>20 × 20 mm</option><option>25 × 25 mm</option><option>30 × 30 mm</option><option>自定义宽高</option></select></div><div class="field"><label>自定义宽度 mm</label><input type="number" min="8" value="25"></div><div class="field"><label>自定义高度 mm</label><input type="number" min="8" value="25"></div><div class="field full"><span class="field-help">仅输出二维码核心区块，不包含标签模板或额外样式选择。</span></div></div>`;
+  if (state.qrStep === 3) return `<div class="confirm-list"><div class="confirm-row"><span>分配状态</span><strong>未分配</strong></div><div class="confirm-row"><span>输出内容</span><strong>二维码核心区块 · 25 × 25 mm</strong></div><div class="confirm-row"><span>生成数量</span><strong>50,000 枚</strong></div><div class="confirm-row"><span>批次号</span><strong class="mono">BATCH-202608-032</strong></div><div class="confirm-row"><span>预计文件</span><strong>50,000 张 SVG · ZIP 压缩包</strong></div></div>`;
+  return `<div style="text-align:center;padding:12px 0 4px"><div class="success-mark">${icon("check", "✓", "icon-lg")}</div><h2 style="margin:0;font-size:18px">码段批次已生成</h2><p class="muted" style="margin:6px 0 0">批次 BATCH-202608-032 已进入库存，共 50,000 枚。</p>${qrMarkup("generated")}</div>`;
 }
 
 function opsCodes() {
   return `<div class="page">
-    ${pageHeader("二维码生成", "创建连续码段、下载图片压缩包并自动建立订单")}
-    <section class="wizard-shell">${qrStepper()}<div class="wizard-content">${qrStepContent()}</div><div class="wizard-actions"><div>${state.qrStep > 1 && state.qrStep < 4 ? `<button class="button" data-action="qr-prev">${icon("arrow-left", "‹")}上一步</button>` : ""}</div><div>${state.qrStep === 4 ? `<button class="button" data-action="go-orders">查看订单</button><button class="button primary" data-action="download">${icon("download", "↓")}下载压缩包</button>` : `<button class="button primary" data-action="qr-next">${state.qrStep === 3 ? `${icon("sparkles", "·")}确认生成` : `下一步${icon("arrow-right", "›")}`}</button>`}</div></div></section>
+    ${pageHeader("生成码段批次", "先生成带序列号的二维码核心区块，进入平台库存后再按需分配")}
+    <section class="wizard-shell">${qrStepper()}<div class="wizard-content">${qrStepContent()}</div><div class="wizard-actions"><div>${state.qrStep > 1 && state.qrStep < 4 ? `<button class="button" data-action="qr-prev">${icon("arrow-left", "‹")}上一步</button>` : ""}</div><div>${state.qrStep === 4 ? `<button class="button" data-action="go-orders">查看码段台账</button><button class="button primary" data-action="download">${icon("download", "↓")}下载核心区块</button>` : `<button class="button primary" data-action="qr-next">${state.qrStep === 3 ? `${icon("sparkles", "·")}确认生成` : `下一步${icon("arrow-right", "›")}`}</button>`}</div></div></section>
   </div>`;
 }
 
 function opsOrders() {
   return `<div class="page">
-    ${pageHeader("订单码量台账", "核对订单序列号范围、码量余额与激活批次", `<button class="button primary" data-action="go-codes">${icon("qr-code", "▦")}创建订单</button><button class="button" data-action="export">${icon("download", "↓")}导出台账</button>`)}
-    ${metricStrip([{label:"订单总量",value:"31",note:"2026 年累计",icon:"receipt-text"},{label:"码段总量",value:"680,000",note:"全部订单",icon:"qr-code"},{label:"已激活",value:"462,800",note:"68.1%",icon:"circle-check",up:true},{label:"未激活",value:"217,200",note:"可用余额",icon:"circle-dashed"}])}
-    <div class="toolbar"><div class="filters"><div class="search-field">${icon("search", "⌕")}<input placeholder="客户名称或订单号"></div><input type="date" value="2026-07-01" aria-label="开始日期"><input type="date" value="2026-07-27" aria-label="结束日期"></div></div>
-    <div class="table-shell"><div class="table-scroll"><table><colgroup><col style="width:17%"><col style="width:22%"><col style="width:23%"><col style="width:10%"><col style="width:10%"><col style="width:10%"><col style="width:8%"></colgroup><thead><tr><th>订单号</th><th>客户</th><th>序列号范围</th><th>总量</th><th>已激活</th><th>未激活</th><th>操作</th></tr></thead><tbody>${orders.map(o => `<tr><td class="mono">${o.no}</td><td>${o.customer}</td><td class="mono">${o.range}</td><td>${formatNumber(o.total)}</td><td>${formatNumber(o.active)}</td><td>${formatNumber(o.total-o.active)}</td><td><button class="text-action" data-action="order-detail">详情</button></td></tr>`).join("")}</tbody></table></div>${pagination(orders.length)}</div>
+    ${pageHeader("码段台账", "核对平台库存码段、分配对象与激活进度", `<button class="button primary" data-action="go-codes">${icon("qr-code", "▦")}生成码段批次</button><button class="button" data-action="export">${icon("download", "↓")}导出台账</button>`)}
+    ${metricStrip([{label:"码段批次",value:"31",note:"2026 年累计",icon:"receipt-text"},{label:"码段总量",value:"680,000",note:"平台库存与已分配",icon:"qr-code"},{label:"已激活",value:"462,800",note:"68.1%",icon:"circle-check",up:true},{label:"剩余可用",value:"217,200",note:"待分配或待绑定",icon:"circle-dashed"}])}
+    <div class="toolbar"><div class="filters"><div class="search-field">${icon("search", "⌕")}<input placeholder="分配对象或批次号"></div><input type="date" value="2026-07-01" aria-label="开始日期"><input type="date" value="2026-07-27" aria-label="结束日期"></div></div>
+    <div class="table-shell"><div class="table-scroll"><table><colgroup><col style="width:17%"><col style="width:22%"><col style="width:23%"><col style="width:10%"><col style="width:10%"><col style="width:10%"><col style="width:8%"></colgroup><thead><tr><th>批次号</th><th>分配对象</th><th>序列号范围</th><th>总量</th><th>已激活</th><th>剩余可用</th><th>操作</th></tr></thead><tbody>${orders.map(o => `<tr><td class="mono">${o.no}</td><td>${o.customer || "未分配"}</td><td class="mono">${o.range}</td><td>${formatNumber(o.total)}</td><td>${formatNumber(o.active)}</td><td>${formatNumber(o.total-o.active)}</td><td><button class="text-action" data-action="order-detail">详情</button></td></tr>`).join("")}</tbody></table></div>${pagination(orders.length)}</div>
   </div>`;
+}
+
+function opsInventory() {
+  return opsOrders();
 }
 
 function filteredProducts() {

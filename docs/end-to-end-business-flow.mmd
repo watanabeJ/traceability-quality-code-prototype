@@ -1,0 +1,55 @@
+flowchart TD
+    A([线下签约并完成收款])
+    B[运营端：生成库存码段<br/>填写数量并选择固定尺寸或自定义宽高]
+    C[系统生成连续序列号和二维码核心区块<br/>压缩包进入平台码段库存]
+    D[下载压缩包并交付印刷]
+    E[运营端：创建并启用客户账号]
+    F[运营端：从库存分配码段给客户<br/>同步生成订单台账记录]
+    G[客户端：登录并查看已分配码段]
+    H{选择产品绑定方式}
+    I[选择已有已激活产品<br/>填写数量并预览申请码段]
+    J[新建产品并填写五个产品资料模块<br/>保存草稿并预览确认]
+    K{产品资料与展示效果<br/>是否确认}
+    L[设置绑定数量<br/>确认订单并预览申请码段]
+    M[客户端：提交统一绑定申请]
+    N{运营端：绑定审核<br/>同步审核产品资料与绑定信息}
+    O[站内信通知驳回原因<br/>客户修改后重新提交]
+    P[运营端：确认订单、数量和具体码段<br/>审核通过并激活]
+    Q[系统写入产品绑定记录<br/>更新订单已激活量与剩余可用量]
+    R[站内信通知客户绑定已激活]
+    S{是否撤回已绑码段}
+    T[客户端：选择具体已绑码段<br/>填写原因并提交撤回申请]
+    U{运营端：撤回审核}
+    V[保留产品与码段绑定关系<br/>站内信通知驳回原因]
+    W[仅重置所选码段<br/>恢复订单可用量并通知客户]
+    X[客户贴码使用]
+    Y([消费者扫码<br/>查看溯源质控信息])
+    Z[运营端：在订单台账选择已有已激活产品<br/>直接绑定指定数量和码段]
+
+    A --> B --> C --> D --> E --> F --> G --> H
+    H -- 已有产品 --> I --> M
+    H -- 新建产品 --> J --> K
+    K -- 需要修改 --> J
+    K -- 确认无误 --> L --> M
+    M --> N
+    N -- 驳回 --> O --> M
+    N -- 通过 --> P --> Q --> R --> S
+    F -. 运营端直接绑定 .-> Z --> Q
+    S -- 无需撤回 --> X --> Y
+    S -- 发起撤回 --> T --> U
+    U -- 驳回 --> V --> S
+    U -- 通过 --> W --> G
+
+    classDef offline fill:#f5f5f5,stroke:#666,color:#222,stroke-width:1px;
+    classDef ops fill:#e8f2ff,stroke:#3975b7,color:#17324d,stroke-width:1px;
+    classDef customer fill:#edf8ee,stroke:#4f8a55,color:#203b22,stroke-width:1px;
+    classDef scan fill:#fff4d8,stroke:#b27a1b,color:#4a3410,stroke-width:1px;
+    classDef decision fill:#fff,stroke:#555,color:#222,stroke-width:2px;
+    classDef terminal fill:#282828,stroke:#282828,color:#fff,stroke-width:1px;
+
+    class D offline;
+    class B,C,E,F,N,P,Q,U,W,Z ops;
+    class G,I,J,L,M,O,R,T,V,X customer;
+    class Y scan;
+    class H,K,S decision;
+    class A terminal;

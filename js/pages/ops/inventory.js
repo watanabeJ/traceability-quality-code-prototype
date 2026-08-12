@@ -2,7 +2,7 @@ import { bootstrapPage } from "../../bootstrap.js?v=v6q9x3ct";
 
 bootstrapPage({
   "portal": "ops",
-  "page": "codes",
-  "title": "生成码段批次",
-  "pageKey": "P04"
+  "page": "inventory",
+  "title": "码段库存",
+  "pageKey": "P05"
 });

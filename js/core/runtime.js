@@ -93,6 +93,10 @@ function syncCurrentRoute() {
   if (!file) return;
   const target = new URL(file, document.baseURI);
   if (page === "order-detail" && state.selectedOrderNo) target.searchParams.set("order", state.selectedOrderNo);
+  if (page === "inventory-detail" && state.selectedCodeBatchNo) {
+    const batch = codeBatches.find(item => item.no === state.selectedCodeBatchNo);
+    if (batch) target.searchParams.set("range", batch.range || batch.no);
+  }
   if (page === "customer-detail" && state.selectedCustomerId) target.searchParams.set("customer", state.selectedCustomerId);
   if (page === "review-detail" && state.drawerProductId) target.searchParams.set("product", state.drawerProductId);
   if (page === "editor" && state.editorProductId) target.searchParams.set("product", state.editorProductId);
@@ -124,6 +128,12 @@ function showToast(message) {
 }
 
 function setNav(page) {
+  const allowedPages = new Set(Object.keys(pageFiles[state.portal] || {}));
+  if (!allowedPages.has(page)) return;
+  if (state.portal === "ops" && page !== "inventory") {
+    state.allocationCustomerId = null;
+    state.allocationSourceRange = "";
+  }
   if (state.portal === "ops") state.opsPage = page;
   if (state.portal === "customer") state.customerPage = page;
   state.modal = null;
@@ -203,6 +213,12 @@ document.addEventListener("click", (event) => {
   event.preventDefault();
   if (target.dataset.nav) return setNav(target.dataset.nav);
   if (!action) return;
+  const legacyBusinessActions = new Set([
+    "new-customer", "edit-customer", "open-first-pending", "open-review", "approve-review", "reject-review",
+    "clear-filters", "order-detail", "approve-withdrawal", "reject-withdrawal", "mark-read", "read-message",
+    "save-password", "customer-edit-product", "product-next", "customer-preview", "regenerate-preview", "submit-product",
+  ]);
+  if (legacyBusinessActions.has(action)) return;
   if (action === "toggle-sidebar") { state.sidebarCollapsed = !state.sidebarCollapsed; localStorage.setItem("trace-sidebar-collapsed-v1", state.sidebarCollapsed ? "1" : "0"); return render(); }
   if (action === "pagination-page") {
     const key = target.dataset.paginationKey;
@@ -229,19 +245,11 @@ document.addEventListener("click", (event) => {
   if (action === "download") return showToast("下载已开始");
   if (action === "go-reviews") return setNav("bind-requests");
   if (action === "go-codes") return setNav("codes");
+  if (action === "go-inventory") return setNav("inventory");
   if (action === "go-orders") return setNav("orders");
   if (action === "customer-products") return setNav("orders");
   if (action === "new-customer") { state.modal = "new-customer"; return render(); }
   if (action === "edit-customer") return showToast("客户编辑抽屉已就绪");
-  if (action === "confirm-new-customer") {
-    const value = document.getElementById("new-customer-name")?.value.trim();
-    if (!value) return showToast("请填写客户名称");
-    customers.unshift({ name: value, account: "new_customer", phone: "待补充", status: "启用", total: 0, active: 0 });
-    state.modal = null;
-    render();
-    return showToast("客户账号已创建");
-  }
-  if (action === "qr-next") { state.qrStep = Math.min(4, state.qrStep + 1); render(); return state.qrStep === 4 ? showToast("二维码生成任务已完成") : null; }
   if (action === "qr-prev") { state.qrStep = Math.max(1, state.qrStep - 1); return render(); }
   if (action === "open-first-pending") {
     const pending = products.find(p => p.status === "待审核");
@@ -252,34 +260,20 @@ document.addEventListener("click", (event) => {
   if (action === "close-drawer") { state.drawerProductId = null; state.modal = null; return render(); }
   if (action === "approve-review") { state.modal = "activation"; return render(); }
   if (action === "reject-review") { state.modal = "reject"; return render(); }
-  if (action === "confirm-activation") {
-    const amount = Number(document.getElementById("activation-amount")?.value || 0);
-    if (amount < 1 || amount > 40000) return showToast("激活数量必须在可用余额内");
-    const product = products.find(p => p.id === state.drawerProductId);
-    if (product) { product.status = "已激活"; product.amount = amount; }
-    state.modal = null; state.drawerProductId = null; render(); return showToast(`审核通过，已激活 ${formatNumber(amount)} 枚码`);
-  }
-  if (action === "confirm-reject") {
-    const product = products.find(p => p.id === state.drawerProductId);
-    if (product) product.status = "已驳回";
-    state.modal = null; state.drawerProductId = null; render(); return showToast("产品已驳回，客户将收到通知");
-  }
   if (action === "clear-filters") { state.filter = ""; state.reviewStatus = "全部状态"; return render(); }
   if (action === "order-detail") return showToast("已加载订单激活批次");
   if (action === "approve-withdrawal") { state.modal = "withdraw-approve"; return render(); }
   if (action === "reject-withdrawal") return showToast("撤回申请已驳回");
-  if (action === "confirm-withdraw-approve") { withdrawals[0].status = "已通过"; state.modal = null; render(); return showToast("撤回已通过，关联码已重置"); }
   if (action === "mark-read") return showToast("全部消息已标记为已读");
   if (action === "read-message") { state.modal = "message"; return render(); }
   if (action === "save-password") return showToast("登录密码已更新");
-  if (action === "customer-new-product" || action === "customer-edit-product") { state.customerPage = "editor"; state.productStep = 0; return render(); }
+  if (action === "customer-edit-product") { state.customerPage = "editor"; state.productStep = 0; return render(); }
   if (action === "product-step") { state.productStep = Number(target.dataset.step); return render(); }
   if (action === "product-next") { if (state.productStep < 4) state.productStep += 1; render(); return showToast(state.productStep === 4 ? "已进入生产追溯模块" : "草稿已保存"); }
   if (action === "product-prev") { state.productStep = Math.max(0, state.productStep - 1); return render(); }
   if (action === "customer-preview") { state.modal = "preview"; return render(); }
   if (action === "regenerate-preview") return showToast("预览码已重新生成");
   if (action === "submit-product") { state.modal = "submit-product"; return render(); }
-  if (action === "confirm-submit-product") { products[0].status = "待审核"; state.modal = null; state.customerPage = "products"; render(); return showToast("产品资料已提交审核"); }
   if (action === "close-modal") { state.modal = null; return render(); }
   if (action === "scan-status") { state.scanStatus = target.dataset.status; return render(); }
   if (action === "scan-tab") { state.scanTab = target.dataset.tab; return render(); }
@@ -349,18 +343,44 @@ function restoreFromLocation() {
   const params = new URLSearchParams(window.location.search);
   state.portal = entryPortal;
   document.body.dataset.initialPage = page;
-  const opsRoutes = new Set([...nav.ops.map(item => item[0]), "codes", "customer-detail", "review-detail", "order-detail"]);
+  const opsRoutes = new Set([...nav.ops.map(item => item[0]), "codes", "inventory", "inventory-detail", "customer-detail", "review-detail", "order-detail"]);
   if (entryPortal === "ops" && opsRoutes.has(page)) state.opsPage = page;
   const customerRoutes = new Set([...nav.customer.map(item => item[0]), "editor", "order-detail"]);
   if (entryPortal === "customer" && customerRoutes.has(page)) state.customerPage = page;
   if (page === "order-detail" && params.get("order")) state.selectedOrderNo = params.get("order");
+  if (entryPortal === "ops" && page === "inventory-detail" && params.get("range")) {
+    const routeRange = params.get("range");
+    state.selectedCodeBatchNo = codeBatches.find(item => item.range === routeRange || item.no === routeRange)?.no || null;
+  }
   if (page === "customer-detail" && params.get("customer")) state.selectedCustomerId = Number(params.get("customer"));
   if (page === "review-detail" && params.get("product")) state.drawerProductId = Number(params.get("product"));
   if (page === "editor" && params.get("product")) {
     const productId = Number(params.get("product"));
     const product = typeof products !== "undefined" ? products.find(item => item.id === productId) : null;
     const targetOrderNo = params.get("order");
+    const currentCustomer = typeof fxCurrentCustomer === "function" ? fxCurrentCustomer() : null;
+    const targetOrder = targetOrderNo && typeof orders !== "undefined" ? orders.find(item => item.no === targetOrderNo) : null;
+    if (entryPortal === "customer" && (!state.authenticated || currentCustomer?.status !== "启用" || !product || !targetOrderNo || !targetOrder || !fxRecordBelongsToCustomer(product, currentCustomer) || !fxRecordBelongsToCustomer(targetOrder, currentCustomer) || targetOrder.allocationStatus === "已撤销")) {
+      state.editorProductId = null;
+      state.editorDraft = null;
+      state.editorTargetOrderNo = null;
+      state.selectedOrderNo = null;
+      state.customerPage = "orders";
+      return;
+    }
     const bindRequestId = Number(params.get("request")) || null;
+    const bindRequest = bindRequestId && typeof bindRequests !== "undefined"
+      ? bindRequests.find(item => Number(item.id) === bindRequestId && item.orderNo === targetOrderNo && (!currentCustomer || fxRecordBelongsToCustomer(item, currentCustomer)))
+      : null;
+    if (entryPortal === "customer" && bindRequestId && !bindRequest) {
+      state.editorProductId = null;
+      state.editorDraft = null;
+      state.editorTargetOrderNo = null;
+      state.editorBindRequestId = null;
+      state.selectedOrderNo = null;
+      state.customerPage = "orders";
+      return;
+    }
     const routeRange = params.get("range") || "";
     const routeAmount = Number(params.get("amount")) || 0;
     state.editorProductId = productId;
@@ -373,11 +393,22 @@ function restoreFromLocation() {
     state.editorRequestedAmount = routeAmount || (targetOrderNo ? Number(product?.requestedAmount || 0) : 0);
     if (product) {
       state.editorDraft = fxNormalizeDetails(fxClone(product.details || fxDefaultDetails(product)));
-      state.editorReadonly = params.get("readonly") === "1" || (!targetOrderNo && ["待审核", "已激活"].includes(product.status));
+      const editableBinding = bindRequest && ["草稿", "已驳回"].includes(bindRequest.status);
+      state.editorReadonly = params.get("readonly") === "1" || (!editableBinding && ["待审核", "已激活"].includes(product.status));
       if (!state.editorReadonly && !routeRange && typeof fxInitializeEditorBinding === "function") fxInitializeEditorBinding(product);
     }
   }
-  if (page === "editor" && params.get("order") && !params.get("product")) state.editorTargetOrderNo = params.get("order");
+  if (page === "editor" && params.get("order") && !params.get("product")) {
+    const targetOrder = typeof orders !== "undefined" ? orders.find(item => item.no === params.get("order")) : null;
+    const currentCustomer = typeof fxCurrentCustomer === "function" ? fxCurrentCustomer() : null;
+    if (entryPortal === "customer" && (!state.authenticated || currentCustomer?.status !== "启用" || !targetOrder || !fxRecordBelongsToCustomer(targetOrder, currentCustomer) || targetOrder.allocationStatus === "已撤销" || (typeof fxOrderAvailableAmount === "function" && fxOrderAvailableAmount(targetOrder) < 1))) {
+      state.editorTargetOrderNo = null;
+      state.selectedOrderNo = null;
+      state.customerPage = "orders";
+      return;
+    }
+    state.editorTargetOrderNo = params.get("order");
+  }
   if (["review-detail", "editor"].includes(page) && params.get("step")) state.productStep = Math.max(0, Math.min(5, Number(params.get("step")) || 0));
 }
 
@@ -387,6 +418,3 @@ window.addEventListener("popstate", () => {
 });
 
 document.addEventListener("submit", event => event.preventDefault());
-
-restoreFromLocation();
-render();
