@@ -278,6 +278,7 @@ render = function () {
     const resets = {
       operators: { operatorNameFilter: "", operatorAccountFilter: "", operatorStatus: "全部状态", operatorDateFrom: "", operatorDateTo: "", operatorDateDraftFrom: "", operatorDateDraftTo: "", operatorCalendarOpen: false },
       customers: { customerNameFilter: "", customerAccountFilter: "", customerPhoneFilter: "", customerStatus: "全部状态", customerSortKey: "", customerSortDirection: "asc" },
+      "customer-detail-orders": { customerDetailOrderFilter: "", customerDetailOrderSortKey: "", customerDetailOrderSortDirection: "asc" },
       inventory: { inventoryRangeFilter: "", inventoryStatus: "全部状态", orderFrom: "", orderTo: "", orderDateDraftFrom: "", orderDateDraftTo: "", orderCalendarOpen: false, orderSortKey: "", orderSortDirection: "asc" },
       "inventory-allocations": { inventoryAllocationCustomerFilter: "", inventoryAllocationOrderFilter: "", inventoryAllocationSortKey: "", inventoryAllocationSortDirection: "asc", inventoryAllocationDateFrom: "", inventoryAllocationDateTo: "", inventoryAllocationDateDraftFrom: "", inventoryAllocationDateDraftTo: "", customerCalendarOpen: false, customerCalendarContext: "" },
       orders: { orderCustomerFilter: "", orderNumberFilter: "", orderFrom: "", orderTo: "", orderDateDraftFrom: "", orderDateDraftTo: "", orderCalendarOpen: false, orderSortKey: "", orderSortDirection: "asc", highlightOrderNo: null },
@@ -305,7 +306,7 @@ render = function () {
       const currentCustomer = fxCurrentCustomer();
       const effectiveOrderNo = targetOrderNo || product?.requestedOrderNo || product?.preferredOrderNo || null;
       const targetOrder = effectiveOrderNo ? orders.find(item => item.no === effectiveOrderNo && fxRecordBelongsToCustomer(item, currentCustomer) && item.allocationStatus !== "已撤销") : null;
-      if ((product && !fxRecordBelongsToCustomer(product, currentCustomer)) || !targetOrder) return showToast("请从我的码段选择有效分配记录后编辑产品与绑定申请");
+      if ((product && !fxRecordBelongsToCustomer(product, currentCustomer)) || !targetOrder) return showToast("请从订单台账选择有效订单后编辑产品与绑定申请");
       targetOrderNo = effectiveOrderNo;
     } else {
       if (!fxEnabledOperatorSession()) return showToast("当前运营账号状态异常，请重新登录");
@@ -330,7 +331,7 @@ render = function () {
   function fxOpenBindingRecordEditor(product, options = {}) {
     if (!fxEnabledCustomerSession()) return showToast("当前客户账号状态异常，请重新登录");
     const order = orders.find(item => item.no === options.orderNo && fxRecordBelongsToCustomer(item, fxCurrentCustomer()) && item.allocationStatus !== "已撤销");
-    if (!product || !fxRecordBelongsToCustomer(product, fxCurrentCustomer()) || !order) return showToast("绑定记录关联的产品或分配记录不存在");
+    if (!product || !fxRecordBelongsToCustomer(product, fxCurrentCustomer()) || !order) return showToast("绑定记录关联的产品或订单不存在");
     const readonly = Boolean(options.readonly);
     state.editorProductId = product.id;
     state.editorDraft = fxNormalizeDetails(fxClone(product.details || fxDefaultDetails(product)));
@@ -345,7 +346,7 @@ render = function () {
       state.editorRequestedAmount = Number(options.amount || 0);
     } else {
       const ranges = fxOrderFreeRanges(order, product.id);
-      if (!ranges.length || fxOrderAvailableAmount(order, product.id) < 1) return showToast("当前码段分配记录没有可重新申请的连续码段");
+      if (!ranges.length || fxOrderAvailableAmount(order, product.id) < 1) return showToast("当前订单没有可重新申请的连续码段");
       const selected = ranges.find(item => {
         const [requestedStart, requestedEnd] = String(options.range || "").split("–");
         return requestedStart && requestedEnd && fxCodeInRange(requestedStart, item.range) && fxCodeInRange(requestedEnd, item.range);
@@ -376,12 +377,12 @@ render = function () {
     const customerOrder = state.editorOwner === "customer" && state.editorTargetOrderNo
       ? orders.find(item => item.no === state.editorTargetOrderNo && item.allocationStatus !== "已撤销" && fxRecordBelongsToCustomer(item, fxCurrentCustomer()))
       : null;
-    if (state.editorOwner === "customer" && !customerOrder) { showToast("请从我的码段选择有效分配记录后编辑产品与绑定申请"); return false; }
+    if (state.editorOwner === "customer" && !customerOrder) { showToast("请从订单台账选择有效订单后编辑产品与绑定申请"); return false; }
     if (!product) { product = { id: Math.max(0, ...products.map(item => item.id)) + 1, customerId: fxCurrentCustomer().id, name: draft.productName, company: fxCurrentCustomer().name, category: draft.category, batch: draft.batch, status: "草稿", submitted: "", amount: 0, details: fxClone(draft), preferredOrderNo: state.editorTargetOrderNo || null }; products.unshift(product); state.editorProductId = product.id; }
     const combined = Boolean(state.editorTargetOrderNo);
     if (submit && combined) {
       const order = orders.find(item => item.no === state.editorTargetOrderNo && fxRecordBelongsToCustomer(item, fxCurrentCustomer()) && item.allocationStatus !== "已撤销");
-      if (!order) { showToast("关联的码段分配记录不存在，请返回我的码段重新发起申请"); return false; }
+      if (!order) { showToast("关联订单不存在，请返回订单台账重新发起申请"); return false; }
       if (!state.editorRequestedSourceRange) { state.productStep = fxEditorSteps().length - 1; render(); showToast("请选择可用码段区间"); return false; }
       if (!Number.isSafeInteger(Number(state.editorRequestedAmount)) || Number(state.editorRequestedAmount) < 1) { state.productStep = fxEditorSteps().length - 1; render(); showToast("请输入有效的申请绑定数量"); return false; }
       if (!fxRequestedRangeIsAvailable(order, state.editorRequestedSourceRange, state.editorRequestedRange, state.editorRequestedAmount, product.id)) { state.productStep = fxEditorSteps().length - 1; fxInitializeEditorBinding(product); render(); showToast("所选码段已发生变化，请重新选择"); return false; }
@@ -593,11 +594,11 @@ render = function () {
     if (action === "fx-back-reviews") { state.drawerProductId = null; state.selectedBindRequestId = null; state.modal = null; state.reviewEditing = false; state.editorProductId = null; state.editorDraft = null; fxClearEditorBinding(); state.opsPage = "bind-requests"; return render(); }
     if (action === "fx-cancel-ops-edit") { state.reviewEditing = false; state.editorProductId = null; state.editorDraft = null; state.editorReadonly = false; state.editorAddingField = null; return render(); }
     if (action === "fx-edit-customer") { if (!fxEnabledOperatorSession()) return showToast("当前账号无权执行此操作"); state.selectedCustomerId = Number(target.dataset.id); state.modal = "fx-customer"; return render(); }
-    if (action === "fx-customer-view-orders") { const item = customers.find(row => row.id === Number(target.dataset.id)); if (!item) return showToast("客户账号不存在"); state.modal = null; state.orderCustomerFilter = item.name; state.orderNumberFilter = ""; state.opsPage = "orders"; render(); return showToast(`正在查看 ${item.name} 的码段分配记录`); }
+    if (action === "fx-customer-view-orders") { const item = customers.find(row => row.id === Number(target.dataset.id)); if (!item) return showToast("客户账号不存在"); state.modal = null; state.orderCustomerFilter = item.name; state.orderNumberFilter = ""; state.opsPage = "orders"; render(); return showToast(`正在查看 ${item.name} 的订单`); }
     if (action === "fx-focus-customer-order") {
       if (state.portal !== "customer") return;
       const order = fxCustomerOrders().find(item => item.no === target.dataset.no);
-      if (!order) return showToast("码段分配记录不存在");
+      if (!order) return showToast("订单不存在");
       state.modal = null;
       state.customerOrderDateFrom = "";
       state.customerOrderDateTo = "";
@@ -608,7 +609,7 @@ render = function () {
       state.customerPage = "order-detail";
       return render();
     }
-    if (action === "fx-focus-order") { if (state.portal !== "ops") return showToast("当前账号无权执行此操作"); const order = orders.find(item => item.no === target.dataset.no && item.allocationStatus !== "已撤销"); if (!order) return showToast("码段分配记录不存在"); state.selectedOrderNo = order.no; state.modal = null; state.opsPage = "order-detail"; return render(); }
+    if (action === "fx-focus-order") { if (state.portal !== "ops") return showToast("当前账号无权执行此操作"); const order = orders.find(item => item.no === target.dataset.no && item.allocationStatus !== "已撤销"); if (!order) return showToast("订单不存在"); state.selectedOrderNo = order.no; state.modal = null; state.opsPage = "order-detail"; return render(); }
     if (action === "fx-view-customer-products") { const item = customers.find(row => row.name === target.dataset.customer); if (!item) return showToast("客户账号不存在"); state.modal = null; state.bindRequestCustomerFilter = item.name; state.bindRequestOrderFilter = ""; state.bindRequestProductFilter = ""; state.bindRequestBatchFilter = ""; state.bindRequestStatus = "全部状态"; state.opsPage = "bind-requests"; render(); return showToast(`正在查看 ${item.name} 的绑定申请`); }
     if (action === "fx-find-customer-account") { const item = customers.find(row => row.name === target.dataset.customer); if (!item) return showToast("客户账号不存在"); state.customerNameFilter = item.name; state.customerAccountFilter = ""; state.customerPhoneFilter = ""; state.opsPage = "customers"; render(); return; }
     if (["fx-confirm-customer", "fx-reset-customer-password", "fx-toggle-customer"].includes(action) && !fxEnabledOperatorSession()) return showToast("当前账号无权执行此操作");
@@ -715,6 +716,7 @@ render = function () {
       state.messageDateFrom = state.messageDateDraftFrom; state.messageDateTo = state.messageDateDraftTo || state.messageDateDraftFrom; state.messageCalendarOpen = false; return render();
     }
     if (action === "fx-sort-customers") { fxToggleSort("customer", target.dataset.sort); return render(); }
+    if (action === "fx-sort-customerDetailOrders") { fxToggleSort("customerDetailOrder", target.dataset.sort); return render(); }
     if (action === "fx-sort-orders") { fxToggleSort("order", target.dataset.sort); return render(); }
     if (action === "fx-sort-inventoryAllocations") { fxToggleSort("inventoryAllocation", target.dataset.sort); return render(); }
     if (action === "fx-sort-bindRequests") { fxToggleSort("bindRequest", target.dataset.sort); return render(); }
@@ -725,7 +727,7 @@ render = function () {
       if (state.portal !== "customer") return showToast("当前账号无权执行此操作");
       const product = products.find(item => item.id === Number(target.dataset.id) && fxRecordBelongsToCustomer(item, fxCurrentCustomer()));
       if (!product || product.status !== "待审核") return showToast("该产品当前不在待审核状态");
-      state.modalData = { kind: "withdraw-review-edit", id: product.id, title: "撤回审核并修改", subtitle: "撤回后，运营端将不再审核当前提交版本。", subject: `${product.name}（${product.batch}）`, operation: "恢复为草稿并进入编辑，保留待关联的码段分配记录", danger: true };
+      state.modalData = { kind: "withdraw-review-edit", id: product.id, title: "撤回审核并修改", subtitle: "撤回后，运营端将不再审核当前提交版本。", subject: `${product.name}（${product.batch}）`, operation: "恢复为草稿并进入编辑，保留待关联订单", danger: true };
       state.modal = "fx-confirm";
       return render();
     }
@@ -818,8 +820,8 @@ render = function () {
       }
       fxSaveOperators(); fxSaveBusiness(); state.modal = null; render(); return showToast("操作已完成");
     }
-    if (action === "fx-export-customers") { fxDownloadExcel(`客户列表_${fxToday}.xls`, ["客户名称", "账号", "电话", "状态", "总量", "已激活", "绑定申请中", "剩余可用"], customers.map(item => { const summary = fxCustomerCodeSummary(item.name); return [item.name, item.account, item.phone, item.status, summary.total, summary.active, summary.pending, summary.available]; })); return showToast("客户列表已导出"); }
-    if (action === "fx-new-qr") { if (!fxEnabledOperatorSession()) return showToast("仅运营端可以生成码段"); state.qrStep = 1; state.qrDraft.amount = 500; state.qrDraft.note = ""; state.qrDraft.size = "25 × 25 mm"; state.qrDraft.customWidth = 25; state.qrDraft.customHeight = 25; fxSetGeneratedBatchNo(null); return render(); }
+    if (action === "fx-export-customers") { fxDownloadExcel(`客户列表_${fxToday}.xls`, ["客户名称", "账号", "联系电话", "状态", "订单码量", "已激活", "绑定申请中", "剩余可用"], customers.map(item => { const summary = fxCustomerCodeSummary(item.name); return [item.name, item.account, item.phone, item.status, summary.total, summary.active, summary.pending, summary.available]; })); return showToast("客户列表已导出"); }
+    if (action === "fx-new-qr") { if (!fxEnabledOperatorSession()) return showToast("仅运营端可以生成码段"); state.qrStep = 1; state.qrDraft.amount = 500; state.qrDraft.note = ""; state.qrDraft.size = "custom"; state.qrDraft.customWidth = 25; state.qrDraft.customHeight = 25; fxSetGeneratedBatchNo(null); return render(); }
     if (action === "fx-finish-order") { state.inventoryRangeFilter = ""; state.highlightOrderNo = null; fxSetGeneratedBatchNo(null); state.opsPage = "inventory"; return render(); }
     if (action === "fx-view-generated-order") { const no = fxGeneratedBatchNo(); if (!no) return showToast("尚未生成码段"); const batch = codeBatches.find(item => item.no === no); state.inventoryRangeFilter = batch?.range || ""; state.opsPage = "inventory"; return render(); }
     if (action === "fx-create-order") {
@@ -828,21 +830,21 @@ render = function () {
       if (!Number.isSafeInteger(amount) || amount < 1 || amount > 100000) return showToast("单个批次生成数量必须为 1–100,000 枚");
       state.qrDraft.amount = amount;
       state.qrDraft.note = fxRead("fx-qr-note");
-      state.qrDraft.size = fxRead("fx-qr-size") || state.qrDraft.size;
       const customWidth = Number(fxRead("fx-qr-width")); const customHeight = Number(fxRead("fx-qr-height"));
-      if (state.qrDraft.size === "custom" && (!Number.isFinite(customWidth) || !Number.isFinite(customHeight) || customWidth < 8 || customHeight < 8 || customWidth > 300 || customHeight > 300)) return showToast("自定义宽高必须在 8–300 mm 之间");
-      state.qrDraft.customWidth = customWidth || state.qrDraft.customWidth || 25;
-      state.qrDraft.customHeight = customHeight || state.qrDraft.customHeight || 25;
+      if (!Number.isFinite(customWidth) || !Number.isFinite(customHeight) || customWidth < 8 || customHeight < 8 || customWidth > 300 || customHeight > 300) return showToast("输出宽高必须在 8–300 mm 之间");
+      state.qrDraft.size = "custom";
+      state.qrDraft.customWidth = customWidth;
+      state.qrDraft.customHeight = customHeight;
       const prefix = state.qrDraft.prefix || "QR";
       const start = fxNextCodeSerialNumber(prefix);
       const no = fxNextCodeBatchNo();
       const currentDate = fxCurrentDateParts().date;
-      const size = state.qrDraft.size === "custom" ? `自定义 ${state.qrDraft.customWidth} × ${state.qrDraft.customHeight} mm` : state.qrDraft.size;
+      const size = `${state.qrDraft.customWidth} × ${state.qrDraft.customHeight} mm`;
       const batch = fxNormalizeCodeBatch({ id: Date.now(), no, range: `${fxSerial(prefix, start)}–${fxSerial(prefix, start + amount - 1)}`, total: amount, created: currentDate, createdAt: fxNow(), style: "二维码核心区块", size, customWidth: state.qrDraft.customWidth, customHeight: state.qrDraft.customHeight, note: state.qrDraft.note }, codeBatches.length);
       codeBatches.unshift(batch); fxSetGeneratedBatchNo(no); state.qrStep = 4; fxSaveBusiness(); render();
       return showToast("码段已生成，当前状态为未分配");
     }
-    if (action === "fx-download-qr") { const batch = codeBatches.find(item => item.no === fxGeneratedBatchNo()); if (!batch) return showToast("码段不存在"); if (Number(batch.total || 0) > 5000) return showToast("浏览器端单次下载最多 5,000 枚；更大码段请按分配记录分批导出"); fxDownloadQrPackage(batch); return showToast("二维码核心区块压缩包已开始下载"); }
+    if (action === "fx-download-qr") { const batch = codeBatches.find(item => item.no === fxGeneratedBatchNo()); if (!batch) return showToast("码段不存在"); if (Number(batch.total || 0) > 5000) return showToast("浏览器端单次下载最多 5,000 枚；更大码段请按订单分批导出"); fxDownloadQrPackage(batch); return showToast("二维码核心区块压缩包已开始下载"); }
     if (action === "fx-export-orders") {
       const rangeTerm = state.inventoryRangeFilter.trim().toLowerCase();
       const preparedRows = codeBatches.map(item => ({ ...item, allocated: fxCodeBatchAllocatedAmount(item), remaining: fxCodeBatchAvailableAmount(item) }));
@@ -884,6 +886,7 @@ render = function () {
       const customer = customers.find(item => item.id === Number(fxRead("fx-allocation-customer")) && item.status === "启用");
       const amount = Number(fxRead("fx-allocation-amount"));
       const sourceRange = fxRead("fx-allocation-source-range") || state.allocationSourceRange || "";
+      const note = fxRead("fx-allocation-note").trim();
       if (!batch) return showToast("库存码段不存在");
       if (!customer) return showToast("请选择启用状态的客户账号");
       const selectedFreeRange = fxCodeBatchFreeRanges(batch).find(item => item.range === sourceRange);
@@ -892,17 +895,16 @@ render = function () {
       const range = fxRequestedRange(selectedFreeRange.range, amount);
       if (!range || fxCodeBatchAllocationRange(batch, amount, sourceRange) !== range) return showToast("所选码段已被占用，请重新分配");
       const allocatedAt = fxNow(); const orderNo = fxNextAllocationOrderNo();
-      const order = fxNormalizeAllocationOrder({ id: Date.now(), no: orderNo, sourceBatchNo: batch.no, customer: customer.name, customerId: customer.id, range, total: amount, active: 0, created: fxCurrentDateParts().date, createdAt: allocatedAt, allocatedAt, allocatedBy: fxCurrentOperator().name, allocationStatus: "已分配", activations: [], note: `来自库存码段 ${batch.range}` }, orders.length);
+      const order = fxNormalizeAllocationOrder({ id: Date.now(), no: orderNo, sourceBatchNo: batch.no, customer: customer.name, customerId: customer.id, range, total: amount, active: 0, created: fxCurrentDateParts().date, createdAt: allocatedAt, allocatedAt, allocatedBy: fxCurrentOperator().name, allocationStatus: "已分配", activations: [], note }, orders.length);
       orders.unshift(order);
-      fxAddMessage({ type: "码段分配通知", title: `${customer.name} 获得新码段`, detail: `分配记录：${orderNo}；分配数量：${formatNumber(amount)} 枚；分配码段：${range}。`, recipient: customer.name, customer: customer.name, customerId: customer.id, orderNo, sourceBatchNo: batch.no });
       state.modal = null; state.selectedCodeBatchNo = batch.no; state.selectedOrderNo = order.no; state.allocationCustomerId = null; state.allocationSourceRange = ""; state.opsPage = "order-detail"; fxSaveBusiness(); render();
       return showToast(`已向 ${customer.name} 分配 ${formatNumber(amount)} 枚码`);
     }
     if (action === "fx-order-detail") {
-      if (state.portal === "ops" && !fxEnabledOperatorSession()) return showToast("当前账号无权查看码段分配记录");
-      if (state.portal === "customer" && !fxEnabledCustomerSession()) return showToast("当前账号无权查看码段分配记录");
+      if (state.portal === "ops" && !fxEnabledOperatorSession()) return showToast("当前账号无权查看订单");
+      if (state.portal === "customer" && !fxEnabledCustomerSession()) return showToast("当前账号无权查看订单");
       const order = orders.find(item => item.no === target.dataset.no);
-      if (!order || order.allocationStatus === "已撤销" || (state.portal === "customer" && !fxRecordBelongsToCustomer(order, fxCurrentCustomer()))) return showToast("码段分配记录不存在");
+      if (!order || order.allocationStatus === "已撤销" || (state.portal === "customer" && !fxRecordBelongsToCustomer(order, fxCurrentCustomer()))) return showToast("订单不存在");
       state.selectedOrderNo = order.no;
       state.modal = null;
       if (state.portal === "customer") state.customerPage = "order-detail";
@@ -926,7 +928,7 @@ render = function () {
     }
     if (action === "fx-view-order-bind-requests") {
       const order = orders.find(item => item.no === target.dataset.no && item.allocationStatus !== "已撤销" && (fxEnabledOperatorSession() || (fxEnabledCustomerSession() && fxRecordBelongsToCustomer(item, fxCurrentCustomer()))));
-      if (!order) return showToast("码段分配记录不存在或无权查看");
+      if (!order) return showToast("订单不存在或无权查看");
       state.selectedOrderNo = order.no;
       state.modal = "fx-order-bind-requests";
       return render();
@@ -959,7 +961,7 @@ render = function () {
       } else {
         const request = bindRequests.find(item => item.id === Number(target.dataset.requestId) && fxRecordBelongsToCustomer(item, fxCurrentCustomer()) && item.status === "待审批");
         if (!request) return showToast("申请状态已变化，请刷新后重试");
-        state.modalData = { kind: "withdraw-bind-request", id: request.id, title: "撤回申请", subtitle: "撤回后，运营端将不再处理本次绑定申请。", subject: `${request.product}（${request.batch || "—"}）`, operation: `取消分配记录 ${request.orderNo} 的本次绑定申请`, danger: true };
+        state.modalData = { kind: "withdraw-bind-request", id: request.id, title: "撤回申请", subtitle: "撤回后，运营端将不再处理本次绑定申请。", subject: `${request.product}（${request.batch || "—"}）`, operation: `取消订单 ${request.orderNo} 的本次绑定申请`, danger: true };
       }
       state.modal = "fx-confirm";
       return render();
@@ -1024,10 +1026,10 @@ render = function () {
       const order = request && requestCustomer && orders.find(item => item.no === request.orderNo && item.allocationStatus !== "已撤销" && fxRecordBelongsToCustomer(item, requestCustomer));
       const product = fxProductForRecord(request);
       const amount = Number(request?.amount || 0);
-      if (!request || !requestCustomer || !order || !product || !fxRecordBelongsToCustomer(product, requestCustomer) || product.status !== "已激活") return showToast("申请关联的产品、客户或分配记录已不可用");
+      if (!request || !requestCustomer || !order || !product || !fxRecordBelongsToCustomer(product, requestCustomer) || product.status !== "已激活") return showToast("申请关联的产品、客户或订单已不可用");
       const otherPendingAmount = Math.max(0, fxOrderPendingAmount(order) - amount);
       const approvableAmount = Math.max(0, Number(order.total || 0) - Number(order.active || 0) - otherPendingAmount);
-      if (amount < 1 || amount > approvableAmount) return showToast("申请数量已超出分配记录可用码量");
+      if (amount < 1 || amount > approvableAmount) return showToast("申请数量已超出订单可用码量");
       const range = request.range || fxActivationRange(order, amount, null, request.id);
       if (!range || !fxBindingRequestRangeIsAvailable(order, { ...request, range })) return showToast("申请码段已发生变化，请重新提交申请");
       order.active = Number(order.active || 0) + amount;
@@ -1097,20 +1099,20 @@ render = function () {
       render();
       return showToast(`已为 ${product.name} 绑定并激活 ${formatNumber(amount)} 枚码`);
     }
-    if (action === "fx-customer-bind-order") { if (!fxEnabledCustomerSession()) return showToast("当前账号无权发起绑定申请"); const order = orders.find(item => item.no === target.dataset.no && fxRecordBelongsToCustomer(item, fxCurrentCustomer()) && item.allocationStatus !== "已撤销"); if (!order || fxOrderAvailableAmount(order) < 1) return showToast("当前码段分配记录没有可用码量"); state.selectedOrderNo = order.no; state.modal = "fx-customer-bind-choice"; return render(); }
+    if (action === "fx-customer-bind-order") { if (!fxEnabledCustomerSession()) return showToast("当前账号无权发起绑定申请"); const order = orders.find(item => item.no === target.dataset.no && fxRecordBelongsToCustomer(item, fxCurrentCustomer()) && item.allocationStatus !== "已撤销"); if (!order || fxOrderAvailableAmount(order) < 1) return showToast("当前订单没有可用码量"); state.selectedOrderNo = order.no; state.modal = "fx-customer-bind-choice"; return render(); }
     if (action === "fx-customer-select-existing-binding") { state.modal = "fx-customer-bind-order"; return render(); }
     if (action === "fx-customer-back-bind-choice") { state.modal = "fx-customer-bind-choice"; return render(); }
-    if (action === "fx-customer-new-product-for-order") { if (!fxEnabledCustomerSession()) return showToast("当前账号无权发起绑定申请"); const orderNo = target.dataset.no || state.selectedOrderNo; const order = orders.find(item => item.no === orderNo && fxRecordBelongsToCustomer(item, fxCurrentCustomer()) && item.allocationStatus !== "已撤销"); if (!order || fxOrderAvailableAmount(order) < 1) return showToast("当前码段分配记录没有可关联的可用码量"); state.modal = null; return fxOpenEditor(null, "customer", order.no); }
+    if (action === "fx-customer-new-product-for-order") { if (!fxEnabledCustomerSession()) return showToast("当前账号无权发起绑定申请"); const orderNo = target.dataset.no || state.selectedOrderNo; const order = orders.find(item => item.no === orderNo && fxRecordBelongsToCustomer(item, fxCurrentCustomer()) && item.allocationStatus !== "已撤销"); if (!order || fxOrderAvailableAmount(order) < 1) return showToast("当前订单没有可关联的可用码量"); state.modal = null; return fxOpenEditor(null, "customer", order.no); }
     if (action === "fx-confirm-customer-bind") {
       if (!fxEnabledCustomerSession()) return showToast("当前账号无权发起绑定申请");
       const requestOrder = orders.find(item => item.no === state.selectedOrderNo && fxRecordBelongsToCustomer(item, fxCurrentCustomer()) && item.allocationStatus !== "已撤销");
       const requestProduct = products.find(item => item.id === Number(fxRead("fx-customer-bind-product")));
       const requestAmount = Number(fxRead("fx-customer-bind-amount"));
       if (!requestOrder || !requestProduct || !fxRecordBelongsToCustomer(requestProduct, fxCurrentCustomer()) || requestProduct.status !== "已激活") return showToast("请选择当前账号下的已激活产品");
-      if (requestAmount < 1 || requestAmount > fxOrderAvailableAmount(requestOrder)) return showToast("申请数量必须在分配记录可用码量内");
+      if (requestAmount < 1 || requestAmount > fxOrderAvailableAmount(requestOrder)) return showToast("申请数量必须在订单可用码量内");
       if (fxPendingBindRequest(requestOrder.no, requestProduct.id, requestProduct.batch)) return showToast("该产品已有待审批的绑定申请");
       const requestRange = fxActivationRange(requestOrder, requestAmount);
-      if (!requestRange) return showToast("当前分配记录没有足够的连续可用码段");
+      if (!requestRange) return showToast("当前订单没有足够的连续可用码段");
       bindRequests.unshift({ id: Date.now(), no: fxNextBindRequestNo(), orderNo: requestOrder.no, customerId: fxCurrentCustomer().id, customer: requestOrder.customer, productId: requestProduct.id, product: requestProduct.name, batch: requestProduct.batch, range: requestRange, amount: requestAmount, status: "待审批", time: fxNow(), decidedAt: "", operator: "", rejectReason: "" });
       fxSaveBusiness();
       state.modal = null;
@@ -1132,14 +1134,14 @@ render = function () {
       const productCustomer = fxCustomerForRecord(product);
       if (!product || product.status !== "待审核") return showToast("绑定审核状态已发生变化，请刷新后重试");
       if (!combined) return showToast("当前产品没有待审核的绑定申请");
-      if (!order || !productCustomer || !fxRecordBelongsToCustomer(order, productCustomer)) return showToast("只能选择该客户名下的有效码段分配记录");
-      if (!Number.isSafeInteger(amount) || amount < 1 || amount > fxOrderAvailableAmount(order, product.id)) return showToast("激活数量必须在该客户分配记录的可用余额内");
+      if (!order || !productCustomer || !fxRecordBelongsToCustomer(order, productCustomer)) return showToast("只能选择该客户名下的有效订单");
+      if (!Number.isSafeInteger(amount) || amount < 1 || amount > fxOrderAvailableAmount(order, product.id)) return showToast("激活数量必须在该客户订单的可用余额内");
       const range = fxReviewActivationRange(order, amount, product);
       const sourceRange = fxOrderFreeRanges(order, product.id).find(source => {
         const [rangeStart, rangeEnd] = String(range || "").split("–");
         return rangeStart && rangeEnd && fxCodeInRange(rangeStart, source.range) && fxCodeInRange(rangeEnd, source.range);
       });
-      if (!range || !sourceRange || !fxRequestedRangeIsAvailable(order, sourceRange.range, range, amount, product.id)) return showToast("所选分配记录的空闲码段已发生变化，请重新选择");
+      if (!range || !sourceRange || !fxRequestedRangeIsAvailable(order, sourceRange.range, range, amount, product.id)) return showToast("所选订单的空闲码段已发生变化，请重新选择");
       const activatedAt = fxNow();
       order.active = Number(order.active || 0) + amount;
       const activation = { productId: product.id, customerId: productCustomer.id, batch: product.batch, amount, range, time: activatedAt, product: product.name, operator: fxCurrentOperator().name, status: "有效" };
@@ -1168,7 +1170,7 @@ render = function () {
       if (!item || item.status !== "待审批") return showToast("撤回申请状态已发生变化，请刷新后重试");
       state.selectedWithdrawalIndex = selectedIndex;
       const resolvedSegments = fxResolvedWithdrawalSegments(item);
-      if (!resolvedSegments.length) return showToast("未找到本次申请对应的具体码段，请先核对码段分配记录");
+      if (!resolvedSegments.length) return showToast("未找到本次申请对应的具体码段，请先核对关联订单");
       if (!Array.isArray(item.segments) || !item.segments.length) item.segments = resolvedSegments.map(segment => ({ ...segment }));
       item.requestedAmount ||= resolvedSegments.reduce((sum, segment) => sum + Number(segment.amount || 0), 0);
       state.modalData = { decision: action === "fx-reject-withdrawal" ? "reject" : "approve", withdrawalId: item.id };
@@ -1187,7 +1189,7 @@ render = function () {
         const customer = fxCustomerForRecord(item) || fxCustomerForRecord(product);
         if (!product || !customer || !fxRecordBelongsToCustomer(product, customer)) return showToast("申请关联的产品或客户已不可用");
         const requestedSegments = (Array.isArray(item.segments) ? item.segments : []).filter(segment => segment.orderNo && segment.range);
-        if (!requestedSegments.length) return showToast("未找到本次申请对应的具体码段，请先核对码段分配记录");
+        if (!requestedSegments.length) return showToast("未找到本次申请对应的具体码段，请先核对关联订单");
         const matchedSegmentKeys = new Set();
         const usedActivations = new Set();
         const resetPlan = [];
@@ -1295,6 +1297,7 @@ render = function () {
     "fx-customer-name-search": "customerNameFilter",
     "fx-customer-account-search": "customerAccountFilter",
     "fx-customer-phone-search": "customerPhoneFilter",
+    "fx-customer-detail-order-search": "customerDetailOrderFilter",
     "fx-inventory-range-search": "inventoryRangeFilter",
     "fx-inventory-allocation-customer-search": "inventoryAllocationCustomerFilter",
     "fx-inventory-allocation-order-search": "inventoryAllocationOrderFilter",
@@ -1523,7 +1526,6 @@ render = function () {
       state.selectedMessageIds = [...selected];
       return render();
     }
-    if (target.id === "fx-qr-size") { state.qrDraft.size = target.value; render(); }
     if (target.id === "fx-editor-range-source") {
       state.editorRequestedSourceRange = target.value;
       const order = orders.find(item => item.no === state.editorTargetOrderNo);

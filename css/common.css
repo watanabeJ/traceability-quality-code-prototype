@@ -683,6 +683,9 @@ tbody tr:last-child td { border-bottom: 0; }
 .field.full { grid-column: 1 / -1; }
 .field label { color: var(--text); font-size: 12px; font-weight: 500; }
 .field-action-row { display: flex; align-items: center; justify-content: flex-start; }
+.qr-size-inputs { width: min(100%, 450px); display: grid; grid-template-columns: minmax(0, 1fr) auto minmax(0, 1fr) auto; gap: 10px; align-items: center; }
+.qr-size-inputs input { width: 100%; min-width: 0; }
+.qr-size-inputs span { color: var(--text-muted); font-size: 13px; white-space: nowrap; }
 .required::after { content: " *"; color: var(--danger); }
 .field-help { color: var(--text-muted); font-size: 11px; }
 .list-reset-button,
@@ -906,6 +909,8 @@ input.immutable-input { width: 100%; color: var(--text); background: var(--surfa
 .scan-shell { width: min(100%, 430px); margin: 0 auto; background: var(--surface); border: 1px solid var(--border-light); border-radius: var(--r-lg); overflow: hidden; }
 .mobile-topbar { height: 48px; display: grid; grid-template-columns: 40px 1fr 40px; align-items: center; padding: 0 6px; border-bottom: 1px solid var(--border-light); }
 .mobile-topbar h1 { margin: 0; text-align: center; color: var(--text-strong); font-size: 15px; font-weight: 600; }
+.scan-brand-banner { width: 100%; background: var(--surface-muted); overflow: hidden; }
+.scan-brand-banner img { width: 100%; height: auto; display: block; }
 .product-hero { aspect-ratio: 4 / 3; background: var(--surface-muted); overflow: hidden; }
 .product-hero img { width: 100%; height: 100%; object-fit: cover; }
 .product-summary { padding: 18px 16px 14px; }

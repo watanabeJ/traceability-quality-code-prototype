@@ -110,6 +110,11 @@ function fxLoginPage(portal) {
     return Math.max(0, Number(order?.total || 0) - Number(order?.active || 0) - fxOrderPendingAmount(order, excludeProductId));
   }
   function fxSortValue(item, key) {
+    if (key === "allocatedTime") {
+      const value = item?.allocatedAt || item?.createdAt || item?.created || "";
+      return Date.parse(String(value).replace(" ", "T")) || 0;
+    }
+    if (key === "orderNo") return String(item?.no || "");
     if (Object.prototype.hasOwnProperty.call(item, key)) return Number(item[key] || 0);
     if (key === "pending") return fxOrderPendingAmount(item);
     if (key === "remaining") return fxOrderAvailableAmount(item);
@@ -121,7 +126,13 @@ function fxLoginPage(portal) {
   function fxSortedRows(rows, scope, defaultTime) {
     const key = state[`${scope}SortKey`]; const direction = state[`${scope}SortDirection`];
     if (!key) return defaultTime ? fxNewestRows(rows, defaultTime) : rows;
-    return [...rows].sort((left, right) => (fxSortValue(left, key) - fxSortValue(right, key)) * (direction === "desc" ? -1 : 1));
+    return [...rows].sort((left, right) => {
+      const leftValue = fxSortValue(left, key); const rightValue = fxSortValue(right, key);
+      const comparison = typeof leftValue === "number" && typeof rightValue === "number"
+        ? leftValue - rightValue
+        : String(leftValue).localeCompare(String(rightValue), "zh-CN", { numeric: true });
+      return comparison * (direction === "desc" ? -1 : 1);
+    });
   }
   function fxSortHeader(label, scope, key, options = {}) {
     const active = state[`${scope}SortKey`] === key; const direction = state[`${scope}SortDirection`];
@@ -176,7 +187,7 @@ function fxLoginPage(portal) {
         && (state.customerStatus === "全部状态" || item.status === state.customerStatus))
       .map(item => ({ ...item, ...fxCustomerCodeSummary(item) }));
     rows = fxSortedRows(rows, "customer");
-    return `<div class="page">${pageHeader("客户列表", "管理客户资料、账号状态与码段使用概况", `<button class="button primary" data-action="fx-new-customer">${icon("plus", "+")}新建客户</button>`)}<div class="toolbar"><div class="filters customer-search-filters">${fxFilterInput("fx-customer-name-search", state.customerNameFilter, "搜索客户名称")}${fxFilterInput("fx-customer-account-search", state.customerAccountFilter, "搜索账号")}${fxFilterInput("fx-customer-phone-search", state.customerPhoneFilter, "搜索联系电话")}<button type="button" class="button small list-reset-button" data-action="fx-reset-list" data-reset-context="customers">${icon("rotate-ccw", "↻")}重置</button></div><button class="button" data-action="fx-export-customers">${icon("download", "↓")}导出</button></div><div class="table-shell"><div class="table-scroll"><table class="customer-account-table"><thead><tr><th>客户名称</th><th>账号</th><th>联系电话</th><th>${fxTableSelectHeader("状态", "customerStatus", ["全部状态", "启用", "禁用"], state.customerStatus)}</th><th>${fxSortHeader("总量", "customer", "total")}</th><th>${fxSortHeader("已激活", "customer", "active")}</th><th>${fxSortHeader("绑定申请中", "customer", "pending")}</th><th>${fxSortHeader("剩余可用", "customer", "available")}</th><th class="action-column">账号操作</th></tr></thead><tbody>${rows.length ? rows.map(item => `<tr><td><div class="cell-main">${fxEscape(item.name)}</div></td><td class="mono">${fxEscape(item.account)}</td><td>${fxEscape(item.phone)}</td><td>${status(item.status)}</td><td>${formatNumber(item.total)}</td><td>${formatNumber(item.active)}</td><td>${formatNumber(item.pending)}</td><td>${formatNumber(item.available)}</td><td class="action-column"><div class="table-actions"><button class="text-action" data-action="fx-view-customer-detail" data-id="${item.id}">详情</button><button class="text-action" data-action="fx-edit-customer" data-id="${item.id}">编辑</button><button class="text-action" data-action="fx-choose-allocation-batch" data-customer-id="${item.id}" ${item.status === "启用" ? "" : `disabled title="客户账号已禁用"`}>分配码段</button><button class="text-action ${item.status === "启用" ? "danger-text" : "success-text"}" data-action="fx-toggle-customer" data-id="${item.id}">${item.status === "启用" ? "禁用" : "启用"}</button></div></td></tr>`).join("") : fxEmpty(9, "未找到客户")}</tbody></table></div>${pagination(rows.length)}</div></div>`;
+    return `<div class="page">${pageHeader("客户列表", "管理客户资料、账号状态与码段使用概况", `<button class="button primary" data-action="fx-new-customer">${icon("plus", "+")}新建客户</button><button class="button" data-action="fx-export-customers">${icon("download", "↓")}导出列表</button>`)}<div class="toolbar"><div class="filters customer-search-filters">${fxFilterInput("fx-customer-name-search", state.customerNameFilter, "搜索客户名称")}${fxFilterInput("fx-customer-account-search", state.customerAccountFilter, "搜索账号")}${fxFilterInput("fx-customer-phone-search", state.customerPhoneFilter, "搜索联系电话")}<button type="button" class="button small list-reset-button" data-action="fx-reset-list" data-reset-context="customers">${icon("rotate-ccw", "↻")}重置</button></div></div><div class="table-shell"><div class="table-scroll"><table class="customer-account-table"><thead><tr><th>客户名称</th><th>账号</th><th>联系电话</th><th>${fxTableSelectHeader("状态", "customerStatus", ["全部状态", "启用", "禁用"], state.customerStatus)}</th><th>${fxSortHeader("订单码量", "customer", "total")}</th><th>${fxSortHeader("已激活", "customer", "active")}</th><th>${fxSortHeader("绑定申请中", "customer", "pending")}</th><th>${fxSortHeader("剩余可用", "customer", "available")}</th><th class="action-column">账号操作</th></tr></thead><tbody>${rows.length ? rows.map(item => `<tr><td><div class="cell-main">${fxEscape(item.name)}</div></td><td class="mono">${fxEscape(item.account)}</td><td>${fxEscape(item.phone)}</td><td>${status(item.status)}</td><td>${formatNumber(item.total)}</td><td>${formatNumber(item.active)}</td><td>${formatNumber(item.pending)}</td><td>${formatNumber(item.available)}</td><td class="action-column"><div class="table-actions"><button class="text-action" data-action="fx-view-customer-detail" data-id="${item.id}">详情</button><button class="text-action" data-action="fx-edit-customer" data-id="${item.id}">编辑</button><button class="text-action" data-action="fx-choose-allocation-batch" data-customer-id="${item.id}" ${item.status === "启用" ? "" : `disabled title="客户账号已禁用"`}>分配码段</button><button class="text-action ${item.status === "启用" ? "danger-text" : "success-text"}" data-action="fx-toggle-customer" data-id="${item.id}">${item.status === "启用" ? "禁用" : "启用"}</button></div></td></tr>`).join("") : fxEmpty(9, "未找到客户")}</tbody></table></div>${pagination(rows.length)}</div></div>`;
   };
 
   function fxCustomerPickerLabel(item) { return item.name; }
@@ -229,16 +240,9 @@ function fxLoginPage(portal) {
   }
 
   function fxQrOutputSize() {
-    const preset = state.qrDraft.size || "25 × 25 mm";
-    if (preset === "custom") {
-      const width = Math.max(8, Number(state.qrDraft.customWidth) || 25);
-      const height = Math.max(8, Number(state.qrDraft.customHeight) || width);
-      return { label: `自定义 ${width} × ${height} mm`, width, height };
-    }
-    const numbers = String(preset).match(/\d+(?:\.\d+)?/g)?.map(Number) || [25, 25];
-    const width = numbers[0] || 25;
-    const height = numbers[1] || width;
-    return { label: preset, width, height };
+    const width = Math.max(8, Number(state.qrDraft.customWidth) || 25);
+    const height = Math.max(8, Number(state.qrDraft.customHeight) || 25);
+    return { label: `${width} × ${height} mm`, width, height };
   }
 
   function fxQrCorePreviewContent() {
@@ -255,13 +259,12 @@ function fxLoginPage(portal) {
     const data = fxQrRangeData();
     const amount = data.amount;
     const range = data.range;
-    const custom = state.qrDraft.size === "custom";
     const generatedBatchNo = fxGeneratedCodeBatchNo();
     if (generatedBatchNo) {
       const batch = fxInventoryBatches().find(item => item.no === generatedBatchNo);
       return `<div class="result-center"><div class="success-mark">${icon("check", "✓", "icon-lg")}</div><h2>码段已生成</h2><p class="muted">序列号范围 ${fxEscape(batch?.range || "—")}，共 ${formatNumber(batch?.total || 0)} 枚。</p></div>`;
     }
-    return `<div class="order-create-form"><section class="order-create-section"><h2>生成信息</h2><div class="form-grid"><div class="field qr-order-field"><label class="required" for="fx-qr-amount">生成数量</label><input id="fx-qr-amount" type="number" min="1" max="100000" step="1" value="${amount}"></div><div class="field qr-order-field"><label for="fx-qr-note">备注</label><input id="fx-qr-note" value="${fxEscape(state.qrDraft.note)}" placeholder="例如：8 月备货码段"></div><div class="field full"><label for="fx-qr-range-preview">序列号预览</label><input id="fx-qr-range-preview" class="mono immutable-input" value="${range}" readonly aria-readonly="true" aria-live="polite"></div></div></section><section class="order-create-section"><h2>二维码核心区块输出</h2><div class="form-grid"><div class="field"><label class="required" for="fx-qr-size">输出尺寸</label><select id="fx-qr-size"><option ${state.qrDraft.size === "20 × 20 mm" ? "selected" : ""}>20 × 20 mm</option><option ${state.qrDraft.size === "25 × 25 mm" ? "selected" : ""}>25 × 25 mm</option><option ${state.qrDraft.size === "30 × 30 mm" ? "selected" : ""}>30 × 30 mm</option><option value="custom" ${custom ? "selected" : ""}>自定义宽高</option></select></div><div class="field ${custom ? "" : "is-hidden"}"><label for="fx-qr-width">自定义宽度 mm</label><input id="fx-qr-width" type="number" min="8" max="300" step="1" value="${state.qrDraft.customWidth || 25}"></div><div class="field ${custom ? "" : "is-hidden"}"><label for="fx-qr-height">自定义高度 mm</label><input id="fx-qr-height" type="number" min="8" max="300" step="1" value="${state.qrDraft.customHeight || 25}"></div><div class="field full"><label>二维码核心区块预览</label><div id="fx-qr-core-preview" class="qr-style-preview" aria-live="polite">${fxQrCorePreviewContent()}</div></div></div></section></div>`;
+    return `<div class="order-create-form"><section class="order-create-section"><h2>生成信息</h2><div class="form-grid"><div class="field qr-order-field"><label class="required" for="fx-qr-amount">生成数量</label><input id="fx-qr-amount" type="number" min="1" max="100000" step="1" value="${amount}"></div><div class="field qr-order-field"><label for="fx-qr-note">备注</label><input id="fx-qr-note" value="${fxEscape(state.qrDraft.note)}" placeholder="例如：8 月备货码段"></div><div class="field full"><label for="fx-qr-range-preview">序列号预览</label><input id="fx-qr-range-preview" class="mono immutable-input" value="${range}" readonly aria-readonly="true" aria-live="polite"></div></div></section><section class="order-create-section"><div class="form-grid"><div class="field full"><label class="required" for="fx-qr-width">尺寸</label><div class="qr-size-inputs"><input id="fx-qr-width" type="number" min="8" max="300" step="0.1" value="${state.qrDraft.customWidth || 25}" placeholder="宽度" aria-label="尺寸宽度，单位毫米"><span aria-hidden="true">×</span><input id="fx-qr-height" type="number" min="8" max="300" step="0.1" value="${state.qrDraft.customHeight || 25}" placeholder="高度" aria-label="尺寸高度，单位毫米"><span>mm</span></div></div><div class="field full"><label>二维码预览</label><div id="fx-qr-core-preview" class="qr-style-preview" aria-live="polite">${fxQrCorePreviewContent()}</div></div></div></section></div>`;
   };
 
   opsCodes = function () {
@@ -290,7 +293,7 @@ function fxLoginPage(portal) {
       return `<tr data-code-range="${fxEscape(item.range || "")}"><td class="mono">${fxEscape(item.range || "—")}</td><td>${fxEscape(item.createdAt || item.created || "—")}</td><td>${formatNumber(item.total)}</td><td>${formatNumber(item.allocated)}</td><td>${formatNumber(item.remaining)}</td><td>${status(batchStatus)}</td><td>${fxEscape(item.size || "—")}</td><td class="action-column"><div class="table-actions">${canAllocate ? `<button class="text-action" data-action="fx-open-code-allocation" data-no="${fxEscape(item.no)}"${targetAttribute}>${fxEscape(allocateLabel)}</button>` : ""}<button class="text-action" data-action="fx-open-code-batch-detail" data-no="${fxEscape(item.no)}">详情</button></div></td></tr>`;
     }).join("") : fxEmpty(8, "未找到库存码段");
     const allocationBanner = allocationTarget ? `<div class="allocation-target-banner"><div><strong>正在为 ${fxEscape(allocationTarget.name)} 选择库存码段</strong><span>请在下方码段中选择“分配给该客户”。</span></div><button class="button small" data-action="fx-cancel-allocation-target">取消选择</button></div>` : "";
-    return `<div class="page">${pageHeader("码段库存", "查看平台已生成码段并按需分配给客户", `<button class="button primary" data-action="go-codes">${icon("qr-code", "▦")}生成码段</button><button class="button" data-action="fx-export-orders">${icon("download", "↓")}导出库存</button>`)}${allocationBanner}<div class="toolbar"><div class="filters order-search-filters">${fxFilterInput("fx-inventory-range-search", state.inventoryRangeFilter, "搜索序列号范围")}<button type="button" class="button small list-reset-button" data-action="fx-reset-list" data-reset-context="inventory">${icon("rotate-ccw", "↻")}重置</button></div></div><div class="table-shell"><div class="table-scroll"><table class="order-table"><thead><tr><th>序列号范围</th><th>${fxOrderCreatedHeader()}</th><th>${fxSortHeader("生成数量", "order", "total")}</th><th>${fxSortHeader("已分配", "order", "allocated")}</th><th>${fxSortHeader("剩余库存", "order", "remaining")}</th><th>${fxTableSelectHeader("状态", "inventoryStatus", ["全部状态", "未分配", "部分分配", "已分配"], state.inventoryStatus)}</th><th>输出尺寸</th><th class="action-column">操作</th></tr></thead><tbody>${body}</tbody></table></div>${pagination(rows.length)}</div></div>`;
+    return `<div class="page">${pageHeader("码段库存", "查看平台已生成码段并按需分配给客户", `<button class="button primary" data-action="go-codes">${icon("qr-code", "▦")}生成码段</button><button class="button" data-action="fx-export-orders">${icon("download", "↓")}导出列表</button>`)}${allocationBanner}<div class="toolbar"><div class="filters order-search-filters">${fxFilterInput("fx-inventory-range-search", state.inventoryRangeFilter, "搜索序列号范围")}<button type="button" class="button small list-reset-button" data-action="fx-reset-list" data-reset-context="inventory">${icon("rotate-ccw", "↻")}重置</button></div></div><div class="table-shell"><div class="table-scroll"><table class="order-table"><thead><tr><th>序列号范围</th><th>${fxOrderCreatedHeader()}</th><th>${fxSortHeader("生成数量", "order", "total")}</th><th>${fxSortHeader("已分配", "order", "allocated")}</th><th>${fxSortHeader("剩余库存", "order", "remaining")}</th><th>${fxTableSelectHeader("状态", "inventoryStatus", ["全部状态", "未分配", "部分分配", "已分配"], state.inventoryStatus)}</th><th>尺寸</th><th class="action-column">操作</th></tr></thead><tbody>${body}</tbody></table></div>${pagination(rows.length)}</div></div>`;
   };
 
   opsOrders = function () {
@@ -355,7 +358,7 @@ function fxLoginPage(portal) {
         return `<tr><td>${fxEscape(request.product)}</td><td class="mono">${fxEscape(request.batch || "—")}</td><td>${fxEscape(product?.category || "—")}</td><td>${fxEscape(request.customer)}</td><td><button class="text-action mono" data-action="fx-order-detail" data-no="${fxEscape(request.orderNo)}">${fxEscape(request.orderNo)}</button></td><td class="mono">${fxEscape(range || "—")}</td><td>${formatNumber(request.amount)}</td><td>${fxEscape(request.time || "—")}</td><td>${status(reviewStatus)}</td><td class="action-column"><div class="table-actions">${actions}</div></td></tr>`;
       }).join("")
       : fxEmpty(10, "未找到绑定申请");
-    return `<div class="page">${pageHeader("绑定审核", "统一审核产品资料、码段分配记录、申请数量与绑定码段")}<div class="toolbar"><div class="filters bind-request-search-filters">${fxFilterInput("fx-bind-request-customer-search", state.bindRequestCustomerFilter, "搜索客户名称")}${fxFilterInput("fx-bind-request-order-search", state.bindRequestOrderFilter, "搜索分配记录号")}${fxFilterInput("fx-bind-request-product-search", state.bindRequestProductFilter, "搜索产品名称")}${fxFilterInput("fx-bind-request-batch-search", state.bindRequestBatchFilter, "搜索产品批次")}<button type="button" class="button small list-reset-button" data-action="fx-reset-list" data-reset-context="bind-requests">${icon("rotate-ccw", "↻")}重置</button></div></div><div class="table-shell"><div class="table-scroll"><table><thead><tr><th>产品名称</th><th>产品批次</th><th>${fxTableSelectHeader("产品大类", "bindRequestCategory", ["全部大类", "农产品", "养殖品", "加工食品", "工业品", "医疗卫生用品"], state.bindRequestCategory)}</th><th>客户名称</th><th>分配记录号</th><th>申请码段</th><th>${fxSortHeader("申请数量", "bindRequest", "amount")}</th><th>${fxCustomerDateHeader("申请时间", "bindRequest")}</th><th>${fxTableSelectHeader("状态", "bindRequestStatus", ["全部状态", "待审核", "已激活", "已驳回"], state.bindRequestStatus)}</th><th>操作</th></tr></thead><tbody>${body}</tbody></table></div>${pagination(rows.length)}</div></div>`;
+    return `<div class="page">${pageHeader("绑定审核", "统一审核产品资料、关联订单、申请数量与绑定码段")}<div class="toolbar"><div class="filters bind-request-search-filters">${fxFilterInput("fx-bind-request-customer-search", state.bindRequestCustomerFilter, "搜索客户名称")}${fxFilterInput("fx-bind-request-order-search", state.bindRequestOrderFilter, "搜索订单号")}${fxFilterInput("fx-bind-request-product-search", state.bindRequestProductFilter, "搜索产品名称")}${fxFilterInput("fx-bind-request-batch-search", state.bindRequestBatchFilter, "搜索产品批次")}<button type="button" class="button small list-reset-button" data-action="fx-reset-list" data-reset-context="bind-requests">${icon("rotate-ccw", "↻")}重置</button></div></div><div class="table-shell"><div class="table-scroll"><table><thead><tr><th>产品名称</th><th>产品批次</th><th>${fxTableSelectHeader("产品大类", "bindRequestCategory", ["全部大类", "农产品", "养殖品", "加工食品", "工业品", "医疗卫生用品"], state.bindRequestCategory)}</th><th>客户名称</th><th>订单号</th><th>申请码段</th><th>${fxSortHeader("申请数量", "bindRequest", "amount")}</th><th>${fxCustomerDateHeader("申请时间", "bindRequest")}</th><th>${fxTableSelectHeader("状态", "bindRequestStatus", ["全部状态", "待审核", "已激活", "已驳回"], state.bindRequestStatus)}</th><th>操作</th></tr></thead><tbody>${body}</tbody></table></div>${pagination(rows.length)}</div></div>`;
   }
 
   function fxFilteredReviews() {
@@ -451,7 +454,7 @@ function fxLoginPage(portal) {
     if (!product) return `<div class="field full withdrawal-segment-field"><label class="required">已绑码段</label><div class="withdrawal-segment-empty">请先选择产品</div></div>`;
     const segments = fxProductActiveSegments(product);
     if (!segments.length) return `<div class="field full withdrawal-segment-field"><label class="required">已绑码段</label><div class="withdrawal-segment-empty">该产品暂无可撤回的已绑码段</div></div>`;
-    const rows = segments.map(segment => `<label class="withdrawal-segment-option"><input type="checkbox" data-withdraw-segment data-amount="${segment.amount}" value="${fxEscape(segment.key)}"><span class="withdrawal-segment-copy"><strong class="mono">${fxEscape(segment.range)}</strong><small>分配记录 ${fxEscape(segment.orderNo)} · ${formatNumber(segment.amount)} 枚</small></span></label>`).join("");
+    const rows = segments.map(segment => `<label class="withdrawal-segment-option"><input type="checkbox" data-withdraw-segment data-amount="${segment.amount}" value="${fxEscape(segment.key)}"><span class="withdrawal-segment-copy"><strong class="mono">${fxEscape(segment.range)}</strong><small>订单号 ${fxEscape(segment.orderNo)} · ${formatNumber(segment.amount)} 枚</small></span></label>`).join("");
     return `<div class="field full withdrawal-segment-field"><div class="withdrawal-segment-head"><label class="required">已绑码段</label><label class="withdrawal-select-all"><input id="fx-withdraw-select-all" type="checkbox">全选</label></div><div class="withdrawal-segment-list">${rows}</div><span id="fx-withdraw-selection-summary" class="field-help">已选择 0 个码段</span></div>`;
   }
   function fxSyncWithdrawalSegmentSelection() {
@@ -630,4 +633,4 @@ function fxLoginPage(portal) {
   function fxBindRequestLabel(statusValue) {
     return statusValue === "待审批" ? "待审批" : statusValue === "已通过" ? "已通过" : "已驳回";
   }
-  function fxCustomerProductStatus(value) { return value === "已驳回" ? "已退回" : value; }
+  function fxCustomerProductStatus(value) { return value; }

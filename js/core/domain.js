@@ -149,7 +149,7 @@ const fxToday = "2026-07-27";
   messages.splice(0, messages.length,
     { id: 1, type: "产品审核申请", title: "云岭高山绿茶等待审核", detail: "客户已提交五个资料模块，请及时处理。", time: "2026-07-27 10:32", unread: true, recipient: "运营方", customer: "云岭生态农业有限公司" },
     { id: 2, type: "产品撤回申请", title: "有机稻花香米发起全量撤回", detail: "涉及 20,000 枚已激活码，等待运营方审批。", time: "2026-07-27 09:18", unread: true, recipient: "运营方", customer: "北辰农产有限公司" },
-    { id: 3, type: "绑定审核结果", title: "云岭春芽红茶（批次：YL20260724）绑定审核已通过", detail: "分配记录：ORD-202607-024；绑定数量：18,000 枚；绑定码段：YL00060001–YL00078000。", time: "2026-07-24 15:18", unread: false, recipient: "云岭生态农业有限公司", customer: "云岭生态农业有限公司" },
+    { id: 3, type: "绑定审核结果", title: "云岭春芽红茶（批次：YL20260724）绑定审核已通过", detail: "订单号：ORD-202607-024；绑定数量：18,000 枚；绑定码段：YL00060001–YL00078000。", time: "2026-07-24 15:18", unread: false, recipient: "云岭生态农业有限公司", customer: "云岭生态农业有限公司" },
     { id: 4, type: "撤回审核结果", title: "古树晒青毛茶（批次：YL20260618）产品撤回审核已驳回", detail: "申请码段：YL00893001–YL00909000；驳回原因：请联系运营方直接修改产品信息。", time: "2026-06-18 13:06", unread: true, recipient: "云岭生态农业有限公司", customer: "云岭生态农业有限公司" }
   );
 
@@ -184,6 +184,10 @@ const fxToday = "2026-07-27";
     const list = { customers, orders, codeBatches, bindRequests, products, withdrawals, messages }[name];
     fxRestoreList(name, list);
   });
+  if (messages.some(item => item.type === "码段分配通知")) {
+    messages.splice(0, messages.length, ...messages.filter(item => item.type !== "码段分配通知"));
+    fxStore.set(fxBusinessStorage.messages, messages);
+  }
 
   function fxNormalizeContinuousCodeRange(range, total) {
     const [startCode, endCode] = String(range || "").split("–");
@@ -471,7 +475,7 @@ const fxToday = "2026-07-27";
       type: "绑定审核结果",
       title: `${fxMessageProductSubject(data.product, data.batch)}绑定审核${approved ? "已通过" : "已驳回"}`,
       detail: fxMessageDetail([
-        orderNo ? `分配记录：${orderNo}` : "",
+        orderNo ? `订单号：${orderNo}` : "",
         amount ? `${approved ? "绑定数量" : "申请数量"}：${formatNumber(amount)} 枚` : "",
         range ? `${approved ? "绑定码段" : "申请码段"}：${range}` : "",
         !approved ? `驳回原因：${reason || "请根据审核意见修改后重新提交"}` : "",
@@ -560,7 +564,7 @@ const fxToday = "2026-07-27";
           : {};
         if (product) Object.assign(item, fxReviewMessageCopy(product, !rejected, {
           ...legacyOptions,
-          orderNo: item.orderNo || fxMessageDetailValue(item.detail, "分配记录") || fxMessageDetailValue(item.detail, "关联订单") || legacyOptions.orderNo,
+          orderNo: item.orderNo || fxMessageDetailValue(item.detail, "订单号") || fxMessageDetailValue(item.detail, "关联订单") || fxMessageDetailValue(item.detail, "分配记录") || legacyOptions.orderNo,
           amount: Number(String(fxMessageDetailValue(item.detail, rejected ? "申请数量" : "绑定数量")).replace(/[^\d]/g, "")) || legacyOptions.amount,
           range: fxMessageDetailValue(item.detail, rejected ? "申请码段" : "绑定码段") || legacyOptions.range,
           reason: item.detail,
@@ -768,6 +772,103 @@ const fxToday = "2026-07-27";
     fxStore.set(fxBusinessStorage.products, products);
   }
   fxEnsurePendingBindingDemoCase();
+  const fxRichDemoCaseVersion = 1;
+  function fxEnsureRichDemoCases() {
+    const markerKey = "trace-rich-demo-cases-version";
+    const requiredCases = [
+      [codeBatches, "inventory-unallocated"],
+      [codeBatches, "inventory-partial"],
+      [codeBatches, "inventory-full"],
+      [orders, "order-unbound"],
+      [orders, "order-partial"],
+      [orders, "order-full-active"],
+      [products, "binding-draft"],
+      [products, "binding-reset-product"],
+      [bindRequests, "binding-pending"],
+      [bindRequests, "binding-approved"],
+      [bindRequests, "binding-rejected"],
+      [withdrawals, "withdrawal-pending"],
+      [withdrawals, "withdrawal-approved"],
+      [withdrawals, "withdrawal-rejected"],
+    ];
+    const marker = Number(fxStore.get(markerKey, 0));
+    if (marker >= fxRichDemoCaseVersion && requiredCases.every(([list, demoCase]) => list.some(item => item.demoCase === demoCase))) return;
+
+    const byCustomer = name => customers.find(item => item.name === name);
+    const upsert = (list, demoCase, data, prepend = true) => {
+      const existing = list.find(item => item.demoCase === demoCase);
+      if (existing) return Object.assign(existing, data, { demoCase });
+      const record = { ...data, demoCase };
+      if (prepend) list.unshift(record); else list.push(record);
+      return record;
+    };
+    const productData = (demoCase, data) => {
+      const customer = byCustomer(data.company);
+      const record = upsert(products, demoCase, { ...data, customerId: customer?.id || null });
+      record.details = fxNormalizeDetails(record.details || fxDefaultDetails(record));
+      return record;
+    };
+    const orderData = (demoCase, data) => {
+      const customer = byCustomer(data.customer);
+      const record = upsert(orders, demoCase, { ...data, customerId: customer?.id || null });
+      return fxNormalizeAllocationOrder(record, orders.indexOf(record));
+    };
+
+    [
+      ["inventory-unallocated", { id: "demo-rich-batch-101", no: "BATCH-202608-101", range: "QR10000001–QR10012000", total: 12000, created: "2026-08-09", createdAt: "2026-08-09 09:12", size: "20 × 20 mm", note: "完整案例：新生成、尚未分配的通用库存码段" }],
+      ["inventory-partial", { id: "demo-rich-batch-102", no: "BATCH-202608-102", range: "QR20000001–QR20020000", total: 20000, created: "2026-08-10", createdAt: "2026-08-10 10:25", size: "25 × 30 mm", note: "完整案例：已向多个客户分配，仍有库存" }],
+      ["inventory-full", { id: "demo-rich-batch-103", no: "BATCH-202608-103", range: "QR30000001–QR30010000", total: 10000, created: "2026-08-11", createdAt: "2026-08-11 14:08", size: "32.5 × 40 mm", note: "完整案例：库存已全部分配且订单已全部激活" }],
+    ].forEach(([demoCase, data]) => fxNormalizeCodeBatch(upsert(codeBatches, demoCase, data), codeBatches.length));
+
+    productData("binding-draft", { id: 2101, name: "低温冻干蓝莓粉", company: "松野食品科技有限公司", category: "加工食品", batch: "SY20260809", status: "草稿", submitted: "", amount: 0, applicationType: "新建产品并绑定", requestedOrderNo: "ORD-202608-101", requestedSourceRange: "QR20000001–QR20008000", requestedRange: "QR20000001–QR20002000", requestedAmount: 2000 });
+    const approvedProduct = productData("binding-approved-product", { id: 2102, name: "北辰胚芽米", company: "北辰农产有限公司", category: "农产品", batch: "BC20260810", status: "已激活", submitted: "2026-08-10 11:05", decidedAt: "2026-08-10 11:26", operator: "平台管理员", amount: 1000 });
+    const pendingProduct = productData("binding-pending-product", { id: 2103, name: "北辰杂粮礼盒", company: "北辰农产有限公司", category: "农产品", batch: "BC20260811", status: "已激活", submitted: "2026-08-10 16:20", amount: 0 });
+    const fullProduct = productData("binding-full-product", { id: 2104, name: "安护医用敷料", company: "安护医疗用品有限公司", category: "医疗卫生用品", batch: "AH20260811", status: "已激活", submitted: "2026-08-11 15:02", decidedAt: "2026-08-11 15:18", operator: "平台管理员", amount: 10000 });
+    const resetProduct = productData("binding-reset-product", { id: 2105, name: "松野蓝莓果干", company: "松野食品科技有限公司", category: "加工食品", batch: "SY20260810", status: "已激活", submitted: "2026-08-10 15:42", amount: 1000 });
+    const rejectedProduct = productData("binding-rejected-product", { id: 2106, name: "松野蓝莓果酱礼盒", company: "松野食品科技有限公司", category: "加工食品", batch: "SY20260812", status: "已激活", submitted: "2026-08-12 09:06", amount: 0 });
+
+    orderData("order-unbound", { id: 2201, no: "ORD-202608-101", sourceBatchNo: "BATCH-202608-102", customer: "松野食品科技有限公司", range: "QR20000001–QR20008000", total: 8000, active: 0, created: "2026-08-10", createdAt: "2026-08-10 10:40", allocatedAt: "2026-08-10 10:40", allocatedBy: "平台管理员", allocationStatus: "已分配", size: "25 × 30 mm", note: "完整案例：已分配但尚未绑定产品，可从草稿继续提交", activations: [] });
+    const partialOrder = orderData("order-partial", { id: 2202, no: "ORD-202608-102", sourceBatchNo: "BATCH-202608-102", customer: "北辰农产有限公司", range: "QR20008001–QR20012000", total: 4000, active: 1000, created: "2026-08-10", createdAt: "2026-08-10 10:52", allocatedAt: "2026-08-10 10:52", allocatedBy: "运营专员", allocationStatus: "已分配", size: "25 × 30 mm", note: "完整案例：包含已激活、待审批和剩余可用码量", activations: [{ activationId: "ACT-RICH-APPROVED", bindRequestNo: "BR-202608-101", productId: approvedProduct.id, customerId: byCustomer("北辰农产有限公司")?.id || null, product: approvedProduct.name, batch: approvedProduct.batch, range: "QR20008001–QR20009000", amount: 1000, time: "2026-08-10 11:26", operator: "平台管理员", status: "有效" }] });
+    const resetOrder = orderData("order-with-reset", { id: 2203, no: "ORD-202608-103", sourceBatchNo: "BATCH-202608-102", customer: "松野食品科技有限公司", range: "QR20012001–QR20015000", total: 3000, active: 1000, created: "2026-08-10", createdAt: "2026-08-10 14:30", allocatedAt: "2026-08-10 14:30", allocatedBy: "运营专员", allocationStatus: "已分配", size: "25 × 30 mm", note: "完整案例：同一订单包含已重置、有效和已驳回的业务记录", activations: [{ activationId: "ACT-RICH-RESET", bindRequestNo: "BR-202608-103", productId: resetProduct.id, customerId: byCustomer("松野食品科技有限公司")?.id || null, product: resetProduct.name, batch: resetProduct.batch, range: "QR20012001–QR20013000", amount: 1000, time: "2026-08-10 15:56", operator: "平台管理员", status: "已重置", withdrawalNo: "WD-202608-102", withdrawalReason: "外包装营养成分表版本更新", resetTime: "2026-08-12 10:18", resetOperator: "平台管理员" }, { activationId: "ACT-RICH-ACTIVE", bindRequestNo: "BR-202608-105", productId: resetProduct.id, customerId: byCustomer("松野食品科技有限公司")?.id || null, product: resetProduct.name, batch: resetProduct.batch, range: "QR20013001–QR20014000", amount: 1000, time: "2026-08-11 09:12", operator: "平台管理员", status: "有效" }] });
+    const fullOrder = orderData("order-full-active", { id: 2204, no: "ORD-202608-104", sourceBatchNo: "BATCH-202608-103", customer: "安护医疗用品有限公司", range: "QR30000001–QR30010000", total: 10000, active: 10000, created: "2026-08-11", createdAt: "2026-08-11 14:36", allocatedAt: "2026-08-11 14:36", allocatedBy: "平台管理员", allocationStatus: "已分配", size: "32.5 × 40 mm", note: "完整案例：整笔订单码量已全部绑定并激活", activations: [{ activationId: "ACT-RICH-FULL", bindRequestNo: "BR-202608-102", productId: fullProduct.id, customerId: byCustomer("安护医疗用品有限公司")?.id || null, product: fullProduct.name, batch: fullProduct.batch, range: "QR30000001–QR30010000", amount: 10000, time: "2026-08-11 15:18", operator: "平台管理员", status: "有效" }] });
+
+    const requestData = [
+      ["binding-approved", { id: "demo-rich-bind-101", no: "BR-202608-101", productId: approvedProduct.id, customerId: byCustomer("北辰农产有限公司")?.id || null, orderNo: partialOrder.no, customer: "北辰农产有限公司", product: approvedProduct.name, batch: approvedProduct.batch, range: "QR20008001–QR20009000", amount: 1000, status: "已通过", time: "2026-08-10 11:05", decidedAt: "2026-08-10 11:26", operator: "平台管理员" }],
+      ["binding-pending", { id: "demo-rich-bind-102", no: "BR-202608-104", productId: pendingProduct.id, customerId: byCustomer("北辰农产有限公司")?.id || null, orderNo: partialOrder.no, customer: "北辰农产有限公司", product: pendingProduct.name, batch: pendingProduct.batch, range: "QR20009001–QR20010500", amount: 1500, status: "待审批", time: "2026-08-12 16:20", decidedAt: "", operator: "" }],
+      ["binding-reset", { id: "demo-rich-bind-103", no: "BR-202608-103", productId: resetProduct.id, customerId: byCustomer("松野食品科技有限公司")?.id || null, orderNo: resetOrder.no, customer: "松野食品科技有限公司", product: resetProduct.name, batch: resetProduct.batch, range: "QR20012001–QR20013000", amount: 1000, status: "已通过", time: "2026-08-10 15:42", decidedAt: "2026-08-10 15:56", operator: "平台管理员" }],
+      ["binding-active-second", { id: "demo-rich-bind-105", no: "BR-202608-105", productId: resetProduct.id, customerId: byCustomer("松野食品科技有限公司")?.id || null, orderNo: resetOrder.no, customer: "松野食品科技有限公司", product: resetProduct.name, batch: resetProduct.batch, range: "QR20013001–QR20014000", amount: 1000, status: "已通过", time: "2026-08-11 08:58", decidedAt: "2026-08-11 09:12", operator: "平台管理员" }],
+      ["binding-rejected", { id: "demo-rich-bind-104", no: "BR-202608-106", productId: rejectedProduct.id, customerId: byCustomer("松野食品科技有限公司")?.id || null, orderNo: resetOrder.no, customer: "松野食品科技有限公司", product: rejectedProduct.name, batch: rejectedProduct.batch, range: "QR20014001–QR20014500", amount: 500, status: "已驳回", time: "2026-08-12 09:06", decidedAt: "2026-08-12 09:25", operator: "平台管理员", rejectReason: "产品批次检验报告缺少签章，请补充后重新提交" }],
+      ["binding-full-approved", { id: "demo-rich-bind-106", no: "BR-202608-102", productId: fullProduct.id, customerId: byCustomer("安护医疗用品有限公司")?.id || null, orderNo: fullOrder.no, customer: "安护医疗用品有限公司", product: fullProduct.name, batch: fullProduct.batch, range: "QR30000001–QR30010000", amount: 10000, status: "已通过", time: "2026-08-11 15:02", decidedAt: "2026-08-11 15:18", operator: "平台管理员" }],
+    ];
+    requestData.forEach(([demoCase, data]) => upsert(bindRequests, demoCase, data));
+
+    const withdrawalData = [
+      ["withdrawal-pending", { id: 2301, no: "WD-202608-101", productId: fullProduct.id, customerId: byCustomer("安护医疗用品有限公司")?.id || null, product: fullProduct.name, batch: fullProduct.batch, customer: "安护医疗用品有限公司", scope: "segments", segments: [{ activationId: "ACT-RICH-FULL", key: "ACT-RICH-FULL", orderNo: fullOrder.no, range: "QR30000001–QR30010000", amount: 10000, time: "2026-08-11 15:18" }], requestedAmount: 10000, reason: "抽检记录需要复核，申请暂时撤回整批码段", status: "待审批", time: "2026-08-12 09:40", decidedAt: "", rejectReason: "" }],
+      ["withdrawal-approved", { id: 2302, no: "WD-202608-102", productId: resetProduct.id, customerId: byCustomer("松野食品科技有限公司")?.id || null, product: resetProduct.name, batch: resetProduct.batch, customer: "松野食品科技有限公司", scope: "segments", segments: [{ activationId: "ACT-RICH-RESET", key: "ACT-RICH-RESET", orderNo: resetOrder.no, range: "QR20012001–QR20013000", amount: 1000, time: "2026-08-10 15:56" }], requestedAmount: 1000, rollbackAmount: 1000, resetRanges: ["QR20012001–QR20013000"], reason: "外包装营养成分表版本更新", status: "已通过", time: "2026-08-12 09:48", decidedAt: "2026-08-12 10:18", rejectReason: "" }],
+      ["withdrawal-rejected", { id: 2303, no: "WD-202608-103", productId: resetProduct.id, customerId: byCustomer("松野食品科技有限公司")?.id || null, product: resetProduct.name, batch: resetProduct.batch, customer: "松野食品科技有限公司", scope: "segments", segments: [{ activationId: "ACT-RICH-ACTIVE", key: "ACT-RICH-ACTIVE", orderNo: resetOrder.no, range: "QR20013001–QR20014000", amount: 1000, time: "2026-08-11 09:12" }], requestedAmount: 1000, reason: "计划更换礼盒宣传文案", status: "已驳回", time: "2026-08-12 10:26", decidedAt: "2026-08-12 10:45", rejectReason: "该修改不影响现有溯源信息，无需撤回码段" }],
+    ];
+    const richWithdrawals = withdrawalData.map(([demoCase, data]) => upsert(withdrawals, demoCase, data));
+
+    const messageData = [
+      ["rich-binding-approved", { id: 2401, ...fxBindingResultMessage({ productId: approvedProduct.id, customerId: byCustomer("北辰农产有限公司")?.id || null, product: approvedProduct.name, batch: approvedProduct.batch, orderNo: partialOrder.no, amount: 1000, range: "QR20008001–QR20009000", bindRequestNo: "BR-202608-101" }, true), time: "2026-08-10 11:26", unread: false, recipient: "北辰农产有限公司", customer: "北辰农产有限公司" }],
+      ["rich-binding-rejected", { id: 2402, ...fxBindingResultMessage({ productId: rejectedProduct.id, customerId: byCustomer("松野食品科技有限公司")?.id || null, product: rejectedProduct.name, batch: rejectedProduct.batch, orderNo: resetOrder.no, amount: 500, range: "QR20014001–QR20014500", bindRequestNo: "BR-202608-106", reason: "产品批次检验报告缺少签章，请补充后重新提交" }, false), time: "2026-08-12 09:25", unread: true, recipient: "松野食品科技有限公司", customer: "松野食品科技有限公司" }],
+      ["rich-withdrawal-approved", { id: 2403, ...fxWithdrawalResultMessage(richWithdrawals[1], true), time: "2026-08-12 10:18", unread: false, recipient: "松野食品科技有限公司", customer: "松野食品科技有限公司" }],
+      ["rich-withdrawal-rejected", { id: 2404, ...fxWithdrawalResultMessage(richWithdrawals[2], false), time: "2026-08-12 10:45", unread: true, recipient: "松野食品科技有限公司", customer: "松野食品科技有限公司" }],
+    ];
+    messageData.forEach(([demoCase, data]) => upsert(messages, demoCase, data));
+
+    orders.forEach(fxNormalizeAllocationOrder);
+    fxMigrateWithdrawalActivationIds();
+    fxStore.set(fxBusinessStorage.customers, customers);
+    fxStore.set(fxBusinessStorage.orders, orders);
+    fxStore.set(fxBusinessStorage.codeBatches, codeBatches);
+    fxStore.set(fxBusinessStorage.bindRequests, bindRequests);
+    fxStore.set(fxBusinessStorage.products, products);
+    fxStore.set(fxBusinessStorage.withdrawals, withdrawals);
+    fxStore.set(fxBusinessStorage.messages, messages);
+    fxStore.set(markerKey, fxRichDemoCaseVersion);
+  }
+  fxEnsureRichDemoCases();
   let fxLegacyBatchLinksChanged = false;
   orders.forEach((order, index) => {
     let batch = codeBatches.find(item => item.no === order.sourceBatchNo && fxCodeRangeContains(item.range, order.range));
@@ -937,6 +1038,7 @@ const fxToday = "2026-07-27";
     operatorDateFrom: "", operatorDateTo: "", operatorDateDraftFrom: "", operatorDateDraftTo: "",
     operatorCalendarOpen: false, operatorCalendarLeftMonth: "2026-06-01", operatorCalendarRightMonth: "2026-07-01",
     customerNameFilter: "", customerAccountFilter: "", customerPhoneFilter: "", customerStatus: "全部状态", customerSortKey: "", customerSortDirection: "asc",
+    customerDetailOrderFilter: "", customerDetailOrderSortKey: "", customerDetailOrderSortDirection: "asc",
     inventoryRangeFilter: "", inventoryStatus: "全部状态", inventoryAllocationCustomerFilter: "", inventoryAllocationOrderFilter: "", inventoryAllocationSortKey: "", inventoryAllocationSortDirection: "asc",
     inventoryAllocationDateFrom: "", inventoryAllocationDateTo: "", inventoryAllocationDateDraftFrom: "", inventoryAllocationDateDraftTo: "",
     orderCustomerFilter: "", orderNumberFilter: "", orderFrom: "", orderTo: "", orderSortKey: "", orderSortDirection: "asc",
@@ -970,7 +1072,7 @@ const fxToday = "2026-07-27";
     selectedWithdrawalIndex: null, selectedMessageId: null, selectedBindRequestId: null,
     editorProductId: null, editorDraft: null, editorReadonly: false, editorOwner: "customer", editorTargetOrderNo: null, editorBindRequestId: null,
     editorRequestedSourceRange: "", editorRequestedRange: "", editorRequestedAmount: 0, reviewEditing: false,
-    qrDraft: { customerId: null, prefix: "QR", size: "25 × 25 mm", customWidth: 25, customHeight: 25, amount: 500, note: "" },
+    qrDraft: { customerId: null, prefix: "QR", size: "custom", customWidth: 25, customHeight: 25, amount: 500, note: "" },
     generatedOrderNo: null, previewVersion: 1,
     scanExpandedModules: {},
   });
@@ -1516,14 +1618,14 @@ const fxToday = "2026-07-27";
     const width = Number(order.customWidth) || Number.parseFloat(order.size) || 25; const height = Number(order.customHeight) || width; const sizeLabel = order.size || `${width} × ${height} mm`;
     const allocations = fxCodeBatchAllocations(order);
     const allocationStatus = fxCodeBatchAllocationStatus(order);
-    const manifest = ["序列号,批次号,分配状态,分配记录号,客户", ...Array.from({ length: order.total }, (_, i) => {
+    const manifest = ["序列号,批次号,分配状态,订单号,客户名称", ...Array.from({ length: order.total }, (_, i) => {
       const serial = fxSerial(prefix, start + i);
       const allocation = allocations.find(item => fxCodeInRange(serial, item.range));
       return `${serial},${order.no},${allocation ? "已分配" : "未分配"},${allocation?.no || ""},${allocation?.customer || ""}`;
     })].join("\n");
     const samples = order.total; const entries = [
       { name: "manifest.csv", data: `\ufeff${manifest}` },
-      { name: "README.txt", data: `码段批次：${order.no}\n分配状态：${allocationStatus}\n已分配：${fxCodeBatchAllocatedAmount(order)}\n剩余库存：${fxCodeBatchAvailableAmount(order)}\n码量：${order.total}\n序列范围：${order.range}\n输出尺寸：${sizeLabel}\n压缩包仅包含二维码核心矩阵 SVG 和完整序列清单，不包含标签模板或额外码样式。序列号保存在 SVG 文件名和 manifest.csv 中，不绘制在二维码图形内。` },
+      { name: "README.txt", data: `码段批次：${order.no}\n分配状态：${allocationStatus}\n已分配：${fxCodeBatchAllocatedAmount(order)}\n剩余库存：${fxCodeBatchAvailableAmount(order)}\n码量：${order.total}\n序列范围：${order.range}\n尺寸：${sizeLabel}\n压缩包仅包含二维码核心矩阵 SVG 和完整序列清单，不包含标签模板或额外码样式。序列号保存在 SVG 文件名和 manifest.csv 中，不绘制在二维码图形内。` },
       ...Array.from({ length: samples }, (_, i) => { const code = fxSerial(prefix, start + i); return { name: `codes/${code}.svg`, data: fxQrSvg(code, undefined, { width, height, size: order.size }) }; }),
     ];
     fxDownloadBlob(`${order.no}_二维码核心区块.zip`, new Blob([fxZip(entries)], { type: "application/zip" }));

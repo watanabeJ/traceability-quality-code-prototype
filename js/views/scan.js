@@ -93,13 +93,6 @@ const fxScanParams = new URLSearchParams(location.search);
   function fxScanRows(base, custom = []) {
     return [...base, ...(custom || []).map(row => [row.name, row.value])].filter(([label, value]) => label && value);
   }
-  function fxProductMainImage(details = fxScanDetails) {
-    fxNormalizeDetails(details);
-    const productImage = (details.fieldMedia?.productImages || []).find(fxIsImageFile);
-    if (productImage) return productImage;
-    const orderedFiles = (details.fieldOrder.product || []).flatMap(token => { if (!token.startsWith("custom:")) return []; const row = details.custom.product.find(item => item.id === token.slice(7)); return row?.files || []; });
-    return orderedFiles.find(fxIsImageFile);
-  }
   function fxScanMediaItem(file, module) {
     const name = fxFileName(file); const type = fxFileType(file); const image = type.startsWith("image/") || /\.(png|jpe?g|webp)$/i.test(name); const fallback = module === "product" || module === "quality" ? "assets/tea-product.jpg" : "assets/tea-field.jpg"; const src = fxFileSrc(file, image ? fallback : "");
     if (image) return `<button type="button" class="scan-inline-image" data-action="fx-scan-image" data-src="${fxEscape(src)}" aria-label="查看${fxEscape(name)}"><img src="${fxEscape(src)}" alt="${fxEscape(name)}"></button>`;
@@ -152,19 +145,20 @@ const fxScanParams = new URLSearchParams(location.search);
     ["quality", "质量", scanQualityTab, d => Boolean(fxModuleDisplayItems(d, "quality").length || d.files?.quality?.length)],
     ["trace", "追溯", scanTraceTab, d => Boolean(fxModuleDisplayItems(d, "trace").length || d.files?.trace?.length)],
   ];
+  function fxScanBrandBanner() {
+    return `<div class="scan-brand-banner"><img src="assets/scan-brand-banner.png?v=v6q9x3cz" alt="溯源质控码追溯系统"></div>`;
+  }
   scanActive = function () {
     const tabs = fxScanModules.filter(([, , , visible]) => visible(fxScanDetails));
     if (!tabs.some(([key]) => key === state.scanTab)) state.scanTab = tabs[0]?.[0] || "product";
     const active = tabs.find(([key]) => key === state.scanTab) || tabs[0];
-    const heroFile = fxProductMainImage();
-    const heroSrc = fxFileSrc(heroFile, "assets/tea-product.jpg");
     const statusMeta = fxScanIsPreview ? `<div class="verified-row"><span class="status warning">预览资料</span></div>` : "";
     const scanMeta = fxScanIsPreview
-      ? `<div class="scan-preview-note">预览码不计入扫码次数，也不占用分配记录码量。</div>`
+      ? `<div class="scan-preview-note">预览码不计入扫码次数，也不占用订单码量。</div>`
       : fxRequestedSerial
         ? `<div class="scan-meta"><div><span>总查询次数</span><strong>${formatNumber(state.scanCount || 1)}</strong></div><div><span>溯源质控码</span><strong class="mono">${fxEscape(fxRequestedSerial)}</strong></div></div>`
         : `<div class="scan-preview-note">当前为扫码端演示入口；扫描溯源质控码后将按单码记录查询次数。</div>`;
-    return `<div class="scan-shell"><div class="mobile-topbar"><span></span><h1>溯源质控码</h1><span></span></div><button class="product-hero hero-button" data-action="fx-scan-image" data-src="${fxEscape(heroSrc)}"><img src="${fxEscape(heroSrc)}" alt="${fxEscape(fxScanDetails.productName || "产品图片")}"></button><div class="product-summary">${statusMeta}<h2>${fxEscape(fxScanDetails.productName || "未命名产品")}</h2>${scanMeta}</div><nav class="tabs" aria-label="溯源内容模块">${tabs.map(([key, label]) => `<button type="button" class="tab ${state.scanTab === key ? "active" : ""}" data-action="scan-tab" data-tab="${key}">${label}</button>`).join("")}</nav><div class="scan-content">${active ? active[2]() : `<section class="content-section"><div class="empty"><h3>暂无公开资料</h3><p>当前产品尚未配置可展示内容。</p></div></section>`}</div></div>`;
+    return `<div class="scan-shell"><div class="mobile-topbar"><span></span><h1>溯源质控码</h1><span></span></div>${fxScanBrandBanner()}<div class="product-summary">${statusMeta}<h2>${fxEscape(fxScanDetails.productName || "未命名产品")}</h2>${scanMeta}</div><nav class="tabs" aria-label="溯源内容模块">${tabs.map(([key, label]) => `<button type="button" class="tab ${state.scanTab === key ? "active" : ""}" data-action="scan-tab" data-tab="${key}">${label}</button>`).join("")}</nav><div class="scan-content">${active ? active[2]() : `<section class="content-section"><div class="empty"><h3>暂无公开资料</h3><p>当前产品尚未配置可展示内容。</p></div></section>`}</div></div>`;
   };
   scanStateMarkup = function (type) {
     const inactive = type === "inactive";
