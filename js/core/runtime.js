@@ -388,9 +388,9 @@ function restoreFromLocation() {
       state.customerPage = "orders";
       return;
     }
-    const bindRequestId = Number(params.get("request")) || null;
+    const bindRequestId = params.get("request") || null;
     const bindRequest = bindRequestId && typeof bindRequests !== "undefined"
-      ? bindRequests.find(item => Number(item.id) === bindRequestId && item.orderNo === targetOrderNo && (!currentCustomer || fxRecordBelongsToCustomer(item, currentCustomer)))
+      ? bindRequests.find(item => fxSameId(item.id, bindRequestId) && item.orderNo === targetOrderNo && (!currentCustomer || fxRecordBelongsToCustomer(item, currentCustomer)))
       : null;
     if (entryPortal === "customer" && bindRequestId && !bindRequest) {
       state.editorProductId = null;

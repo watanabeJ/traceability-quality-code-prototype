@@ -92,7 +92,7 @@ render = function () {
           time: item.time || fxNow(),
           customerId: fxCustomerForRecord(item)?.id || item.customerId || null,
         }));
-        const selectedRequest = bindRequests.find(item => Number(item.id) === Number(state.selectedBindRequestId));
+        const selectedRequest = bindRequests.find(item => fxSameId(item.id, state.selectedBindRequestId));
         if (state.selectedBindRequestId && !selectedRequest) {
           state.selectedBindRequestId = null;
           state.drawerProductId = null;
@@ -102,7 +102,7 @@ render = function () {
           state.drawerProductId = null;
           state.modal = null;
         }
-        const editingRequest = bindRequests.find(item => Number(item.id) === Number(state.editorBindRequestId));
+        const editingRequest = bindRequests.find(item => fxSameId(item.id, state.editorBindRequestId));
         if (state.editorBindRequestId && (!editingRequest || !["草稿", "已驳回"].includes(editingRequest.status))) {
           state.editorBindRequestId = null;
           state.editorReadonly = true;
@@ -339,7 +339,7 @@ render = function () {
     state.editorOwner = "customer";
     state.selectedOrderNo = order.no;
     state.editorTargetOrderNo = order.no;
-    state.editorBindRequestId = !readonly && options.requestSource === "binding" ? Number(options.requestId) || null : null;
+    state.editorBindRequestId = !readonly && options.requestSource === "binding" ? options.requestId || null : null;
     if (readonly) {
       state.editorRequestedSourceRange = options.range || "";
       state.editorRequestedRange = options.range || "";
@@ -418,7 +418,7 @@ render = function () {
   }
   function fxPersistExistingBindEdit(submit = false, saveAsDraft = false) {
     if (!fxEnabledCustomerSession()) return showToast("当前客户账号状态异常，请重新登录"), false;
-    const request = bindRequests.find(item => item.id === state.editorBindRequestId && fxRecordBelongsToCustomer(item, fxCurrentCustomer()) && ["已驳回", "草稿"].includes(item.status));
+    const request = bindRequests.find(item => fxSameId(item.id, state.editorBindRequestId) && fxRecordBelongsToCustomer(item, fxCurrentCustomer()) && ["已驳回", "草稿"].includes(item.status));
     const linkedProduct = fxProductForRecord(request);
     const product = linkedProduct && Number(linkedProduct.id) === Number(state.editorProductId) ? linkedProduct : null;
     const order = request && orders.find(item => item.no === state.editorTargetOrderNo && item.allocationStatus !== "已撤销" && fxRecordBelongsToCustomer(item, fxCurrentCustomer()));
@@ -763,7 +763,7 @@ render = function () {
       }
       if (data.kind === "withdraw-bind-request") {
         if (!fxEnabledCustomerSession()) return showToast("当前账号无权执行此操作");
-        const index = bindRequests.findIndex(item => item.id === Number(data.id) && fxRecordBelongsToCustomer(item, fxCurrentCustomer()) && item.status === "待审批");
+        const index = bindRequests.findIndex(item => fxSameId(item.id, data.id) && fxRecordBelongsToCustomer(item, fxCurrentCustomer()) && item.status === "待审批");
         if (index < 0) return showToast("申请状态已变化，请刷新后重试");
         bindRequests.splice(index, 1);
         fxSaveBusiness();
@@ -936,7 +936,7 @@ render = function () {
       return render();
     }
     if (action === "fx-view-bind-request") {
-      const request = bindRequests.find(item => item.id === Number(target.dataset.id) && (fxEnabledOperatorSession() || (fxEnabledCustomerSession() && fxRecordBelongsToCustomer(item, fxCurrentCustomer()))));
+      const request = bindRequests.find(item => fxSameId(item.id, target.dataset.id) && (fxEnabledOperatorSession() || (fxEnabledCustomerSession() && fxRecordBelongsToCustomer(item, fxCurrentCustomer()))));
       if (!request) return showToast("绑定申请不存在或无权查看");
       state.selectedBindRequestId = request.id;
       state.modal = "fx-bind-request-detail";
@@ -961,7 +961,7 @@ render = function () {
         if (!product) return showToast("申请状态已变化，请刷新后重试");
         state.modalData = { kind: "withdraw-review-edit", id: product.id, title: "撤回申请", subtitle: "撤回后，运营端将不再审核当前提交版本。", subject: `${product.name}（${product.batch || "—"}）`, operation: "恢复为待提交状态并保留当前资料", danger: true };
       } else {
-        const request = bindRequests.find(item => item.id === Number(target.dataset.requestId) && fxRecordBelongsToCustomer(item, fxCurrentCustomer()) && item.status === "待审批");
+        const request = bindRequests.find(item => fxSameId(item.id, target.dataset.requestId) && fxRecordBelongsToCustomer(item, fxCurrentCustomer()) && item.status === "待审批");
         if (!request) return showToast("申请状态已变化，请刷新后重试");
         state.modalData = { kind: "withdraw-bind-request", id: request.id, title: "撤回申请", subtitle: "撤回后，运营端将不再处理本次绑定申请。", subject: `${request.product}（${request.batch || "—"}）`, operation: `取消订单 ${request.orderNo} 的本次绑定申请`, danger: true };
       }
@@ -979,7 +979,7 @@ render = function () {
     }
     if (action === "fx-submit-existing-bind-draft") {
       if (!fxEnabledCustomerSession()) return showToast("当前账号无权执行此操作");
-      const request = bindRequests.find(item => item.id === Number(target.dataset.requestId) && fxRecordBelongsToCustomer(item, fxCurrentCustomer()) && item.status === "草稿");
+      const request = bindRequests.find(item => fxSameId(item.id, target.dataset.requestId) && fxRecordBelongsToCustomer(item, fxCurrentCustomer()) && item.status === "草稿");
       const linkedProduct = fxProductForRecord(request);
       const product = linkedProduct && Number(linkedProduct.id) === Number(target.dataset.id) ? linkedProduct : null;
       if (!request || !product) return showToast("待提交的绑定申请不存在");
@@ -987,8 +987,15 @@ render = function () {
     }
     if (action === "fx-open-binding-review-product" || action === "fx-edit-binding-review-product") {
       if (!fxEnabledOperatorSession()) return showToast("当前账号无权执行此操作");
-      const product = products.find(item => item.id === Number(target.dataset.productId));
-      const bindingRequest = target.dataset.source === "binding" ? bindRequests.find(item => Number(item.id) === Number(target.dataset.requestId)) : null;
+      const bindingRequest = target.dataset.source === "binding" ? bindRequests.find(item => fxSameId(item.id, target.dataset.requestId)) : null;
+      const product = bindingRequest
+        ? fxProductForRecord(bindingRequest)
+        : fxProductForRecord({
+          productId: target.dataset.productId,
+          product: target.dataset.productName,
+          batch: target.dataset.productBatch,
+          customerId: target.dataset.customerId,
+        });
       const requestCustomer = bindingRequest ? fxCustomerForRecord(bindingRequest) : fxCustomerForRecord(product);
       if (!product || !requestCustomer || !fxRecordBelongsToCustomer(product, requestCustomer) || (target.dataset.source === "binding" && !bindingRequest)) return showToast("绑定审核关联的产品或客户不存在");
       const reviewStatus = bindingRequest ? fxBindingReviewStatus(bindingRequest.status) : product.status;
@@ -1023,7 +1030,7 @@ render = function () {
     }
     if (action === "fx-approve-bind-request") {
       if (!fxEnabledOperatorSession()) return showToast("当前账号无权处理绑定申请");
-      const request = bindRequests.find(item => item.id === Number(target.dataset.id) && item.status === "待审批");
+      const request = bindRequests.find(item => fxSameId(item.id, target.dataset.id) && item.status === "待审批");
       const requestCustomer = fxCustomerForRecord(request);
       const order = request && requestCustomer && orders.find(item => item.no === request.orderNo && item.allocationStatus !== "已撤销" && fxRecordBelongsToCustomer(item, requestCustomer));
       const product = fxProductForRecord(request);
@@ -1055,13 +1062,13 @@ render = function () {
     }
     if (action === "fx-reject-bind-request") {
       if (!fxEnabledOperatorSession()) return showToast("当前账号无权处理绑定申请");
-      state.selectedBindRequestId = Number(target.dataset.id);
+      state.selectedBindRequestId = target.dataset.id;
       state.modal = "fx-bind-request-reject";
       return render();
     }
     if (action === "fx-confirm-bind-request-reject") {
       if (!fxEnabledOperatorSession()) return showToast("当前账号无权处理绑定申请");
-      const request = bindRequests.find(item => item.id === state.selectedBindRequestId && item.status === "待审批");
+      const request = bindRequests.find(item => fxSameId(item.id, state.selectedBindRequestId) && item.status === "待审批");
       const reason = fxRead("fx-bind-request-reason").trim();
       if (!request) return showToast("绑定申请不存在或已处理");
       if (!reason) return showToast("请填写驳回原因");
@@ -1125,7 +1132,7 @@ render = function () {
     if (action === "fx-view-activation-withdrawal") { const item = withdrawals.find(row => row.no === target.dataset.withdrawalNo && (fxEnabledOperatorSession() || (fxEnabledCustomerSession() && fxRecordBelongsToCustomer(row, fxCurrentCustomer())))); if (!item) return showToast("撤回记录不存在或无权查看"); state.modalData = { withdrawalNo: item.no }; state.modal = "fx-reset-history"; return render(); }
     if (action === "fx-back-order-detail") { state.modal = null; if (state.portal === "customer") state.customerPage = "order-detail"; else state.opsPage = "order-detail"; return render(); }
     if (action === "fx-export-products") { fxDownloadExcel(`产品信息_${fxToday}.xls`, ["产品名称", "产品批次", "产品大类", "客户名称", "产品提交时间", "审核状态"], fxFilteredReviews().map(item => [item.name, item.batch, item.category, item.company, item.submitted || "", item.status])); return showToast("产品信息已导出"); }
-    if (action === "fx-ops-edit-product") { if (!fxEnabledOperatorSession()) return showToast("当前账号无权编辑产品资料"); const product = products.find(item => item.id === Number(target.dataset.id)); const bindingRequest = bindRequests.find(item => Number(item.id) === Number(state.selectedBindRequestId) && Number(item.productId) === Number(product?.id)); const reviewStatus = bindingRequest ? fxBindingReviewStatus(bindingRequest.status) : product?.status; if (!product || !["待审核", "已激活"].includes(reviewStatus)) return showToast("当前状态不支持编辑产品资料"); const initialStep = state.opsPage === "review-detail" && state.drawerProductId === product.id ? state.productStep : 0; return fxOpenEditor(product, "ops", product.requestedOrderNo || null, initialStep, true); }
+    if (action === "fx-ops-edit-product") { if (!fxEnabledOperatorSession()) return showToast("当前账号无权编辑产品资料"); const product = products.find(item => item.id === Number(target.dataset.id)); const bindingRequest = bindRequests.find(item => fxSameId(item.id, state.selectedBindRequestId) && Number(item.productId) === Number(product?.id)); const reviewStatus = bindingRequest ? fxBindingReviewStatus(bindingRequest.status) : product?.status; if (!product || !["待审核", "已激活"].includes(reviewStatus)) return showToast("当前状态不支持编辑产品资料"); const initialStep = state.opsPage === "review-detail" && state.drawerProductId === product.id ? state.productStep : 0; return fxOpenEditor(product, "ops", product.requestedOrderNo || null, initialStep, true); }
     if (action === "fx-open-activation") { if (!fxEnabledOperatorSession()) return showToast("当前账号无权处理绑定审核"); const product = products.find(item => item.id === Number(target.dataset.id) && item.status === "待审核"); if (!product) return showToast("绑定审核状态已发生变化，请刷新后重试"); state.drawerProductId = product.id; state.modal = "fx-activation"; return render(); }
     if (action === "fx-confirm-activation") {
       if (!fxEnabledOperatorSession()) return showToast("当前账号无权处理绑定申请");
@@ -1421,7 +1428,7 @@ render = function () {
       fxSyncCustomerBindRangePreview();
     }
     if (target.id === "fx-edit-bind-request-amount") {
-      const request = bindRequests.find(item => item.id === state.selectedBindRequestId);
+      const request = bindRequests.find(item => fxSameId(item.id, state.selectedBindRequestId));
       const order = request && orders.find(item => item.no === request.orderNo && item.allocationStatus !== "已撤销");
       const preview = document.getElementById("fx-edit-bind-request-range");
       const range = order ? fxActivationRange(order, Number(target.value), null, request.id) : "";

@@ -4,6 +4,7 @@ const fxToday = "2026-07-27";
   const fxNow = () => `${fxToday} ${new Date().toLocaleTimeString("zh-CN", { hour12: false, hour: "2-digit", minute: "2-digit" })}`;
   const fxEscape = (value = "") => String(value).replace(/[&<>"']/g, ch => ({ "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;", "'": "&#39;" }[ch]));
   const fxClone = value => JSON.parse(JSON.stringify(value));
+  const fxSameId = (left, right) => left !== undefined && left !== null && right !== undefined && right !== null && String(left) === String(right);
   const fxStore = {
     get(key, fallback = null) { try { const value = localStorage.getItem(key); return value == null ? fallback : JSON.parse(value); } catch (_) { return fallback; } },
     set(key, value) { try { localStorage.setItem(key, JSON.stringify(value)); } catch (_) {} },
@@ -128,6 +129,88 @@ const fxToday = "2026-07-27";
     custom: { product: [], company: [], production: [], quality: [], trace: [] },
     files: { product: ["产品主图.jpg"], company: ["营业执照.pdf", "资质证明.pdf"], production: ["生产环境.jpg"], quality: [`${product.batch}_产品检测报告.pdf`], trace: [] },
   });
+  function fxCompleteProductDetails(product) {
+    const customer = fxCustomerForRecord(product);
+    const company = customer?.name || product.company || "示例生产企业";
+    const shortCompany = company.replace(/有限责任公司|股份有限公司|有限公司|科技公司|公司/g, "") || company;
+    const companyProfiles = {
+      "云岭生态农业有限公司": { phone: "0883-661 2098", address: "云南省临沧市双江县勐库镇茶山路 18 号", productionAddress: "云南省临沧市双江县勐库镇大雪山村 6 组" },
+      "北辰农产有限公司": { phone: "0451-5588 3106", address: "黑龙江省哈尔滨市五常市民乐乡北辰路 16 号", productionAddress: "黑龙江省哈尔滨市五常市民乐乡现代农业园 2 号" },
+      "松野食品科技有限公司": { phone: "0871-6560 2088", address: "云南省昆明市经开区林溪路 28 号", productionAddress: "云南省昆明市经开区食品产业园 8 号" },
+      "安护医疗用品有限公司": { phone: "0512-6683 6799", address: "江苏省苏州市工业园区启明路 66 号", productionAddress: "江苏省苏州市工业园区医疗器械产业园 3 号" },
+    };
+    const companyProfile = companyProfiles[company] || { phone: "400-800-2026", address: "企业备案经营地址", productionAddress: "企业备案生产地址" };
+    const categoryProfiles = {
+      农产品: { subcategory: "初级农产品", specification: "500 g / 袋", origin: companyProfile.productionAddress, shelfLife: "18 个月", storage: "阴凉、干燥、通风处密封保存", standard: "符合产品标示及国家相关质量标准", process: "原料验收 → 分选 → 加工 → 检验 → 包装 → 赋码入库", equipment: "原料分选设备、加工设备、质量检测设备和自动包装线" },
+      养殖品: { subcategory: "养殖产品", specification: "按包装标示", origin: companyProfile.productionAddress, shelfLife: "以包装标示为准", storage: "按产品标示温度贮存并保持冷链", standard: "符合养殖产品质量安全相关标准", process: "养殖记录 → 检疫检验 → 分级加工 → 包装 → 赋码入库", equipment: "环境监测设备、检验设备、分级设备和冷链设施" },
+      加工食品: { subcategory: "预包装食品", specification: "按包装标示", origin: companyProfile.productionAddress, shelfLife: "12 个月", storage: "常温避光保存，开封后尽快食用", standard: "符合食品安全国家标准及产品执行标准", process: "原辅料验收 → 配料 → 加工 → 杀菌 → 检验 → 包装赋码", equipment: "自动配料设备、加工生产线、杀菌设备和质量检测仪器" },
+      工业品: { subcategory: "工业制成品", specification: "按产品技术规格", origin: companyProfile.productionAddress, shelfLife: "按产品说明书", storage: "按产品说明书要求贮存", standard: "符合产品技术规范及相关行业标准", process: "原料检验 → 生产加工 → 过程检验 → 成品检验 → 包装赋码", equipment: "自动化生产线、过程监控设备和成品检测设备" },
+      医疗卫生用品: { subcategory: "医疗卫生用品", specification: "按注册或备案规格", origin: companyProfile.productionAddress, shelfLife: "36 个月", storage: "清洁、干燥、通风且无腐蚀性气体环境保存", standard: "符合医疗器械产品技术要求及相关国家标准", process: "原料检验 → 洁净生产 → 灭菌或消毒 → 成品检验 → 包装赋码", equipment: "洁净生产线、灭菌设备、无菌检测设备和自动包装线" },
+    };
+    const categoryProfile = categoryProfiles[product.category] || categoryProfiles.工业品;
+    const template = fxDefaultDetails({ ...product, company });
+    Object.assign(template, {
+      productName: product.name,
+      brand: shortCompany,
+      category: product.category || "工业品",
+      subcategory: categoryProfile.subcategory,
+      trademark: shortCompany,
+      productImages: `${product.name}产品、包装及批次实物图片`,
+      intro: `${product.name}由${company}生产或经营，本批次已建立从生产、质量检验到赋码入库的完整记录。`,
+      specification: categoryProfile.specification,
+      origin: categoryProfile.origin,
+      batch: product.batch,
+      productionDate: String(product.submitted || fxToday).slice(0, 10),
+      shelfLife: categoryProfile.shelfLife,
+      storage: categoryProfile.storage,
+      standard: categoryProfile.standard,
+      companyName: company,
+      companyPhone: companyProfile.phone,
+      companyAddress: companyProfile.address,
+      companyIntro: `${company}建立了产品批次、生产过程、质量检验和赋码入库管理制度，相关记录可按批次追溯。`,
+      qualificationProof: "企业主体资质、生产或经营许可及质量管理文件齐全",
+      productionEnvironment: "生产区域按产品类别分区管理，环境检查记录完整",
+      productionUnit: `${shortCompany}生产中心`,
+      productionAddress: companyProfile.productionAddress,
+      productionSiteEnvironment: "生产现场清洁，关键区域实施温湿度与卫生状态监测",
+      qualificationDocuments: "生产单位主体资质、场地及从业人员资料已备案",
+      process: categoryProfile.process,
+      equipment: categoryProfile.equipment,
+      productionLicense: `生产或经营许可备案（批次：${product.batch}）`,
+      productHonorCertificate: "企业质量信誉与产品荣誉资料已归档",
+      productCertificationCertificate: "产品合格证明及相关认证资料已归档",
+      onSiteVerificationCertificate: "生产场地与质量管理情况已完成现场核验",
+      productInspectionReport: `${product.batch} 批次产品检验报告；检验结论符合产品执行标准。`,
+      trace: [
+        { date: String(product.submitted || fxToday).slice(0, 10), content: "完成本批次生产任务下达及原辅料验收" },
+        { date: String(product.submitted || fxToday).slice(0, 10), content: "完成生产加工、过程检查和成品检验" },
+        { date: String(product.decidedAt || product.submitted || fxToday).slice(0, 10), content: "完成产品包装、质控码关联及成品入库" },
+      ],
+    });
+    const details = product.details && typeof product.details === "object" ? product.details : {};
+    const hasLegacyTeaTemplate = details.intro === "精选高山生态原料，经标准化工艺加工并完成批次质量检验。"
+      && details.origin === "云南省临沧市双江县"
+      && details.standard === "GB/T 14456.1-2017";
+    const productIsTea = /茶|普洱|红茶|绿茶|毛茶/.test(String(product.name || ""));
+    if (hasLegacyTeaTemplate && (company !== "云岭生态农业有限公司" || !productIsTea)) {
+      [
+        "brand", "category", "subcategory", "trademark", "productImages", "intro", "specification", "origin", "batch",
+        "productionDate", "shelfLife", "storage", "standard", "companyName", "companyPhone", "companyAddress", "companyIntro",
+        "qualificationProof", "productionEnvironment", "productionUnit", "productionAddress", "productionSiteEnvironment",
+        "qualificationDocuments", "process", "equipment", "productionLicense", "productHonorCertificate",
+        "productCertificationCertificate", "onSiteVerificationCertificate", "productInspectionReport", "trace",
+      ].forEach(key => { details[key] = fxClone(template[key]); });
+    }
+    Object.entries(template).forEach(([key, value]) => {
+      if (["custom", "files", "fieldMedia", "fieldOrder", "trace"].includes(key)) return;
+      if (details[key] === undefined || details[key] === null || String(details[key]).trim() === "") details[key] = fxClone(value);
+    });
+    if (!Array.isArray(details.trace) || !details.trace.some(row => String(row?.date || "").trim() || String(row?.content || "").trim())) details.trace = fxClone(template.trace);
+    details.custom ||= fxClone(template.custom);
+    details.files ||= fxClone(template.files);
+    details.fieldMedia ||= fxClone(template.fieldMedia);
+    return fxNormalizeDetails(details);
+  }
   products.forEach(product => {
     if (!product.details) product.details = fxDefaultDetails(product);
     fxNormalizeDetails(product.details);
@@ -324,17 +407,28 @@ const fxToday = "2026-07-27";
   function fxProductForRecord(record) {
     if (!record) return null;
     const customer = fxCustomerForRecord(record);
+    const productName = String(record.product || record.name || "").trim();
+    const batch = String(record.batch || "").trim();
     const hasProductId = record.productId !== undefined && record.productId !== null && record.productId !== "";
     if (hasProductId) {
       const productId = Number(record.productId);
       const byId = Number.isFinite(productId) ? products.find(item => Number(item.id) === productId) : null;
-      return byId && (!customer || fxRecordBelongsToCustomer(byId, customer)) ? byId : null;
+      const identityMatches = byId && (!productName || byId.name === productName) && (!batch || byId.batch === batch);
+      if (identityMatches && (!customer || fxRecordBelongsToCustomer(byId, customer))) return byId;
     }
-    const productName = record.product || record.name;
-    const candidates = products.filter(item => (!productName || item.name === productName)
-      && (!record.batch || item.batch === record.batch)
-      && (!customer || fxRecordBelongsToCustomer(item, customer)));
-    return candidates.length === 1 ? candidates[0] : null;
+    const customerProducts = products.filter(item => !customer || fxRecordBelongsToCustomer(item, customer));
+    const exactCandidates = customerProducts.filter(item => (!productName || item.name === productName)
+      && (!batch || item.batch === batch));
+    if (exactCandidates.length === 1) return exactCandidates[0];
+    if (productName) {
+      const nameCandidates = customerProducts.filter(item => item.name === productName);
+      if (nameCandidates.length === 1) return nameCandidates[0];
+    }
+    if (batch) {
+      const batchCandidates = customerProducts.filter(item => item.batch === batch);
+      if (batchCandidates.length === 1) return batchCandidates[0];
+    }
+    return null;
   }
   function fxMigrateWithdrawalActivationIds() {
     withdrawals.forEach(withdrawal => {
@@ -869,6 +963,148 @@ const fxToday = "2026-07-27";
     fxStore.set(markerKey, fxRichDemoCaseVersion);
   }
   fxEnsureRichDemoCases();
+  const fxRelationshipConsistencyVersion = 6;
+  function fxEnsureRelationshipConsistency() {
+    const markerKey = "trace-relationship-consistency-version";
+    let changed = Number(fxStore.get(markerKey, 0)) < fxRelationshipConsistencyVersion;
+    const normalizeCustomerLink = record => {
+      const customer = fxCustomerForRecord(record);
+      if (!customer) return null;
+      if (Number(record.customerId) !== Number(customer.id)) { record.customerId = customer.id; changed = true; }
+      if ("customer" in record && record.customer !== customer.name) { record.customer = customer.name; changed = true; }
+      if ("company" in record && record.company !== customer.name) { record.company = customer.name; changed = true; }
+      return customer;
+    };
+    const normalizeProductLink = record => {
+      const product = fxProductForRecord(record);
+      if (!product) return null;
+      const customer = fxCustomerForRecord(product) || fxCustomerForRecord(record);
+      if (Number(record.productId) !== Number(product.id)) { record.productId = product.id; changed = true; }
+      if ("product" in record && record.product !== product.name) { record.product = product.name; changed = true; }
+      if (record.batch !== product.batch) { record.batch = product.batch; changed = true; }
+      if (customer && Number(record.customerId) !== Number(customer.id)) { record.customerId = customer.id; changed = true; }
+      return product;
+    };
+    const placeholderProductNames = new Set(["", "—", "历史产品", "未命名产品"]);
+    const usedProductIds = new Set();
+    let maxProductId = Math.max(0, ...products.map(item => Number(item.id) || 0));
+    products.forEach(product => {
+      const productId = Number(product.id);
+      if (!Number.isFinite(productId) || usedProductIds.has(productId)) {
+        product.id = ++maxProductId;
+        changed = true;
+      }
+      usedProductIds.add(Number(product.id));
+    });
+    const nextProductId = () => Math.max(0, ...products.map(item => Number(item.id) || 0)) + 1;
+    const archiveProductForRecord = (record, customer, activated = false) => {
+      const linked = fxProductForRecord(record);
+      if (linked) return linked;
+      const productName = String(record?.product || record?.name || "").trim();
+      if (!customer || placeholderProductNames.has(productName)) return null;
+      const customerProducts = products.filter(item => fxRecordBelongsToCustomer(item, customer));
+      const category = customerProducts[0]?.category || "农产品";
+      const knownBatches = { 云岭春芽红茶: "YL20260724" };
+      const rawBatch = String(record?.batch || "").trim();
+      const batchLooksLikeSerial = orders.some(order => fxRecordBelongsToCustomer(order, customer) && String(order.range || "").split("–")[0] === rawBatch);
+      const batch = knownBatches[productName] || (!batchLooksLikeSerial && rawBatch ? rawBatch : `HIST-${String(customer.account || customer.id).toUpperCase()}-${String(nextProductId()).padStart(4, "0")}`);
+      const statusValue = activated || ["已通过", "已激活"].includes(record?.status)
+        ? "已激活"
+        : ["待审批", "待审核"].includes(record?.status) ? "待审核" : "已驳回";
+      const product = {
+        id: nextProductId(),
+        archiveCase: true,
+        customerId: customer.id,
+        name: productName,
+        company: customer.name,
+        category,
+        batch,
+        status: statusValue,
+        submitted: record?.time || record?.submitted || fxToday,
+        decidedAt: record?.decidedAt || record?.time || "",
+        amount: 0,
+      };
+      product.details = fxCompleteProductDetails(product);
+      products.push(product);
+      changed = true;
+      return product;
+    };
+
+    customers.forEach(normalizeCustomerLink);
+    products.forEach(product => {
+      const customer = normalizeCustomerLink(product);
+      const previousDetails = JSON.stringify(product.details || null);
+      const normalizedDetails = fxCompleteProductDetails(product);
+      product.details = normalizedDetails;
+      normalizedDetails.productName = product.name;
+      normalizedDetails.batch = product.batch;
+      normalizedDetails.category = product.category || normalizedDetails.category || "";
+      if (customer) normalizedDetails.companyName = customer.name;
+      if (JSON.stringify(normalizedDetails) !== previousDetails) changed = true;
+    });
+    orders.forEach(order => {
+      const customer = normalizeCustomerLink(order);
+      order.activations = (order.activations || []).filter(activation => {
+        if (customer && Number(activation.customerId) !== Number(customer.id)) { activation.customerId = customer.id; changed = true; }
+        const linkRecord = { ...activation, customerId: customer?.id || activation.customerId, customer: customer?.name || order.customer };
+        let product = normalizeProductLink(linkRecord);
+        if (!product && customer && placeholderProductNames.has(String(activation.product || "").trim())) {
+          const candidates = products.filter(item => fxRecordBelongsToCustomer(item, customer));
+          if (candidates.length === 1) product = candidates[0];
+        }
+        if (!product) product = archiveProductForRecord(linkRecord, customer, true);
+        if (!product) { changed = true; return false; }
+        if (Number(activation.productId) !== Number(product.id) || activation.product !== product.name || activation.batch !== product.batch) {
+          Object.assign(activation, { productId: product.id, customerId: customer?.id || product.customerId || null, product: product.name, batch: product.batch });
+          changed = true;
+        }
+        if (activation.status !== "已重置" && product.status !== "已激活") {
+          product.status = "已激活";
+          changed = true;
+        }
+        const request = bindRequests.find(item => item.no && item.no === activation.bindRequestNo)
+          || bindRequests.find(item => item.orderNo === order.no && item.range === activation.range && Number(item.productId) === Number(product.id));
+        if (request?.no && activation.bindRequestNo !== request.no) { activation.bindRequestNo = request.no; changed = true; }
+        return true;
+      });
+    });
+    bindRequests.splice(0, bindRequests.length, ...bindRequests.filter(request => {
+      const customer = normalizeCustomerLink(request);
+      const product = normalizeProductLink(request) || archiveProductForRecord(request, customer, request.status === "已通过");
+      if (!product) { changed = true; return false; }
+      Object.assign(request, { productId: product.id, product: product.name, batch: product.batch, customerId: customer?.id || product.customerId || null });
+      return true;
+    }));
+    withdrawals.splice(0, withdrawals.length, ...withdrawals.filter(withdrawal => {
+      const customer = normalizeCustomerLink(withdrawal);
+      const product = normalizeProductLink(withdrawal) || archiveProductForRecord(withdrawal, customer, true);
+      if (!product) { changed = true; return false; }
+      Object.assign(withdrawal, { productId: product.id, product: product.name, batch: product.batch, customerId: customer?.id || product.customerId || null });
+      return true;
+    }));
+    messages.forEach(message => { normalizeCustomerLink(message); if (message.productId || message.batch) normalizeProductLink(message); });
+    const retainedProducts = products.filter(product => !placeholderProductNames.has(String(product.name || "").trim()));
+    if (retainedProducts.length !== products.length) {
+      products.splice(0, products.length, ...retainedProducts);
+      changed = true;
+    }
+    products.forEach(product => {
+      const previousDetails = JSON.stringify(product.details || null);
+      product.details = fxCompleteProductDetails(product);
+      if (JSON.stringify(product.details) !== previousDetails) changed = true;
+    });
+
+    if (changed) {
+      fxStore.set(fxBusinessStorage.customers, customers);
+      fxStore.set(fxBusinessStorage.orders, orders);
+      fxStore.set(fxBusinessStorage.bindRequests, bindRequests);
+      fxStore.set(fxBusinessStorage.products, products);
+      fxStore.set(fxBusinessStorage.withdrawals, withdrawals);
+      fxStore.set(fxBusinessStorage.messages, messages);
+    }
+    fxStore.set(markerKey, fxRelationshipConsistencyVersion);
+  }
+  fxEnsureRelationshipConsistency();
   let fxLegacyBatchLinksChanged = false;
   orders.forEach((order, index) => {
     let batch = codeBatches.find(item => item.no === order.sourceBatchNo && fxCodeRangeContains(item.range, order.range));
@@ -1345,7 +1581,7 @@ const fxToday = "2026-07-27";
     if (!start || !end || needed < 1 || start.prefix !== end.prefix) return "";
     const reservedRows = [
       ...fxCombinedPendingProducts(order.no, excludeProductId).map(product => ({ range: product.requestedRange, status: "有效" })),
-      ...bindRequests.filter(request => request.orderNo === order.no && request.status === "待审批" && request.range && Number(request.id) !== Number(excludeBindRequestId)).map(request => ({ range: request.range, status: "有效" })),
+      ...bindRequests.filter(request => request.orderNo === order.no && request.status === "待审批" && request.range && !fxSameId(request.id, excludeBindRequestId)).map(request => ({ range: request.range, status: "有效" })),
     ];
     const occupied = [...(order.activations || []), ...reservedRows].filter(row => row.status !== "已重置" && row.range).map(row => {
       const [rowStartCode, rowEndCode] = String(row.range).split("–");
@@ -1367,7 +1603,7 @@ const fxToday = "2026-07-27";
     if (!start || !end || start.prefix !== end.prefix) return [];
     const reservedRows = [
       ...fxCombinedPendingProducts(order.no, excludeProductId).map(product => ({ range: product.requestedRange, status: "有效" })),
-      ...bindRequests.filter(request => request.orderNo === order.no && request.status === "待审批" && request.range && Number(request.id) !== Number(excludeBindRequestId)).map(request => ({ range: request.range, status: "有效" })),
+      ...bindRequests.filter(request => request.orderNo === order.no && request.status === "待审批" && request.range && !fxSameId(request.id, excludeBindRequestId)).map(request => ({ range: request.range, status: "有效" })),
     ];
     const occupied = [...(order.activations || []), ...reservedRows].filter(row => row.status !== "已重置" && row.range).map(row => {
       const [rowStartCode, rowEndCode] = String(row.range).split("–");
@@ -1441,7 +1677,10 @@ const fxToday = "2026-07-27";
     return files.map(fxNormalizeStoredFile).filter(file => { const key = `${file.name}\u0000${file.src}\u0000${file.size || 0}`; if (seen.has(key)) return false; seen.add(key); return true; });
   }
   function fxNormalizeDetails(details) {
-    details.custom ||= {}; details.files ||= {}; details.fieldOrder ||= {}; details.fieldMedia ||= {};
+    if (!details.custom || Array.isArray(details.custom) || typeof details.custom !== "object") details.custom = {};
+    if (!details.files || Array.isArray(details.files) || typeof details.files !== "object") details.files = {};
+    if (!details.fieldOrder || Array.isArray(details.fieldOrder) || typeof details.fieldOrder !== "object") details.fieldOrder = {};
+    if (!details.fieldMedia || Array.isArray(details.fieldMedia) || typeof details.fieldMedia !== "object") details.fieldMedia = {};
     Object.values(fxStandardFieldDefs).flat().filter(field => field.mediaKey).forEach(field => {
       if (!Array.isArray(details.fieldMedia[field.mediaKey])) details.fieldMedia[field.mediaKey] = [];
       details.fieldMedia[field.mediaKey] = fxUniqueFiles(details.fieldMedia[field.mediaKey]);

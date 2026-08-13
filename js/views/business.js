@@ -300,7 +300,7 @@ function customerOrders() {
   function fxReviewDetailPage() {
     const product = products.find(item => item.id === state.drawerProductId);
     if (!product) return `<div class="page">${pageHeader("绑定审核详情", "", `<button class="button" data-action="fx-back-reviews">${icon("arrow-left", "←")}返回绑定审核</button>`)}<div class="empty"><div><div class="empty-icon">${icon("package-x", "×")}</div><h3>申请记录不存在</h3></div></div></div>`;
-    const bindingRequest = bindRequests.find(item => Number(item.id) === Number(state.selectedBindRequestId) && Number(item.productId) === Number(product.id));
+    const bindingRequest = bindRequests.find(item => fxSameId(item.id, state.selectedBindRequestId) && Number(item.productId) === Number(product.id));
     const reviewStatus = bindingRequest ? fxBindingReviewStatus(bindingRequest.status) : product.status;
     if (state.editorOwner !== "ops" || state.editorProductId !== product.id || !state.editorDraft) {
       state.editorProductId = product.id;
@@ -500,7 +500,7 @@ function customerOrders() {
       return fxModalShell("绑定申请中明细", state.selectedOrderNo || "", body, `<button class="button primary" data-action="close-modal">关闭</button>`, true);
     }
     if (state.modal === "fx-bind-request-detail") {
-      const request = bindRequests.find(item => item.id === state.selectedBindRequestId);
+      const request = bindRequests.find(item => fxSameId(item.id, state.selectedBindRequestId));
       if (!request) return "";
       const order = orders.find(item => item.no === request.orderNo);
       const requestedRange = request.range || (order ? fxActivationRange(order, request.amount, null, request.id) : "");
@@ -511,7 +511,7 @@ function customerOrders() {
       return fxModalShell("绑定审核详情", "已有产品追加绑定", `<div class="confirm-list"><div class="confirm-row"><span>申请时间</span><strong>${fxEscape(request.time || "—")}</strong></div><div class="confirm-row"><span>申请状态</span><strong>${status(request.status)}</strong></div><div class="confirm-row"><span>客户名称</span><strong>${fxEscape(request.customer)}</strong></div><div class="confirm-row"><span>订单号</span><strong class="mono">${fxEscape(request.orderNo)}</strong></div><div class="confirm-row"><span>产品名称</span><strong>${fxEscape(request.product)}</strong></div><div class="confirm-row"><span>产品批次</span><strong class="mono">${fxEscape(request.batch || "—")}</strong></div><div class="confirm-row"><span>申请码段</span><strong class="mono">${fxEscape(requestedRange || "—")}</strong></div><div class="confirm-row"><span>申请数量</span><strong>${formatNumber(request.amount)}</strong></div><div class="confirm-row"><span>处理时间</span><strong>${fxEscape(request.decidedAt || "—")}</strong></div><div class="confirm-row"><span>处理说明</span><strong>${fxEscape(result || "等待运营端审批")}</strong></div></div>`, actions);
     }
     if (state.modal === "fx-bind-request-reject") {
-      const request = bindRequests.find(item => item.id === state.selectedBindRequestId);
+      const request = bindRequests.find(item => fxSameId(item.id, state.selectedBindRequestId));
       return fxModalShell("驳回绑定申请", request?.product || "", `<div class="field"><label class="required">驳回原因</label><textarea id="fx-bind-request-reason" placeholder="请说明驳回原因"></textarea></div>`, `<button class="button" data-action="close-modal">取消</button><button class="button danger" data-action="fx-confirm-bind-request-reject">确认驳回</button>`);
     }
     if (state.modal === "fx-ops-bind-order") {

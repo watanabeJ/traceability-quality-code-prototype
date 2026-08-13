@@ -16,28 +16,14 @@ const fxScanParams = new URLSearchParams(location.search);
   const fxResetWithdrawal = fxRequestedSerial ? withdrawals.filter(item => item.status === "已通过" && (item.resetRanges || []).some(range => fxCodeInRange(fxRequestedSerial, range))).sort((a, b) => String(b.decidedAt || b.time || "").localeCompare(String(a.decidedAt || a.time || "")))[0] : null;
   function fxScanActivationProduct(activation, order) {
     if (!activation) return null;
-    const hasProductId = activation.productId !== undefined && activation.productId !== null && activation.productId !== "";
-    const hasCustomerId = activation.customerId !== undefined && activation.customerId !== null && activation.customerId !== "";
-    const activationCustomer = hasCustomerId ? customers.find(item => Number(item.id) === Number(activation.customerId)) : null;
     const orderCustomer = order ? fxCustomerForRecord(order) : null;
-    const matchesCustomer = product => {
-      if (!product) return false;
-      if (hasCustomerId) {
-        if (order?.customerId !== undefined && order.customerId !== null && order.customerId !== "" && Number(order.customerId) !== Number(activation.customerId)) return false;
-        if (product.customerId !== undefined && product.customerId !== null && product.customerId !== "" && Number(product.customerId) !== Number(activation.customerId)) return false;
-        if (activationCustomer && !fxRecordBelongsToCustomer(product, activationCustomer)) return false;
-      }
-      return !orderCustomer || fxRecordBelongsToCustomer(product, orderCustomer);
-    };
-    if (hasProductId) {
-      const product = products.find(item => Number(item.id) === Number(activation.productId));
-      return matchesCustomer(product) ? product : null;
-    }
-    if (!activation.batch) return null;
-    const candidates = products.filter(item => item.name === activation.product
-      && item.batch === activation.batch
-      && matchesCustomer(item));
-    return candidates.length === 1 ? candidates[0] : null;
+    return fxProductForRecord({
+      productId: activation.productId,
+      product: activation.product,
+      batch: activation.batch,
+      customerId: orderCustomer?.id || activation.customerId,
+      customer: orderCustomer?.name || order?.customer,
+    });
   }
   const fxActivatedProduct = fxScanActivationProduct(fxMatchedActivation, fxMatchedOrder);
   const fxActivationIsNewer = Boolean(fxActivatedProduct && (!fxResetWithdrawal || String(fxMatchedActivation.time || "") > String(fxResetWithdrawal.decidedAt || fxResetWithdrawal.time || "")));
@@ -71,6 +57,12 @@ const fxScanParams = new URLSearchParams(location.search);
       || (!fxRequestedSerial ? products.find(item => item.status === "已激活") : null)
       || products[0];
   const fxScanDetails = fxNormalizeDetails(fxScanProduct?.details || fxNewDraft());
+  if (entryPortal === "scan") {
+    const fxScanRefreshKeys = new Set([fxBusinessStorage.orders, fxBusinessStorage.products, fxBusinessStorage.withdrawals]);
+    window.addEventListener("storage", event => {
+      if (event.newValue && fxScanRefreshKeys.has(event.key)) window.location.reload();
+    });
+  }
   const fxScanRecordKey = "trace-scan-records-v2";
   const fxScanRecords = fxStore.get(fxScanRecordKey, {});
   let fxCurrentScanRecord = fxRequestedSerial && fxScanRecords[fxRequestedSerial] && typeof fxScanRecords[fxRequestedSerial] === "object"

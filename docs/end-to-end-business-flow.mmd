@@ -1,5 +1,4 @@
 flowchart TD
-    A([线下签约并完成收款])
     B[运营端：生成库存码段<br/>填写数量并选择固定尺寸或自定义宽高]
     C[系统生成连续序列号和二维码核心区块<br/>压缩包进入平台码段库存]
     D[下载压缩包并交付印刷]
@@ -26,7 +25,7 @@ flowchart TD
     Y([消费者扫码<br/>查看溯源质控信息])
     Z[运营端：在订单台账选择已有已激活产品<br/>直接绑定指定数量和码段]
 
-    A --> B --> C --> D --> E --> F --> G --> H
+    B --> C --> D --> E --> F --> G --> H
     H -- 已有产品 --> I --> M
     H -- 新建产品 --> J --> K
     K -- 需要修改 --> J
@@ -45,11 +44,9 @@ flowchart TD
     classDef customer fill:#edf8ee,stroke:#4f8a55,color:#203b22,stroke-width:1px;
     classDef scan fill:#fff4d8,stroke:#b27a1b,color:#4a3410,stroke-width:1px;
     classDef decision fill:#fff,stroke:#555,color:#222,stroke-width:2px;
-    classDef terminal fill:#282828,stroke:#282828,color:#fff,stroke-width:1px;
 
     class D offline;
     class B,C,E,F,N,P,Q,U,W,Z ops;
     class G,I,J,L,M,O,R,T,V,X customer;
     class Y scan;
     class H,K,S decision;
-    class A terminal;

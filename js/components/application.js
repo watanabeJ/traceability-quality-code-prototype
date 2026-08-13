@@ -320,7 +320,7 @@ function fxLoginPage(portal) {
   function fxBindingReviewActions(request, product, statusValue = request.status) {
     if (!product) return "";
     const reviewStatus = fxBindingReviewStatus(statusValue);
-    const context = `data-source="${fxEscape(request.source || "activation")}" data-request-id="${fxEscape(request.id || "")}" data-product-id="${product.id}"`;
+    const context = `data-source="${fxEscape(request.source || "activation")}" data-request-id="${fxEscape(request.id || "")}" data-product-id="${product.id}" data-product-name="${fxEscape(product.name || request.product || "")}" data-product-batch="${fxEscape(product.batch || request.batch || "")}" data-customer-id="${fxEscape(product.customerId || request.customerId || "")}"`;
     const reviewAction = `<button class="text-action" data-action="fx-open-binding-review-product" ${context}>${reviewStatus === "待审核" ? "审核" : "查看"}</button>`;
     const editAction = ["待审核", "已激活"].includes(reviewStatus)
       ? `<button class="text-action" data-action="fx-edit-binding-review-product" ${context}>编辑</button>`
