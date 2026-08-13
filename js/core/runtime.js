@@ -92,7 +92,16 @@ function syncCurrentRoute() {
   const file = pageFiles[state.portal]?.[page];
   if (!file) return;
   const target = new URL(file, document.baseURI);
-  if (page === "order-detail" && state.selectedOrderNo) target.searchParams.set("order", state.selectedOrderNo);
+  if (page === "order-detail" && state.selectedOrderNo) {
+    target.searchParams.set("order", state.selectedOrderNo);
+    if (state.portal === "ops" && state.orderDetailReturnPage === "customer-detail" && state.selectedCustomerId) {
+      target.searchParams.set("from", "customer-detail");
+      target.searchParams.set("customer", state.selectedCustomerId);
+    } else if (state.portal === "ops" && state.orderDetailReturnPage === "inventory-detail" && state.selectedCodeBatchNo) {
+      target.searchParams.set("from", "inventory-detail");
+      target.searchParams.set("batch", state.selectedCodeBatchNo);
+    }
+  }
   if (page === "inventory-detail" && state.selectedCodeBatchNo) {
     const batch = codeBatches.find(item => item.no === state.selectedCodeBatchNo);
     if (batch) target.searchParams.set("range", batch.range || batch.no);
@@ -347,7 +356,18 @@ function restoreFromLocation() {
   if (entryPortal === "ops" && opsRoutes.has(page)) state.opsPage = page;
   const customerRoutes = new Set([...nav.customer.map(item => item[0]), "editor", "order-detail"]);
   if (entryPortal === "customer" && customerRoutes.has(page)) state.customerPage = page;
-  if (page === "order-detail" && params.get("order")) state.selectedOrderNo = params.get("order");
+  if (page === "order-detail" && params.get("order")) {
+    state.selectedOrderNo = params.get("order");
+    if (entryPortal === "ops" && params.get("from") === "customer-detail" && params.get("customer")) {
+      state.orderDetailReturnPage = "customer-detail";
+      state.selectedCustomerId = Number(params.get("customer"));
+    } else if (entryPortal === "ops" && params.get("from") === "inventory-detail" && params.get("batch")) {
+      state.orderDetailReturnPage = "inventory-detail";
+      state.selectedCodeBatchNo = params.get("batch");
+    } else {
+      state.orderDetailReturnPage = "";
+    }
+  }
   if (entryPortal === "ops" && page === "inventory-detail" && params.get("range")) {
     const routeRange = params.get("range");
     state.selectedCodeBatchNo = codeBatches.find(item => item.range === routeRange || item.no === routeRange)?.no || null;

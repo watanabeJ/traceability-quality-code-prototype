@@ -1068,7 +1068,7 @@ const fxToday = "2026-07-27";
     messageDateFrom: "", messageDateTo: "", messageDateDraftFrom: "", messageDateDraftTo: "",
     messageCalendarOpen: false, messageCalendarLeftMonth: "2026-06-01", messageCalendarRightMonth: "2026-07-01",
     selectedMessageIds: [],
-    selectedOperatorId: null, selectedCustomerId: null, selectedOrderNo: null, selectedCodeBatchNo: null, allocationCustomerId: null, allocationSourceRange: "", highlightOrderNo: null,
+    selectedOperatorId: null, selectedCustomerId: null, selectedOrderNo: null, selectedCodeBatchNo: null, orderDetailReturnPage: "", allocationCustomerId: null, allocationSourceRange: "", highlightOrderNo: null,
     selectedWithdrawalIndex: null, selectedMessageId: null, selectedBindRequestId: null,
     editorProductId: null, editorDraft: null, editorReadonly: false, editorOwner: "customer", editorTargetOrderNo: null, editorBindRequestId: null,
     editorRequestedSourceRange: "", editorRequestedRange: "", editorRequestedAmount: 0, reviewEditing: false,

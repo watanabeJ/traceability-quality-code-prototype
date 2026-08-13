@@ -905,6 +905,7 @@ render = function () {
       if (state.portal === "customer" && !fxEnabledCustomerSession()) return showToast("当前账号无权查看订单");
       const order = orders.find(item => item.no === target.dataset.no);
       if (!order || order.allocationStatus === "已撤销" || (state.portal === "customer" && !fxRecordBelongsToCustomer(order, fxCurrentCustomer()))) return showToast("订单不存在");
+      state.orderDetailReturnPage = state.portal === "ops" && ["customer-detail", "inventory-detail"].includes(state.opsPage) ? state.opsPage : "";
       state.selectedOrderNo = order.no;
       state.modal = null;
       if (state.portal === "customer") state.customerPage = "order-detail";
@@ -915,7 +916,8 @@ render = function () {
       state.modal = null;
       state.selectedOrderNo = null;
       if (state.portal === "customer") state.customerPage = "orders";
-      else state.opsPage = "orders";
+      else state.opsPage = state.orderDetailReturnPage || "orders";
+      state.orderDetailReturnPage = "";
       return render();
     }
     if (action === "fx-ops-bind-order") {

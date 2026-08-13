@@ -608,6 +608,9 @@ tbody tr:last-child td { border-bottom: 0; }
 .detail-section:last-child { border-bottom: 0; margin-bottom: 0; padding-bottom: 0; }
 .detail-section h3 { margin: 0 0 12px; color: var(--text-strong); font-size: 13px; font-weight: 600; }
 .detail-grid { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 14px 20px; }
+.order-detail-grid { grid-template-columns: repeat(4, minmax(0, 1fr)); }
+.order-detail-grid .order-detail-half { grid-column: span 2; }
+.order-detail-grid .order-detail-wide { grid-column: 1 / -1; }
 .detail-item dt { color: var(--text-muted); font-size: 12px; }
 .detail-item dd { margin: 3px 0 0; color: var(--text); font-size: 13px; }
 .detail-item-button { width: 100%; min-height: 42px; display: block; padding: 0; color: var(--text); background: transparent; border: 0; text-align: left; }

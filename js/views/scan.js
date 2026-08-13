@@ -172,9 +172,9 @@ const fxScanParams = new URLSearchParams(location.search);
     const current = fxScanIsPreview ? "preview" : fxResolvedScanStatus;
     const entries = [
       ["preview", "预览码", "pages/scan/preview.html?preview=1"],
-      ["active", "已激活", "pages/scan/active.html?serial=YL00880001"],
-      ["inactive", "未激活", "pages/scan/inactive.html?serial=YL00892001"],
-      ["reset", "已重置", "pages/scan/reset.html?serial=YL00880001&status=reset"],
+      ["active", "已激活", "pages/scan/active.html?serial=QR30000001"],
+      ["inactive", "未激活", "pages/scan/inactive.html?serial=QR10000001"],
+      ["reset", "已重置", "pages/scan/reset.html?serial=QR20012001&status=reset"],
     ];
     return `<nav class="scan-prototype-nav" aria-label="扫码页面原型切换"><span>页面原型</span><div class="scan-prototype-links">${entries.map(([key, label, href]) => `<a href="${href}" ${current === key ? `class="active" aria-current="page"` : ""}>${label}</a>`).join("")}</div></nav>`;
   }

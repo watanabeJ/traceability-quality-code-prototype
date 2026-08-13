@@ -252,6 +252,7 @@
   .step:last-child { border-bottom: 0; }
   .step:not(.active):not(.done) { display: none; }
   .detail-grid { grid-template-columns: 1fr; }
+  .order-detail-grid .order-detail-half, .order-detail-grid .order-detail-wide { grid-column: 1 / -1; }
   .review-field { grid-template-columns: 1fr; gap: 7px; }
   .review-media-grid { grid-template-columns: 1fr; }
   .preview-layout { grid-template-columns: 1fr; gap: 20px; }
