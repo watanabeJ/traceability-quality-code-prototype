@@ -6,11 +6,10 @@ const fxScanParams = new URLSearchParams(location.search);
   const fxPreviewPayload = fxStore.get("trace-preview-draft-v2", null);
   const fxRequestedSerial = String(fxScanParams.get("serial") || "").trim().toUpperCase();
   const fxRequestedStatus = fxScanParams.get("status");
+  const fxDedicatedState = ["inactive", "reset"].includes(fxBodyScanStatus) ? fxBodyScanStatus : null;
   const fxForcedStatus = ["active", "inactive", "reset"].includes(fxRequestedStatus)
     ? fxRequestedStatus
-    : !fxRequestedSerial && ["active", "inactive", "reset"].includes(fxBodyScanStatus)
-      ? fxBodyScanStatus
-      : null;
+    : fxDedicatedState || (!fxRequestedSerial && fxBodyScanStatus === "active" ? "active" : null);
   const fxMatchedOrder = fxRequestedSerial ? orders.find(order => fxCodeInRange(fxRequestedSerial, order.range)) : null;
   const fxMatchedActivation = fxMatchedOrder?.activations?.find(row => row.status !== "已重置" && row.range && fxCodeInRange(fxRequestedSerial, row.range));
   const fxResetWithdrawal = fxRequestedSerial ? withdrawals.filter(item => item.status === "已通过" && (item.resetRanges || []).some(range => fxCodeInRange(fxRequestedSerial, range))).sort((a, b) => String(b.decidedAt || b.time || "").localeCompare(String(a.decidedAt || a.time || "")))[0] : null;
@@ -29,10 +28,10 @@ const fxScanParams = new URLSearchParams(location.search);
   const fxActivationIsNewer = Boolean(fxActivatedProduct && (!fxResetWithdrawal || String(fxMatchedActivation.time || "") > String(fxResetWithdrawal.decidedAt || fxResetWithdrawal.time || "")));
   const fxResolvedScanStatus = fxScanIsPreview
     ? "active"
-    : fxResetWithdrawal && !fxActivationIsNewer
-      ? "reset"
-      : fxForcedStatus === "reset" || fxForcedStatus === "inactive"
-        ? fxForcedStatus
+    : fxForcedStatus === "reset" || fxForcedStatus === "inactive"
+      ? fxForcedStatus
+      : fxResetWithdrawal && !fxActivationIsNewer
+        ? "reset"
         : fxForcedStatus === "active"
           ? fxRequestedSerial && !fxActivationIsNewer ? "inactive" : "active"
           : fxActivationIsNewer
@@ -164,8 +163,8 @@ const fxScanParams = new URLSearchParams(location.search);
     const current = fxScanIsPreview ? "preview" : fxResolvedScanStatus;
     const entries = [
       ["preview", "预览码", "pages/scan/preview.html?preview=1"],
-      ["active", "已激活", "pages/scan/active.html?serial=QR30000001"],
-      ["inactive", "未激活", "pages/scan/inactive.html?serial=QR10000001"],
+      ["active", "已激活", "pages/scan/active.html?serial=QR30000001&status=active"],
+      ["inactive", "未激活", "pages/scan/inactive.html?serial=QR10000001&status=inactive"],
       ["reset", "已重置", "pages/scan/reset.html?serial=QR20012001&status=reset"],
     ];
     return `<nav class="scan-prototype-nav" aria-label="扫码页面原型切换"><span>页面原型</span><div class="scan-prototype-links">${entries.map(([key, label, href]) => `<a href="${href}" ${current === key ? `class="active" aria-current="page"` : ""}>${label}</a>`).join("")}</div></nav>`;
