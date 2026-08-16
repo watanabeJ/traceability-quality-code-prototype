@@ -1507,8 +1507,12 @@ const fxToday = "2026-07-27";
   function fxCodeBatchAllocations(batchOrNo) {
     const batch = fxResolveCodeBatch(batchOrNo);
     if (!batch) return [];
+    return fxCodeBatchAllocationHistory(batch).filter(order => order.allocationStatus !== "已撤销");
+  }
+  function fxCodeBatchAllocationHistory(batchOrNo) {
+    const batch = fxResolveCodeBatch(batchOrNo);
+    if (!batch) return [];
     return orders.filter(order => order.sourceBatchNo === batch.no
-      && order.allocationStatus !== "已撤销"
       && fxCodeRangeContains(batch.range, order.range));
   }
   function fxCodeBatchFreeRanges(batchOrNo) {
@@ -1857,6 +1861,26 @@ const fxToday = "2026-07-27";
     const width = Number(order.customWidth) || Number.parseFloat(order.size) || 25; const height = Number(order.customHeight) || width; const sizeLabel = order.size || `${width} × ${height} mm`;
     const allocations = fxCodeBatchAllocations(order);
     const allocationStatus = fxCodeBatchAllocationStatus(order);
+    // Large exports are delegated as one complete job so the browser does not materialize millions of SVG files in memory.
+    if (Number(order.total || 0) > 5000) {
+      const task = {
+        type: "qr-package-export",
+        status: "已创建",
+        batchNo: order.no,
+        serialRange: order.range,
+        amount: Number(order.total || 0),
+        size: sizeLabel,
+        splitRequired: false,
+        requestedAt: fxNow(),
+      };
+      const readme = `二维码完整压缩包下载任务\n\n批次号：${order.no}\n序列号范围：${order.range}\n二维码数量：${order.total}\n尺寸：${sizeLabel}\n\n本任务不限制单次下载码量，也不拆分码段。生产环境由后台异步生成完整压缩包，避免浏览器一次性占用过多内存。`;
+      const entries = [
+        { name: "download-task.json", data: JSON.stringify(task, null, 2) },
+        { name: "README.txt", data: readme },
+      ];
+      fxDownloadBlob(`${order.no}_二维码完整下载任务.zip`, new Blob([fxZip(entries)], { type: "application/zip" }));
+      return "queued";
+    }
     const manifest = ["序列号,批次号,分配状态,订单号,客户名称", ...Array.from({ length: order.total }, (_, i) => {
       const serial = fxSerial(prefix, start + i);
       const allocation = allocations.find(item => fxCodeInRange(serial, item.range));
@@ -1868,4 +1892,5 @@ const fxToday = "2026-07-27";
       ...Array.from({ length: samples }, (_, i) => { const code = fxSerial(prefix, start + i); return { name: `codes/${code}.svg`, data: fxQrSvg(code, undefined, { width, height, size: order.size }) }; }),
     ];
     fxDownloadBlob(`${order.no}_二维码核心区块.zip`, new Blob([fxZip(entries)], { type: "application/zip" }));
+    return "downloaded";
   }

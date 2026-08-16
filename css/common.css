@@ -526,6 +526,44 @@ tbody tr:last-child td { border-bottom: 0; }
 .order-table .action-column .table-actions { flex-wrap: nowrap; white-space: nowrap; }
 .customer-account-table .action-column { width: 250px; min-width: 250px; }
 .customer-account-table .action-column .table-actions { flex-wrap: nowrap; white-space: nowrap; }
+.inventory-allocation-table {
+  --frozen-action-bg: color-mix(in srgb, var(--primary-soft) 38%, var(--surface));
+  --frozen-action-head-bg: color-mix(in srgb, var(--primary-soft) 72%, var(--surface-muted));
+  --frozen-action-hover-bg: color-mix(in srgb, var(--primary-soft) 58%, var(--surface-muted));
+  min-width: 1260px;
+}
+.inventory-allocation-table .action-column {
+  position: sticky;
+  right: 0;
+  z-index: 2;
+  width: 244px;
+  min-width: 244px;
+  background: var(--frozen-action-bg);
+  box-shadow: -2px 0 0 var(--primary-border), -12px 0 18px color-mix(in srgb, var(--text) 7%, transparent);
+}
+.inventory-allocation-table thead .action-column {
+  z-index: 3;
+  color: var(--text-strong);
+  background: var(--frozen-action-head-bg);
+}
+.inventory-allocation-table tbody tr:hover > .action-column { background: var(--frozen-action-hover-bg); }
+.order-binding-table {
+  --frozen-action-bg: color-mix(in srgb, var(--primary-soft) 38%, var(--surface));
+  --frozen-action-head-bg: color-mix(in srgb, var(--primary-soft) 72%, var(--surface-muted));
+  --frozen-action-hover-bg: color-mix(in srgb, var(--primary-soft) 58%, var(--surface-muted));
+  min-width: 1180px;
+}
+.order-binding-table .action-column {
+  position: sticky;
+  right: 0;
+  z-index: 2;
+  width: 248px;
+  min-width: 248px;
+  background: var(--frozen-action-bg);
+  box-shadow: -2px 0 0 var(--primary-border), -12px 0 18px color-mix(in srgb, var(--text) 7%, transparent);
+}
+.order-binding-table thead .action-column { z-index: 3; color: var(--text-strong); background: var(--frozen-action-head-bg); }
+.order-binding-table tbody tr:hover > .action-column { background: var(--frozen-action-hover-bg); }
 .text-action { border: 0; background: transparent; color: var(--text); padding: 4px 6px; border-radius: var(--r-sm); font-size: 13px; }
 .text-action:hover { background: var(--surface-muted); }
 .pagination { min-height: 48px; display: flex; justify-content: space-between; align-items: center; gap: 16px; padding: 8px 12px; border-top: 1px solid var(--border-light); color: var(--text-muted); background: var(--surface); font-size: 12px; }
@@ -533,7 +571,7 @@ tbody tr:last-child td { border-bottom: 0; }
 .pagination-summary strong { color: var(--text); font-weight: 500; font-variant-numeric: tabular-nums; }
 .pagination-controls { display: flex; align-items: center; justify-content: flex-end; gap: 14px; min-width: 0; }
 .pagination-size { display: flex; align-items: center; gap: 5px; white-space: nowrap; }
-.pagination-size select { width: 54px; min-height: 30px; padding: 3px 20px 3px 7px; border-color: transparent; background-color: transparent; font-size: 12px; }
+.pagination-size select { width: 64px; min-width: 64px; min-height: 30px; padding: 3px 22px 3px 8px; border-color: transparent; background-color: transparent; font-size: 12px; font-variant-numeric: tabular-nums; }
 .page-buttons { display: flex; align-items: stretch; gap: 0; }
 .page-buttons button { width: 32px; height: 30px; display: grid; place-items: center; padding: 0; border: 1px solid var(--border-light); border-radius: 0; background: var(--surface); color: var(--text-muted); }
 .page-buttons button + button,
@@ -768,6 +806,30 @@ input.immutable-input { width: 100%; color: var(--text); background: var(--surfa
 .withdrawal-segment-empty { min-height: 58px; display: grid; place-items: center; padding: 12px; border: 1px dashed var(--border); border-radius: var(--r-sm); color: var(--text-muted); background: var(--surface-muted); font-size: 12px; }
 .withdrawal-range-list { min-width: 0; display: grid; gap: 4px; align-content: center; }
 .withdrawal-range-list span { display: block; overflow-wrap: anywhere; color: var(--text-strong); font-size: 12px; line-height: 1.45; }
+.withdrawal-review-table { min-width: 1340px; }
+.withdrawal-review-table th:nth-child(5), .withdrawal-review-table td:nth-child(5) { width: 224px; }
+.withdrawal-range-summary { min-width: 0; display: flex; align-items: center; gap: 6px; }
+.withdrawal-range-primary { min-width: 0; display: block; overflow: hidden; color: var(--text-strong); font-size: 12px; line-height: 1.45; text-overflow: ellipsis; white-space: nowrap; }
+.withdrawal-range-more { flex: 0 0 auto; min-width: 30px; height: 24px; padding: 0 7px; border: 1px solid var(--border); border-radius: var(--r-sm); color: var(--primary); background: var(--surface); font-size: 12px; font-weight: 600; line-height: 22px; }
+.withdrawal-range-more:hover { border-color: var(--primary); background: var(--primary-soft); }
+.withdrawal-range-popover {
+  width: min(360px, calc(100vw - 32px));
+  max-height: min(420px, calc(100vh - 32px));
+  padding: 0;
+  border: 1px solid var(--border);
+  border-radius: var(--r-md);
+  color: var(--text);
+  background: var(--surface);
+  box-shadow: 0 16px 40px rgba(15, 23, 42, .16);
+}
+.withdrawal-range-popover::backdrop { background: rgba(15, 23, 42, .12); }
+.withdrawal-range-popover-head { display: flex; align-items: center; justify-content: space-between; gap: 12px; padding: 12px 14px; border-bottom: 1px solid var(--border-light); }
+.withdrawal-range-popover-head > div { min-width: 0; display: flex; align-items: baseline; gap: 8px; }
+.withdrawal-range-popover-head strong { color: var(--text-strong); font-size: 14px; font-weight: 600; }
+.withdrawal-range-popover-head span { color: var(--text-muted); font-size: 12px; }
+.withdrawal-range-popover-list { max-height: 320px; display: grid; overflow-y: auto; }
+.withdrawal-range-popover-list span { padding: 10px 14px; border-bottom: 1px solid var(--border-light); color: var(--text-strong); font-size: 12px; white-space: nowrap; }
+.withdrawal-range-popover-list span:last-child { border-bottom: 0; }
 .immutable-range-panel { min-height: 42px; padding: 9px 11px; border: 1px solid var(--border); border-radius: var(--r-sm); background: var(--surface-muted); }
 .confirm-row .withdrawal-range-list { padding: 3px 0; }
 .customer-picker-control { position: relative; }

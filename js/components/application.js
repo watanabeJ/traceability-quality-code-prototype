@@ -87,7 +87,7 @@ function fxLoginPage(portal) {
   }
   function fxAllBindingReviewRequests(includeDrafts = false) {
     const existingRequests = bindRequests
-      .filter(request => includeDrafts || request.status !== "草稿")
+      .filter(request => request.status !== "已撤回" && (includeDrafts || request.status !== "草稿"))
       .map(request => ({ ...request, source: "binding", applicationType: "已有产品追加绑定" }));
     const combinedRequests = products
       .filter(product => product.applicationType === "新建产品并绑定" && product.requestedOrderNo && (includeDrafts || product.status !== "草稿"))
@@ -108,6 +108,21 @@ function fxLoginPage(portal) {
   function fxOrderAvailableAmount(order, excludeProductId = null) {
     if (!order || order.allocationStatus === "已撤销") return 0;
     return Math.max(0, Number(order?.total || 0) - Number(order?.active || 0) - fxOrderPendingAmount(order, excludeProductId));
+  }
+  function fxCodeAllocationRecallBlockReason(order) {
+    if (!order || order.allocationStatus === "已撤销") return "该分配记录已撤销";
+    if (Number(order.active || 0) > 0) return "该分配记录已有二维码激活，不可撤销分配";
+    if (fxOrderPendingAmount(order) > 0) return "该分配记录存在绑定申请，不可撤销分配";
+    return "";
+  }
+  function fxCanRecallCodeAllocation(order) {
+    return !fxCodeAllocationRecallBlockReason(order);
+  }
+  function fxAllocationRecallAction(order) {
+    const reason = fxCodeAllocationRecallBlockReason(order);
+    return reason
+      ? ""
+      : `<button class="text-action danger-text" type="button" data-action="fx-open-allocation-recall" data-no="${fxEscape(order.no)}">撤销分配</button>`;
   }
   function fxSortValue(item, key) {
     if (key === "allocatedTime") {
@@ -264,7 +279,7 @@ function fxLoginPage(portal) {
       const batch = fxInventoryBatches().find(item => item.no === generatedBatchNo);
       return `<div class="result-center"><div class="success-mark">${icon("check", "✓", "icon-lg")}</div><h2>码段已生成</h2><p class="muted">序列号范围 ${fxEscape(batch?.range || "—")}，共 ${formatNumber(batch?.total || 0)} 枚。</p></div>`;
     }
-    return `<div class="order-create-form"><section class="order-create-section"><h2>生成信息</h2><div class="form-grid"><div class="field qr-order-field"><label class="required" for="fx-qr-amount">生成数量</label><input id="fx-qr-amount" type="number" min="1" max="100000" step="1" value="${amount}"></div><div class="field qr-order-field"><label for="fx-qr-note">备注</label><input id="fx-qr-note" value="${fxEscape(state.qrDraft.note)}" placeholder="例如：8 月备货码段"></div><div class="field full"><label for="fx-qr-range-preview">序列号预览</label><input id="fx-qr-range-preview" class="mono immutable-input" value="${range}" readonly aria-readonly="true" aria-live="polite"></div></div></section><section class="order-create-section"><div class="form-grid"><div class="field full"><label class="required" for="fx-qr-width">尺寸</label><div class="qr-size-inputs"><input id="fx-qr-width" type="number" min="8" max="300" step="0.1" value="${state.qrDraft.customWidth || 25}" placeholder="宽度" aria-label="尺寸宽度，单位毫米"><span aria-hidden="true">×</span><input id="fx-qr-height" type="number" min="8" max="300" step="0.1" value="${state.qrDraft.customHeight || 25}" placeholder="高度" aria-label="尺寸高度，单位毫米"><span>mm</span></div></div><div class="field full"><label>二维码预览</label><div id="fx-qr-core-preview" class="qr-style-preview" aria-live="polite">${fxQrCorePreviewContent()}</div></div></div></section></div>`;
+    return `<div class="order-create-form"><section class="order-create-section"><h2>生成信息</h2><div class="form-grid"><div class="field qr-order-field"><label class="required" for="fx-qr-amount">生成数量</label><input id="fx-qr-amount" type="number" min="1" max="10000000" step="1" value="${amount}"></div><div class="field qr-order-field"><label for="fx-qr-note">备注</label><input id="fx-qr-note" value="${fxEscape(state.qrDraft.note)}" placeholder="例如：8 月备货码段"></div><div class="field full"><label for="fx-qr-range-preview">序列号预览</label><input id="fx-qr-range-preview" class="mono immutable-input" value="${range}" readonly aria-readonly="true" aria-live="polite"></div></div></section><section class="order-create-section"><div class="form-grid"><div class="field full"><label class="required" for="fx-qr-width">尺寸</label><div class="qr-size-inputs"><input id="fx-qr-width" type="number" min="8" max="300" step="0.1" value="${state.qrDraft.customWidth || 25}" placeholder="宽度" aria-label="尺寸宽度，单位毫米"><span aria-hidden="true">×</span><input id="fx-qr-height" type="number" min="8" max="300" step="0.1" value="${state.qrDraft.customHeight || 25}" placeholder="高度" aria-label="尺寸高度，单位毫米"><span>mm</span></div></div><div class="field full"><label>二维码预览</label><div id="fx-qr-core-preview" class="qr-style-preview" aria-live="polite">${fxQrCorePreviewContent()}</div></div></div></section></div>`;
   };
 
   opsCodes = function () {
@@ -450,12 +465,23 @@ function fxLoginPage(portal) {
     if (!ranges.length) return `<span class="muted">未记录具体码段</span>`;
     return `<div class="withdrawal-range-list">${ranges.map(range => `<span class="mono">${fxEscape(range)}</span>`).join("")}</div>`;
   }
+  function fxWithdrawalRangeSummaryMarkup(item) {
+    const ranges = [...new Set(fxResolvedWithdrawalSegments(item).map(segment => segment.range).filter(Boolean))];
+    if (!ranges.length) return `<span class="muted">未记录具体码段</span>`;
+    if (ranges.length === 1) return `<span class="withdrawal-range-primary mono" title="${fxEscape(ranges[0])}">${fxEscape(ranges[0])}</span>`;
+    const popoverId = `fx-withdrawal-ranges-${Number(item.index)}`;
+    return `<div class="withdrawal-range-summary"><span class="withdrawal-range-primary mono" title="${fxEscape(ranges[0])}">${fxEscape(ranges[0])}</span><button type="button" class="withdrawal-range-more" data-action="fx-toggle-withdrawal-ranges" data-popover-id="${popoverId}" aria-label="查看全部 ${ranges.length} 个撤回码段">+${ranges.length - 1}</button><div id="${popoverId}" class="withdrawal-range-popover" popover role="dialog" aria-label="全部撤回码段"><div class="withdrawal-range-popover-head"><div><strong>撤回码段</strong><span>共 ${ranges.length} 段</span></div><button type="button" class="icon-button" data-action="fx-toggle-withdrawal-ranges" data-popover-id="${popoverId}" aria-label="关闭" title="关闭">${icon("x", "×")}</button></div><div class="withdrawal-range-popover-list">${ranges.map(range => `<span class="mono">${fxEscape(range)}</span>`).join("")}</div></div></div>`;
+  }
+  function fxWithdrawalAmount(item) {
+    const recordedAmount = Number(item?.requestedAmount || item?.rollbackAmount || 0);
+    return recordedAmount || fxResolvedWithdrawalSegments(item).reduce((sum, segment) => sum + Number(segment.amount || 0), 0);
+  }
   function fxWithdrawalSegmentPicker(product) {
-    if (!product) return `<div class="field full withdrawal-segment-field"><label class="required">已绑码段</label><div class="withdrawal-segment-empty">请先选择产品</div></div>`;
+    if (!product) return `<div class="field full withdrawal-segment-field"><label class="required">撤回码段</label><div class="withdrawal-segment-empty">请先选择产品</div></div>`;
     const segments = fxProductActiveSegments(product);
-    if (!segments.length) return `<div class="field full withdrawal-segment-field"><label class="required">已绑码段</label><div class="withdrawal-segment-empty">该产品暂无可撤回的已绑码段</div></div>`;
+    if (!segments.length) return `<div class="field full withdrawal-segment-field"><label class="required">撤回码段</label><div class="withdrawal-segment-empty">该产品暂无可撤回的码段</div></div>`;
     const rows = segments.map(segment => `<label class="withdrawal-segment-option"><input type="checkbox" data-withdraw-segment data-amount="${segment.amount}" value="${fxEscape(segment.key)}"><span class="withdrawal-segment-copy"><strong class="mono">${fxEscape(segment.range)}</strong><small>订单号 ${fxEscape(segment.orderNo)} · ${formatNumber(segment.amount)} 枚</small></span></label>`).join("");
-    return `<div class="field full withdrawal-segment-field"><div class="withdrawal-segment-head"><label class="required">已绑码段</label><label class="withdrawal-select-all"><input id="fx-withdraw-select-all" type="checkbox">全选</label></div><div class="withdrawal-segment-list">${rows}</div><span id="fx-withdraw-selection-summary" class="field-help">已选择 0 个码段</span></div>`;
+    return `<div class="field full withdrawal-segment-field"><div class="withdrawal-segment-head"><label class="required">撤回码段</label><label class="withdrawal-select-all"><input id="fx-withdraw-select-all" type="checkbox">全选</label></div><div class="withdrawal-segment-list">${rows}</div><span id="fx-withdraw-selection-summary" class="field-help">已选择 0 个码段</span></div>`;
   }
   function fxSyncWithdrawalSegmentSelection() {
     const boxes = [...document.querySelectorAll("[data-withdraw-segment]")];
@@ -478,7 +504,7 @@ function fxLoginPage(portal) {
     const productTerm = state.withdrawalProductFilter.trim().toLowerCase();
     const customerTerm = state.withdrawalCustomerFilter.trim().toLowerCase();
     const rows = fxNewestRows(withdrawals.map((item, index) => ({ ...item, index })).filter(item => (!noTerm || String(item.no || "").toLowerCase().includes(noTerm)) && (!productTerm || String(item.product || "").toLowerCase().includes(productTerm)) && (!customerTerm || String(item.customer || "").toLowerCase().includes(customerTerm)) && (state.withdrawalStatus === "全部状态" || item.status === state.withdrawalStatus) && fxMatchesCustomerDate(item.time, "opsWithdrawal")), item => item.time);
-    return `<div class="page">${pageHeader("撤回审核", "审批已激活产品的码段撤回或整产品撤回，处理结果自动通知客户")}<div class="toolbar"><div class="filters withdrawal-search-filters">${fxFilterInput("fx-withdrawal-no-search", state.withdrawalNoFilter, "搜索申请编号")}${fxFilterInput("fx-withdrawal-product-search", state.withdrawalProductFilter, "搜索产品名称")}${fxFilterInput("fx-withdrawal-customer-search", state.withdrawalCustomerFilter, "搜索客户名称")}<button type="button" class="button small list-reset-button" data-action="fx-reset-list" data-reset-context="withdrawals">${icon("rotate-ccw", "↻")}重置</button></div></div><div class="table-shell"><div class="table-scroll"><table><thead><tr><th>申请编号</th><th>产品名称</th><th>产品批次</th><th>撤回码段</th><th>客户名称</th><th>撤回原因</th><th>${fxCustomerDateHeader("申请时间", "opsWithdrawal")}</th><th>${fxTableSelectHeader("状态", "withdrawalStatus", ["全部状态", "待审批", "已通过", "已驳回"], state.withdrawalStatus)}</th><th>操作</th></tr></thead><tbody>${rows.length ? rows.map(item => { const product = fxProductForRecord(item); return `<tr><td class="mono">${item.no}</td><td>${fxEscape(item.product)}</td><td class="mono">${fxEscape(item.batch || product?.batch || "—")}</td><td>${fxWithdrawalRangeMarkup(item)}</td><td>${fxEscape(item.customer)}</td><td>${fxEscape(item.reason)}</td><td>${fxEscape(item.time || "—")}</td><td>${status(item.status)}</td><td>${item.status === "待审批" ? `<button class="text-action success-text" data-action="fx-approve-withdrawal" data-index="${item.index}">通过</button><button class="text-action danger-text" data-action="fx-reject-withdrawal" data-index="${item.index}">驳回</button>` : `<button class="text-action" data-action="fx-view-withdrawal" data-index="${item.index}">查看</button>`}</td></tr>`; }).join("") : fxEmpty(9, "未找到撤回申请")}</tbody></table></div>${pagination(rows.length)}</div></div>`;
+    return `<div class="page">${pageHeader("撤回审核", "审批已激活产品的码段撤回或整产品撤回，处理结果自动通知客户")}<div class="toolbar"><div class="filters withdrawal-search-filters">${fxFilterInput("fx-withdrawal-no-search", state.withdrawalNoFilter, "搜索申请编号")}${fxFilterInput("fx-withdrawal-product-search", state.withdrawalProductFilter, "搜索产品名称")}${fxFilterInput("fx-withdrawal-customer-search", state.withdrawalCustomerFilter, "搜索客户名称")}<button type="button" class="button small list-reset-button" data-action="fx-reset-list" data-reset-context="withdrawals">${icon("rotate-ccw", "↻")}重置</button></div></div><div class="table-shell"><div class="table-scroll"><table class="withdrawal-review-table"><thead><tr><th>申请编号</th><th>产品名称</th><th>产品批次</th><th>撤回码段</th><th>撤回数量</th><th>客户名称</th><th>撤回原因</th><th>${fxCustomerDateHeader("申请时间", "opsWithdrawal")}</th><th>${fxTableSelectHeader("状态", "withdrawalStatus", ["全部状态", "待审批", "已通过", "已驳回"], state.withdrawalStatus)}</th><th>操作</th></tr></thead><tbody>${rows.length ? rows.map(item => { const product = fxProductForRecord(item); return `<tr><td class="mono">${item.no}</td><td>${fxEscape(item.product)}</td><td class="mono">${fxEscape(item.batch || product?.batch || "—")}</td><td>${fxWithdrawalRangeSummaryMarkup(item)}</td><td>${formatNumber(fxWithdrawalAmount(item))}</td><td>${fxEscape(item.customer)}</td><td>${fxEscape(item.reason)}</td><td>${fxEscape(item.time || "—")}</td><td>${status(item.status)}</td><td>${item.status === "待审批" ? `<button class="text-action success-text" data-action="fx-approve-withdrawal" data-index="${item.index}">通过</button><button class="text-action danger-text" data-action="fx-reject-withdrawal" data-index="${item.index}">驳回</button>` : `<button class="text-action" data-action="fx-view-withdrawal" data-index="${item.index}">查看</button>`}</td></tr>`; }).join("") : fxEmpty(10, "未找到撤回申请")}</tbody></table></div>${pagination(rows.length)}</div></div>`;
   };
 
   function fxMessageHeader(label, filter, customerScope = false) {

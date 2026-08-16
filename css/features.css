@@ -196,7 +196,7 @@
   .portal-link { padding: 0 9px; }
   .pagination { align-items: flex-start; flex-direction: column; gap: 8px; padding: 10px 12px; }
   .pagination-controls { width: 100%; justify-content: space-between; gap: 8px; }
-  .pagination-size select { width: 48px; }
+  .pagination-size select { width: 64px; }
   .page-buttons button { width: 29px; }
   .pagination-page-position input { width: 42px; }
   .pagination-page-position span { min-width: 52px; padding: 0 6px; }

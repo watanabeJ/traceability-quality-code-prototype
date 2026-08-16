@@ -465,10 +465,11 @@ render = function () {
     "fx-confirm-customer", "fx-reset-customer-password", "fx-toggle-customer", "fx-export-customers",
     "fx-new-qr", "fx-finish-order", "fx-view-generated-order", "fx-create-order", "fx-download-qr", "fx-export-orders",
     "fx-open-code-allocation", "fx-choose-allocation-batch", "fx-cancel-allocation-target", "fx-open-code-batch-detail", "fx-confirm-code-allocation",
+    "fx-open-allocation-recall", "fx-confirm-allocation-recall",
     "fx-ops-bind-order", "fx-confirm-ops-bind",
     "fx-open-binding-review-product", "fx-edit-binding-review-product", "fx-approve-bind-request", "fx-reject-bind-request",
     "fx-confirm-bind-request-reject", "fx-export-products", "fx-ops-edit-product", "fx-open-activation", "fx-confirm-activation",
-    "fx-open-reject", "fx-confirm-reject", "fx-approve-withdrawal", "fx-reject-withdrawal", "fx-confirm-withdraw-decision",
+    "fx-open-reject", "fx-confirm-reject", "fx-approve-withdrawal", "fx-reject-withdrawal", "fx-confirm-withdraw-decision", "fx-toggle-withdrawal-ranges",
     "fx-sort-customers", "fx-sort-orders", "fx-sort-bindRequests",
   ]);
   const fxCustomerOnlyActions = new Set([
@@ -491,6 +492,13 @@ render = function () {
     if (!["fx-login", "fx-logout"].includes(action) && !fxScanOnlyActions.has(action)) {
       if (entryPortal === "ops" && !fxEnabledOperatorSession()) return showToast("当前运营账号状态异常，请重新登录");
       if (entryPortal === "customer" && !fxEnabledCustomerSession()) return showToast("当前客户账号状态异常，请重新登录");
+    }
+    if (action === "fx-toggle-withdrawal-ranges") {
+      const popover = document.getElementById(target.dataset.popoverId || "");
+      if (!popover || typeof popover.showPopover !== "function") return;
+      if (popover.matches(":popover-open")) popover.hidePopover();
+      else popover.showPopover();
+      return;
     }
     if (action === "fx-reset-list") { if (fxResetListFilters(target.dataset.resetContext)) render(); return; }
     if (action === "fx-replace-customer-file") { document.getElementById(target.dataset.target)?.click(); return; }
@@ -827,7 +835,7 @@ render = function () {
     if (action === "fx-create-order") {
       if (!fxEnabledOperatorSession()) return showToast("当前账号无权生成码段");
       const amount = Number(fxRead("fx-qr-amount"));
-      if (!Number.isSafeInteger(amount) || amount < 1 || amount > 100000) return showToast("单个批次生成数量必须为 1–100,000 枚");
+      if (!Number.isSafeInteger(amount) || amount < 1 || amount > 10000000) return showToast("单个批次生成数量必须为 1–10,000,000 枚");
       state.qrDraft.amount = amount;
       state.qrDraft.note = fxRead("fx-qr-note");
       const customWidth = Number(fxRead("fx-qr-width")); const customHeight = Number(fxRead("fx-qr-height"));
@@ -844,7 +852,12 @@ render = function () {
       codeBatches.unshift(batch); fxSetGeneratedBatchNo(no); state.qrStep = 4; fxSaveBusiness(); render();
       return showToast("码段已生成，当前状态为未分配");
     }
-    if (action === "fx-download-qr") { const batch = codeBatches.find(item => item.no === fxGeneratedBatchNo()); if (!batch) return showToast("码段不存在"); if (Number(batch.total || 0) > 5000) return showToast("浏览器端单次下载最多 5,000 枚；更大码段请按订单分批导出"); fxDownloadQrPackage(batch); return showToast("二维码核心区块压缩包已开始下载"); }
+    if (action === "fx-download-qr") {
+      const batch = codeBatches.find(item => item.no === fxGeneratedBatchNo());
+      if (!batch) return showToast("码段不存在");
+      const result = fxDownloadQrPackage(batch);
+      return showToast(result === "queued" ? `已创建 ${formatNumber(batch.total)} 枚二维码完整下载任务，不限制码量` : "二维码核心区块压缩包已开始下载");
+    }
     if (action === "fx-export-orders") {
       const rangeTerm = state.inventoryRangeFilter.trim().toLowerCase();
       const preparedRows = codeBatches.map(item => ({ ...item, allocated: fxCodeBatchAllocatedAmount(item), remaining: fxCodeBatchAvailableAmount(item) }));
@@ -875,6 +888,53 @@ render = function () {
       const batch = codeBatches.find(item => item.no === target.dataset.no);
       if (!batch) return showToast("库存码段不存在");
       state.selectedCodeBatchNo = batch.no; state.modal = null; state.opsPage = "inventory-detail"; return render();
+    }
+    if (action === "fx-open-allocation-recall") {
+      if (!fxEnabledOperatorSession()) return showToast("当前账号无权撤销码段分配");
+      if (state.opsPage !== "inventory-detail") return showToast("请在库存码段详情中撤销分配");
+      const order = orders.find(item => item.no === target.dataset.no && item.allocationStatus !== "已撤销");
+      if (!order) return showToast("分配记录不存在或已经撤销");
+      const reason = fxCodeAllocationRecallBlockReason(order);
+      if (reason) return showToast(reason);
+      state.selectedOrderNo = order.no; state.modal = "fx-allocation-recall"; return render();
+    }
+    if (action === "fx-confirm-allocation-recall") {
+      if (!fxEnabledOperatorSession()) return showToast("当前账号无权撤销码段分配");
+      if (state.opsPage !== "inventory-detail") return showToast("请在库存码段详情中撤销分配");
+      const latestOrders = fxStore.get(fxBusinessStorage.orders, null);
+      if (Array.isArray(latestOrders)) { orders.splice(0, orders.length, ...latestOrders); orders.forEach(fxNormalizeAllocationOrder); }
+      const order = orders.find(item => item.no === state.selectedOrderNo && item.allocationStatus !== "已撤销");
+      if (!order) return showToast("分配记录不存在或已经撤销");
+      const blockReason = fxCodeAllocationRecallBlockReason(order);
+      if (blockReason) { state.modal = null; render(); return showToast(blockReason); }
+      const recallReason = fxRead("fx-allocation-recall-reason").trim();
+      if (!recallReason) return showToast("请输入撤销原因");
+      const recalledAt = fxNow();
+      const recalledBy = fxCurrentOperator().name;
+      const linkedRequests = bindRequests.filter(request => request.orderNo === order.no && request.status !== "已撤回");
+      linkedRequests.forEach(request => Object.assign(request, { status: "已撤回", withdrawnAt: recalledAt, withdrawnBy: recalledBy, withdrawalReason: recallReason }));
+      const linkedProducts = products.filter(product => product.applicationType === "新建产品并绑定" && product.requestedOrderNo === order.no);
+      linkedProducts.forEach(product => Object.assign(product, {
+        status: product.status === "已激活" ? "已激活" : "草稿",
+        applicationType: "",
+        preferredOrderNo: null,
+        requestedOrderNo: "",
+        requestedSourceRange: "",
+        requestedRange: "",
+        requestedAmount: 0,
+        submitted: product.status === "已激活" ? product.submitted : "",
+        allocationRecallCancelledAt: recalledAt,
+        allocationRecallCancelledBy: recalledBy,
+        allocationRecallReason: recallReason,
+      }));
+      Object.assign(order, { allocationStatus: "已撤销", recalledAt, recalledBy, recallReason });
+      const sourceBatchNo = order.sourceBatchNo;
+      state.modal = null; state.selectedOrderNo = null; state.orderDetailReturnPage = "";
+      state.selectedCodeBatchNo = codeBatches.some(batch => batch.no === sourceBatchNo) ? sourceBatchNo : null;
+      state.opsPage = state.selectedCodeBatchNo ? "inventory-detail" : "inventory";
+      fxSaveBusiness(); render();
+      const cancelledCount = linkedRequests.length + linkedProducts.length;
+      return showToast(`订单 ${order.no} 已撤销分配，${formatNumber(order.total || 0)} 枚码已归还库存${cancelledCount ? `，${cancelledCount} 条关联绑定流程已取消` : ""}`);
     }
     if (action === "fx-confirm-code-allocation") {
       if (!fxEnabledOperatorSession()) return showToast("当前账号无权分配码段");
@@ -1278,7 +1338,7 @@ render = function () {
     if (action === "fx-preview-custom-file") { const file = state.editorDraft.custom[target.dataset.module][Number(target.dataset.index)]?.files?.[Number(target.dataset.fileIndex)]; if (!file) return; state.modalData = { name: fxFileName(file), type: fxFileType(file), src: fxFileSrc(file, /\.(png|jpe?g|webp)$/i.test(fxFileName(file)) ? "assets/tea-field.jpg" : "") }; state.modal = "fx-file"; return render(); }
     if (action === "fx-remove-custom-file") { state.editorDraft.custom[target.dataset.module][Number(target.dataset.index)]?.files?.splice(Number(target.dataset.fileIndex), 1); return render(); }
     if (action === "fx-open-withdraw") { if (!fxEnabledCustomerSession()) return showToast("当前账号无权发起撤回申请"); state.editorProductId = null; state.modalData = { withdrawalMode: "segments", withdrawalProductId: null }; state.modal = "fx-customer-withdraw"; return render(); }
-    if (action === "fx-customer-withdraw") { if (!fxEnabledCustomerSession()) return showToast("当前账号无权发起撤回申请"); const productId = Number(target.dataset.id) || null; const product = products.find(item => item.id === productId && fxRecordBelongsToCustomer(item, fxCurrentCustomer()) && item.status === "已激活" && fxProductActiveSegments(item).length); if (!product) return showToast("当前产品没有可撤回的已绑码段"); state.editorProductId = product.id; state.modalData = { withdrawalMode: "product", withdrawalProductId: product.id }; state.modal = "fx-customer-withdraw"; return render(); }
+     if (action === "fx-customer-withdraw") { if (!fxEnabledCustomerSession()) return showToast("当前账号无权发起撤回申请"); const productId = Number(target.dataset.id) || null; const product = products.find(item => item.id === productId && fxRecordBelongsToCustomer(item, fxCurrentCustomer()) && item.status === "已激活" && fxProductActiveSegments(item).length); if (!product) return showToast("当前产品没有可撤回的码段"); state.editorProductId = product.id; state.modalData = { withdrawalMode: "product", withdrawalProductId: product.id }; state.modal = "fx-customer-withdraw"; return render(); }
     if (action === "fx-confirm-customer-withdraw") {
       if (!fxEnabledCustomerSession()) return showToast("当前账号无权发起撤回申请");
       const productMode = state.modalData?.withdrawalMode === "product";
@@ -1287,12 +1347,12 @@ render = function () {
       const reason = fxRead("fx-withdraw-reason");
       if (!product || !reason) return showToast("请选择产品并填写撤回原因");
       const availableSegments = fxProductActiveSegments(product);
-      const selectedKeys = productMode ? new Set(availableSegments.map(segment => segment.key)) : new Set([...document.querySelectorAll("[data-withdraw-segment]:checked")].map(input => input.value));
+      const selectedKeys = new Set([...document.querySelectorAll("[data-withdraw-segment]:checked")].map(input => input.value));
       const segments = availableSegments.filter(segment => selectedKeys.has(segment.key));
-      if (!segments.length) return showToast("请至少选择一个已绑码段");
+      if (!segments.length) return showToast("请至少选择一个撤回码段");
       const customer = fxCustomerForRecord(product);
       if (!customer || customer.id !== fxCurrentCustomer().id) return showToast("产品归属已发生变化，请刷新后重试");
-      withdrawals.unshift({ id: Date.now(), no: fxNextWithdrawalNo(), productId: product.id, customerId: customer.id, product: product.name, batch: product.batch, customer: customer.name, scope: productMode ? "product" : "segments", segments, requestedAmount: segments.reduce((sum, segment) => sum + Number(segment.amount || 0), 0), reason, status: "待审批", time: fxNow(), rejectReason: "" });
+      withdrawals.unshift({ id: Date.now(), no: fxNextWithdrawalNo(), productId: product.id, customerId: customer.id, product: product.name, batch: product.batch, customer: customer.name, scope: "segments", segments, requestedAmount: segments.reduce((sum, segment) => sum + Number(segment.amount || 0), 0), reason, status: "待审批", time: fxNow(), rejectReason: "" });
       fxSaveBusiness(); state.modal = null; state.customerPage = "withdrawals"; render(); return showToast(productMode ? "产品撤回申请已提交" : "码段撤回申请已提交");
     }
     if (action === "fx-scan-image") { state.modalData = { name: target.querySelector("img")?.alt || "产品图片", src: target.dataset.src || target.closest("[data-src]")?.dataset.src }; state.modal = "fx-scan-image"; return render(); }
