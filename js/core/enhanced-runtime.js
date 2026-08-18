@@ -19,6 +19,7 @@ render = function () {
     }
     if (entryPortal !== "scan" && !state.authenticated) app.innerHTML = fxLoginPage(entryPortal);
     else app.innerHTML = state.portal === "ops" ? renderOps() : state.portal === "customer" ? renderCustomer() : renderScan();
+    fxEnhanceCustomerDocumentLinks();
     if ((state.portal === "ops" && state.opsPage === "messages") || (state.portal === "customer" && state.customerPage === "messages")) app.insertAdjacentHTML("beforeend", fxMessageCalendar());
     if (state.portal === "ops" && state.opsPage === "operators") app.insertAdjacentHTML("beforeend", fxOperatorCalendar());
     if (state.portal === "ops" && ["inventory", "orders"].includes(state.opsPage)) app.insertAdjacentHTML("beforeend", fxOrderCalendar());
@@ -33,6 +34,34 @@ render = function () {
     if (window.lucide) { window.lucide.createIcons({ attrs: { "aria-hidden": "true" } }); document.documentElement.classList.add("icons-loaded"); }
     restorePortalSwitcherPosition();
   };
+
+  function fxEnhanceCustomerDocumentLinks() {
+    if (entryPortal !== "ops" || state.opsPage !== "customer-detail") return;
+    const customer = customers.find(item => item.id === state.selectedCustomerId);
+    if (!customer) return;
+    [["营业执照", "license"], ["法人身份证", "legalId"]].forEach(([label, key]) => {
+      const term = [...document.querySelectorAll(".customer-detail-page .detail-grid dt")].find(node => node.textContent.trim() === label);
+      const container = term?.nextElementSibling;
+      const file = customer[key];
+      const name = fxFileName(file);
+      if (!container || !file || !name) return;
+      const link = document.createElement("a");
+      link.className = "customer-document-link";
+      link.textContent = name;
+      link.title = `查看 ${name}`;
+      const src = fxFileSrc(file);
+      if (src) {
+        link.href = src;
+        link.target = "_blank";
+        link.rel = "noopener noreferrer";
+      } else {
+        link.href = "#";
+        link.dataset.action = "fx-view-customer-document";
+        link.dataset.fileName = name;
+      }
+      container.replaceChildren(link);
+    });
+  }
 
   window.addEventListener("storage", event => {
     const syncedBusinessKeys = new Set([
@@ -283,7 +312,7 @@ render = function () {
       "inventory-allocations": { inventoryAllocationCustomerFilter: "", inventoryAllocationOrderFilter: "", inventoryAllocationSortKey: "", inventoryAllocationSortDirection: "asc", inventoryAllocationDateFrom: "", inventoryAllocationDateTo: "", inventoryAllocationDateDraftFrom: "", inventoryAllocationDateDraftTo: "", customerCalendarOpen: false, customerCalendarContext: "" },
       orders: { orderCustomerFilter: "", orderNumberFilter: "", orderFrom: "", orderTo: "", orderDateDraftFrom: "", orderDateDraftTo: "", orderCalendarOpen: false, orderSortKey: "", orderSortDirection: "asc", highlightOrderNo: null },
       reviews: { filter: "", productCategory: "全部大类", reviewStatus: "全部状态", reviewDateFrom: "", reviewDateTo: "", reviewDateDraftFrom: "", reviewDateDraftTo: "", customerCalendarOpen: false, customerCalendarContext: "" },
-      "bind-requests": { bindRequestCustomerFilter: "", bindRequestOrderFilter: "", bindRequestProductFilter: "", bindRequestBatchFilter: "", bindRequestStatus: "全部状态", bindRequestCategory: "全部大类", bindRequestSortKey: "", bindRequestSortDirection: "asc", bindRequestDateFrom: "", bindRequestDateTo: "", bindRequestDateDraftFrom: "", bindRequestDateDraftTo: "", customerCalendarOpen: false, customerCalendarContext: "" },
+      "bind-requests": { bindRequestCustomerFilter: "", bindRequestOrderFilter: "", bindRequestProductFilter: "", bindRequestBatchFilter: "", bindRequestStatus: "全部状态", bindRequestCurrentStatus: "全部状态", bindRequestCategory: "全部大类", bindRequestSortKey: "", bindRequestSortDirection: "asc", bindRequestDateFrom: "", bindRequestDateTo: "", bindRequestDateDraftFrom: "", bindRequestDateDraftTo: "", customerCalendarOpen: false, customerCalendarContext: "" },
       "order-bindings": { orderBindingProductFilter: "", orderBindingBatchFilter: "", orderBindingCategory: "全部大类", orderBindingStatus: "全部状态", orderBindingSortKey: "", orderBindingSortDirection: "asc", orderBindingRequestedDateFrom: "", orderBindingRequestedDateTo: "", orderBindingRequestedDateDraftFrom: "", orderBindingRequestedDateDraftTo: "", orderBindingProcessedDateFrom: "", orderBindingProcessedDateTo: "", orderBindingProcessedDateDraftFrom: "", orderBindingProcessedDateDraftTo: "", customerCalendarOpen: false, customerCalendarContext: "" },
       withdrawals: { withdrawalNoFilter: "", withdrawalProductFilter: "", withdrawalCustomerFilter: "", withdrawalStatus: "全部状态", withdrawalDateFrom: "", withdrawalDateTo: "", withdrawalDateDraftFrom: "", withdrawalDateDraftTo: "", customerCalendarOpen: false, customerCalendarContext: "" },
       messages: { messageTitleSearch: "", messageContentSearch: "", messageReadFilter: "全部阅读状态", messageRecipientFilter: "全部接收方", messageTimeFilter: "全部发送时间", messageTypeFilter: "全部消息类型", messageDateFrom: "", messageDateTo: "", messageDateDraftFrom: "", messageDateDraftTo: "", messageCalendarOpen: false, selectedMessageIds: [] },
@@ -460,7 +489,7 @@ render = function () {
   const fxOpsOnlyActions = new Set([
     "fx-select-activation-order", "fx-select-customer", "fx-select-allocation-range", "fx-replace-customer-file",
     "fx-new-operator", "fx-edit-operator", "fx-confirm-operator", "fx-reset-operator-password", "fx-toggle-operator",
-    "fx-new-customer", "fx-view-customer-detail", "fx-back-customers", "fx-back-reviews", "fx-cancel-ops-edit",
+    "fx-new-customer", "fx-view-customer-detail", "fx-view-customer-document", "fx-back-customers", "fx-back-reviews", "fx-cancel-ops-edit",
     "fx-edit-customer", "fx-customer-view-orders", "fx-focus-order", "fx-view-customer-products", "fx-find-customer-account",
     "fx-confirm-customer", "fx-reset-customer-password", "fx-toggle-customer", "fx-export-customers",
     "fx-new-qr", "fx-finish-order", "fx-view-generated-order", "fx-create-order", "fx-download-qr", "fx-export-orders",
@@ -501,6 +530,7 @@ render = function () {
       return;
     }
     if (action === "fx-reset-list") { if (fxResetListFilters(target.dataset.resetContext)) render(); return; }
+    if (action === "fx-view-customer-document") return showToast(`${target.dataset.fileName || "附件"} 暂无原始附件，仅保留文件名`);
     if (action === "fx-replace-customer-file") { document.getElementById(target.dataset.target)?.click(); return; }
     if (action === "fx-select-bind-product") {
       const prefix = target.dataset.prefix;
@@ -836,27 +866,60 @@ render = function () {
       if (!fxEnabledOperatorSession()) return showToast("当前账号无权生成码段");
       const amount = Number(fxRead("fx-qr-amount"));
       if (!Number.isSafeInteger(amount) || amount < 1 || amount > 10000000) return showToast("单个批次生成数量必须为 1–10,000,000 枚");
-      state.qrDraft.amount = amount;
-      state.qrDraft.note = fxRead("fx-qr-note");
+      const note = fxRead("fx-qr-note");
       const customWidth = Number(fxRead("fx-qr-width")); const customHeight = Number(fxRead("fx-qr-height"));
       if (!Number.isFinite(customWidth) || !Number.isFinite(customHeight) || customWidth < 8 || customHeight < 8 || customWidth > 300 || customHeight > 300) return showToast("输出宽高必须在 8–300 mm 之间");
+      const generation = { amount, note, customWidth, customHeight, prefix: state.qrDraft.prefix || "QR" };
+      state.qrDraft.amount = amount;
+      state.qrDraft.note = note;
       state.qrDraft.size = "custom";
       state.qrDraft.customWidth = customWidth;
       state.qrDraft.customHeight = customHeight;
-      const prefix = state.qrDraft.prefix || "QR";
-      const start = fxNextCodeSerialNumber(prefix);
-      const no = fxNextCodeBatchNo();
-      const currentDate = fxCurrentDateParts().date;
-      const size = `${state.qrDraft.customWidth} × ${state.qrDraft.customHeight} mm`;
-      const batch = fxNormalizeCodeBatch({ id: Date.now(), no, range: `${fxSerial(prefix, start)}–${fxSerial(prefix, start + amount - 1)}`, total: amount, created: currentDate, createdAt: fxNow(), style: "二维码核心区块", size, customWidth: state.qrDraft.customWidth, customHeight: state.qrDraft.customHeight, note: state.qrDraft.note }, codeBatches.length);
-      codeBatches.unshift(batch); fxSetGeneratedBatchNo(no); state.qrStep = 4; fxSaveBusiness(); render();
-      return showToast("码段已生成，当前状态为未分配");
+      state.qrGeneration = generation;
+      render();
+      window.setTimeout(() => {
+        if (state.qrGeneration !== generation) return;
+        const start = fxNextCodeSerialNumber(generation.prefix);
+        const no = fxNextCodeBatchNo();
+        const currentDate = fxCurrentDateParts().date;
+        const size = `${generation.customWidth} × ${generation.customHeight} mm`;
+        const batch = fxNormalizeCodeBatch({ id: Date.now(), no, range: `${fxSerial(generation.prefix, start)}–${fxSerial(generation.prefix, start + generation.amount - 1)}`, total: generation.amount, created: currentDate, createdAt: fxNow(), style: "二维码核心区块", size, customWidth: generation.customWidth, customHeight: generation.customHeight, note: generation.note }, codeBatches.length);
+        codeBatches.unshift(batch);
+        fxSetGeneratedBatchNo(no);
+        state.qrStep = 4;
+        state.qrGeneration = null;
+        fxSaveBusiness();
+        render();
+        showToast("码段已生成，当前状态为未分配");
+      }, Math.min(1800, Math.max(900, 900 + Math.floor(amount / 1000000) * 300)));
+      return;
     }
-    if (action === "fx-download-qr") {
+    if (action === "fx-download-qr-partial") {
       const batch = codeBatches.find(item => item.no === fxGeneratedBatchNo());
       if (!batch) return showToast("码段不存在");
-      const result = fxDownloadQrPackage(batch);
-      return showToast(result === "queued" ? `已创建 ${formatNumber(batch.total)} 枚二维码完整下载任务，不限制码量` : "二维码核心区块压缩包已开始下载");
+      state.modalData = { batchNo: batch.no };
+      state.modal = "fx-qr-download";
+      return render();
+    }
+    if (action === "fx-download-qr-full") {
+      const batch = codeBatches.find(item => item.no === fxGeneratedBatchNo());
+      if (!batch) return showToast("码段不存在");
+      const result = fxDownloadQrPackage(batch, { mode: "all" });
+      return showToast(result === "queued" ? `已创建 ${formatNumber(batch.total)} 枚二维码完整下载任务，不限制码量` : "完整二维码压缩包已开始下载");
+    }
+    if (action === "fx-confirm-qr-download") {
+      const batch = codeBatches.find(item => item.no === state.modalData?.batchNo);
+      if (!batch) { state.modal = null; state.modalData = null; return render(); }
+      const firstCode = String(batch.range || "").split("–")[0];
+      const startNumber = Number(firstCode.replace(/\D/g, "")) || 1;
+      const total = Number(batch.total || 0);
+      const amount = Number(fxRead("fx-qr-download-amount"));
+      if (!Number.isSafeInteger(amount) || amount < 1 || amount > total) return showToast("下载数量必须为正整数，且不能超过当前码段总量");
+      fxDownloadQrPackage(batch, { mode: "partial", startNumber, amount });
+      state.modal = null;
+      state.modalData = null;
+      render();
+      return showToast(`已开始下载 ${formatNumber(amount)} 张二维码样例`);
     }
     if (action === "fx-export-orders") {
       const rangeTerm = state.inventoryRangeFilter.trim().toLowerCase();
@@ -891,7 +954,7 @@ render = function () {
     }
     if (action === "fx-open-allocation-recall") {
       if (!fxEnabledOperatorSession()) return showToast("当前账号无权撤销码段分配");
-      if (state.opsPage !== "inventory-detail") return showToast("请在库存码段详情中撤销分配");
+      if (!["inventory-detail", "customer-detail", "order-detail"].includes(state.opsPage)) return showToast("请在订单详情、客户详情或库存码段详情中撤销分配");
       const order = orders.find(item => item.no === target.dataset.no && item.allocationStatus !== "已撤销");
       if (!order) return showToast("分配记录不存在或已经撤销");
       const reason = fxCodeAllocationRecallBlockReason(order);
@@ -900,7 +963,9 @@ render = function () {
     }
     if (action === "fx-confirm-allocation-recall") {
       if (!fxEnabledOperatorSession()) return showToast("当前账号无权撤销码段分配");
-      if (state.opsPage !== "inventory-detail") return showToast("请在库存码段详情中撤销分配");
+      if (!["inventory-detail", "customer-detail", "order-detail"].includes(state.opsPage)) return showToast("请在订单详情、客户详情或库存码段详情中撤销分配");
+      const recallFromPage = state.opsPage;
+      const recallReturnPage = state.orderDetailReturnPage;
       const latestOrders = fxStore.get(fxBusinessStorage.orders, null);
       if (Array.isArray(latestOrders)) { orders.splice(0, orders.length, ...latestOrders); orders.forEach(fxNormalizeAllocationOrder); }
       const order = orders.find(item => item.no === state.selectedOrderNo && item.allocationStatus !== "已撤销");
@@ -931,7 +996,9 @@ render = function () {
       const sourceBatchNo = order.sourceBatchNo;
       state.modal = null; state.selectedOrderNo = null; state.orderDetailReturnPage = "";
       state.selectedCodeBatchNo = codeBatches.some(batch => batch.no === sourceBatchNo) ? sourceBatchNo : null;
-      state.opsPage = state.selectedCodeBatchNo ? "inventory-detail" : "inventory";
+      state.opsPage = recallFromPage === "customer-detail" || (recallFromPage === "order-detail" && recallReturnPage === "customer-detail")
+        ? "customer-detail"
+        : state.selectedCodeBatchNo ? "inventory-detail" : "inventory";
       fxSaveBusiness(); render();
       const cancelledCount = linkedRequests.length + linkedProducts.length;
       return showToast(`订单 ${order.no} 已撤销分配，${formatNumber(order.total || 0)} 枚码已归还库存${cancelledCount ? `，${cancelledCount} 条关联绑定流程已取消` : ""}`);
@@ -1019,11 +1086,15 @@ render = function () {
       if (target.dataset.source === "product-review") {
         const product = products.find(item => item.id === Number(target.dataset.productId) && fxRecordBelongsToCustomer(item, fxCurrentCustomer()) && item.status === "待审核");
         if (!product) return showToast("申请状态已变化，请刷新后重试");
-        state.modalData = { kind: "withdraw-review-edit", id: product.id, title: "撤回申请", subtitle: "撤回后，运营端将不再审核当前提交版本。", subject: `${product.name}（${product.batch || "—"}）`, operation: "恢复为待提交状态并保留当前资料", danger: true };
+        const productOrder = orders.find(item => item.no === product.requestedOrderNo || item.no === product.preferredOrderNo);
+        const productAmount = Number(product.requestedAmount || 0);
+        state.modalData = { kind: "withdraw-review-edit", id: product.id, title: "撤回申请", subtitle: "撤回后，运营端将不再审核当前提交版本。", product: product.name, batch: product.batch, applicationType: product.applicationType || (product.requestedOrderNo ? "新建产品并绑定" : "产品审核"), orderNo: product.requestedOrderNo || product.preferredOrderNo || "", range: product.requestedRange || (productOrder && productAmount ? fxActivationRange(productOrder, productAmount, null, product.id) : ""), amount: productAmount, subject: `${product.name}（${product.batch || "—"}）`, operation: "恢复为待提交状态并保留当前资料", danger: true };
       } else {
         const request = bindRequests.find(item => fxSameId(item.id, target.dataset.requestId) && fxRecordBelongsToCustomer(item, fxCurrentCustomer()) && item.status === "待审批");
         if (!request) return showToast("申请状态已变化，请刷新后重试");
-        state.modalData = { kind: "withdraw-bind-request", id: request.id, title: "撤回申请", subtitle: "撤回后，运营端将不再处理本次绑定申请。", subject: `${request.product}（${request.batch || "—"}）`, operation: `取消订单 ${request.orderNo} 的本次绑定申请`, danger: true };
+        const requestOrder = orders.find(item => item.no === request.orderNo);
+        const requestRange = request.range || (requestOrder ? fxActivationRange(requestOrder, request.amount, null, request.id) : "");
+        state.modalData = { kind: "withdraw-bind-request", id: request.id, title: "撤回申请", subtitle: "撤回后，运营端将不再处理本次绑定申请。", product: request.product, batch: request.batch, applicationType: request.applicationType || "已有产品追加绑定", orderNo: request.orderNo, range: requestRange, amount: Number(request.amount || 0), danger: true };
       }
       state.modal = "fx-confirm";
       return render();
@@ -1338,7 +1409,7 @@ render = function () {
     if (action === "fx-preview-custom-file") { const file = state.editorDraft.custom[target.dataset.module][Number(target.dataset.index)]?.files?.[Number(target.dataset.fileIndex)]; if (!file) return; state.modalData = { name: fxFileName(file), type: fxFileType(file), src: fxFileSrc(file, /\.(png|jpe?g|webp)$/i.test(fxFileName(file)) ? "assets/tea-field.jpg" : "") }; state.modal = "fx-file"; return render(); }
     if (action === "fx-remove-custom-file") { state.editorDraft.custom[target.dataset.module][Number(target.dataset.index)]?.files?.splice(Number(target.dataset.fileIndex), 1); return render(); }
     if (action === "fx-open-withdraw") { if (!fxEnabledCustomerSession()) return showToast("当前账号无权发起撤回申请"); state.editorProductId = null; state.modalData = { withdrawalMode: "segments", withdrawalProductId: null }; state.modal = "fx-customer-withdraw"; return render(); }
-     if (action === "fx-customer-withdraw") { if (!fxEnabledCustomerSession()) return showToast("当前账号无权发起撤回申请"); const productId = Number(target.dataset.id) || null; const product = products.find(item => item.id === productId && fxRecordBelongsToCustomer(item, fxCurrentCustomer()) && item.status === "已激活" && fxProductActiveSegments(item).length); if (!product) return showToast("当前产品没有可撤回的码段"); state.editorProductId = product.id; state.modalData = { withdrawalMode: "product", withdrawalProductId: product.id }; state.modal = "fx-customer-withdraw"; return render(); }
+     if (action === "fx-customer-withdraw") { if (!fxEnabledCustomerSession()) return showToast("当前账号无权发起撤回申请"); const productId = Number(target.dataset.id) || null; const orderNo = target.dataset.orderNo || ""; const range = target.dataset.range || ""; const amount = Number(target.dataset.amount || 0); const product = products.find(item => item.id === productId && fxRecordBelongsToCustomer(item, fxCurrentCustomer()) && item.status === "已激活" && fxProductActiveSegments(item).length); if (!product) return showToast("当前产品没有可撤回的码段"); const segment = fxProductActiveSegments(product).find(item => item.orderNo === orderNo && item.range === range && (!amount || Number(item.amount) === amount)); if (!segment) return showToast("该绑定记录对应的码段已不可撤回，请刷新后重试"); state.editorProductId = product.id; state.modalData = { withdrawalMode: "product", withdrawalProductId: product.id, withdrawalSegment: segment }; state.modal = "fx-customer-withdraw"; return render(); }
     if (action === "fx-confirm-customer-withdraw") {
       if (!fxEnabledCustomerSession()) return showToast("当前账号无权发起撤回申请");
       const productMode = state.modalData?.withdrawalMode === "product";
@@ -1347,8 +1418,16 @@ render = function () {
       const reason = fxRead("fx-withdraw-reason");
       if (!product || !reason) return showToast("请选择产品并填写撤回原因");
       const availableSegments = fxProductActiveSegments(product);
-      const selectedKeys = new Set([...document.querySelectorAll("[data-withdraw-segment]:checked")].map(input => input.value));
-      const segments = availableSegments.filter(segment => selectedKeys.has(segment.key));
+      let segments;
+      if (productMode) {
+        const requestedSegment = state.modalData?.withdrawalSegment;
+        const segment = requestedSegment && availableSegments.find(item => item.key === requestedSegment.key
+          || (item.orderNo === requestedSegment.orderNo && item.range === requestedSegment.range && Number(item.amount) === Number(requestedSegment.amount)));
+        segments = segment ? [segment] : [];
+      } else {
+        const selectedKeys = new Set([...document.querySelectorAll("[data-withdraw-segment]:checked")].map(input => input.value));
+        segments = availableSegments.filter(segment => selectedKeys.has(segment.key));
+      }
       if (!segments.length) return showToast("请至少选择一个撤回码段");
       const customer = fxCustomerForRecord(product);
       if (!customer || customer.id !== fxCurrentCustomer().id) return showToast("产品归属已发生变化，请刷新后重试");
@@ -1570,7 +1649,7 @@ render = function () {
       return;
     }
     if (target.dataset.tableFilter) {
-      const tableFilters = { operatorStatus: "operatorStatus", customerStatus: "customerStatus", inventoryStatus: "inventoryStatus", productCategory: "productCategory", reviewStatus: "reviewStatus", bindRequestStatus: "bindRequestStatus", bindRequestCategory: "bindRequestCategory", orderBindingStatus: "orderBindingStatus", orderBindingCategory: "orderBindingCategory", withdrawalStatus: "withdrawalStatus", customerProductStatus: "customerProductStatus", customerProductCategory: "customerProductCategory", customerWithdrawalStatus: "customerWithdrawalStatus" };
+      const tableFilters = { operatorStatus: "operatorStatus", customerStatus: "customerStatus", inventoryStatus: "inventoryStatus", productCategory: "productCategory", reviewStatus: "reviewStatus", bindRequestStatus: "bindRequestStatus", bindRequestCurrentStatus: "bindRequestCurrentStatus", bindRequestCategory: "bindRequestCategory", orderBindingStatus: "orderBindingStatus", orderBindingCategory: "orderBindingCategory", withdrawalStatus: "withdrawalStatus", customerProductStatus: "customerProductStatus", customerProductCategory: "customerProductCategory", customerWithdrawalStatus: "customerWithdrawalStatus" };
       const key = tableFilters[target.dataset.tableFilter]; if (key) state[key] = target.value; return render();
     }
     if (target.dataset.messageFilter) {

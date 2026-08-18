@@ -23,6 +23,13 @@
 .login-submit { width: 100%; min-height: 38px; }
 .login-tip { margin-top: 16px; padding-top: 14px; border-top: 1px solid var(--border-light); color: var(--text-muted); font-size: 12px; }
 .result-center { min-height: 220px; display: grid; place-items: center; gap: 12px; padding: 28px; text-align: center; }
+.qr-generation-state { min-height: 250px; display: grid; place-items: center; align-content: center; gap: 10px; padding: 28px; text-align: center; }
+.qr-generation-state strong { color: var(--text-strong); font-size: 15px; }
+.qr-generation-state p { max-width: 340px; margin: 0; color: var(--text-muted); font-size: 12px; line-height: 1.7; }
+.qr-generation-spinner { width: 52px; height: 52px; display: grid; place-items: center; color: var(--primary); border: 1px solid var(--primary-border); border-radius: 50%; background: var(--primary-soft); }
+.qr-generation-spinner .icon { width: 24px; height: 24px; animation: qrGenerationSpin 1s linear infinite; }
+.qr-generation-progress { width: min(100%, 300px); height: 5px; overflow: hidden; margin-top: 5px; border-radius: 999px; background: var(--surface-muted); }
+.qr-generation-progress span { display: block; width: 42%; height: 100%; border-radius: inherit; background: var(--primary); animation: qrGenerationProgress 1.4s ease-in-out infinite; }
 .unread-row { background: var(--primary-soft); }
 .unread-row .cell-main { font-weight: 600; }
 .unread-dot { width: 7px; height: 7px; display: inline-block; margin-right: 6px; border-radius: 50%; background: var(--primary); vertical-align: 1px; }
@@ -181,6 +188,8 @@
 @keyframes slideIn { from { transform: translateX(30px); opacity: .7; } to { transform: translateX(0); opacity: 1; } }
 @keyframes modalIn { from { transform: translateY(8px); opacity: 0; } to { transform: translateY(0); opacity: 1; } }
 @keyframes toastIn { from { transform: translateY(-8px); opacity: 0; } to { transform: translateY(0); opacity: 1; } }
+@keyframes qrGenerationSpin { to { transform: rotate(360deg); } }
+@keyframes qrGenerationProgress { 0% { transform: translateX(-130%); } 50% { transform: translateX(100%); } 100% { transform: translateX(260%); } }
 
 @media (max-width: 1100px) {
   .editor-layout { grid-template-columns: 1fr; }

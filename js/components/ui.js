@@ -10,9 +10,9 @@ function formatNumber(value) {
 
 function statusClass(value) {
   if (["已激活", "已通过", "启用", "已完成", "有效", "已分配"].includes(value)) return "success";
-  if (["待审核", "待审批", "生成中", "部分分配"].includes(value)) return "warning";
+  if (["待审核", "待审批", "生成中", "部分分配", "待激活", "撤回申请中", "部分撤回"].includes(value)) return "warning";
   if (["已驳回", "禁用", "失败"].includes(value)) return "danger";
-  if (["已重置"].includes(value)) return "info";
+  if (["已重置", "已撤回"].includes(value)) return "info";
   return "neutral";
 }
 

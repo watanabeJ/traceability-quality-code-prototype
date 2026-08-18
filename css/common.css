@@ -65,6 +65,9 @@ button:focus-visible, input:focus-visible, select:focus-visible, textarea:focus-
 }
 img { max-width: 100%; display: block; }
 a { color: inherit; }
+.customer-document-link { color: #2563eb; font-weight: 500; text-decoration: none; overflow-wrap: anywhere; }
+.customer-document-link:hover { color: #1d4ed8; text-decoration: underline; }
+.customer-document-link:focus-visible { outline: none; border-radius: 2px; box-shadow: 0 0 0 2px var(--surface), 0 0 0 4px #2563eb; }
 .hidden,
 .is-hidden { display: none !important; }
 .muted { color: var(--text-muted); }
@@ -526,6 +529,8 @@ tbody tr:last-child td { border-bottom: 0; }
 .order-table .action-column .table-actions { flex-wrap: nowrap; white-space: nowrap; }
 .customer-account-table .action-column { width: 250px; min-width: 250px; }
 .customer-account-table .action-column .table-actions { flex-wrap: nowrap; white-space: nowrap; }
+.customer-detail-page table .action-column { width: 220px; min-width: 220px; }
+.customer-detail-page table .action-column .table-actions { flex-wrap: nowrap; white-space: nowrap; }
 .inventory-allocation-table {
   --frozen-action-bg: color-mix(in srgb, var(--primary-soft) 38%, var(--surface));
   --frozen-action-head-bg: color-mix(in srgb, var(--primary-soft) 72%, var(--surface-muted));
@@ -564,6 +569,23 @@ tbody tr:last-child td { border-bottom: 0; }
 }
 .order-binding-table thead .action-column { z-index: 3; color: var(--text-strong); background: var(--frozen-action-head-bg); }
 .order-binding-table tbody tr:hover > .action-column { background: var(--frozen-action-hover-bg); }
+.bind-request-table {
+  --frozen-action-bg: color-mix(in srgb, var(--primary-soft) 38%, var(--surface));
+  --frozen-action-head-bg: color-mix(in srgb, var(--primary-soft) 72%, var(--surface-muted));
+  --frozen-action-hover-bg: color-mix(in srgb, var(--primary-soft) 58%, var(--surface-muted));
+  min-width: 1460px;
+}
+.bind-request-table .action-column {
+  position: sticky;
+  right: 0;
+  z-index: 2;
+  width: 180px;
+  min-width: 180px;
+  background: var(--frozen-action-bg);
+  box-shadow: -2px 0 0 var(--primary-border), -12px 0 18px color-mix(in srgb, var(--text) 7%, transparent);
+}
+.bind-request-table thead .action-column { z-index: 3; color: var(--text-strong); background: var(--frozen-action-head-bg); }
+.bind-request-table tbody tr:hover > .action-column { background: var(--frozen-action-hover-bg); }
 .text-action { border: 0; background: transparent; color: var(--text); padding: 4px 6px; border-radius: var(--r-sm); font-size: 13px; }
 .text-action:hover { background: var(--surface-muted); }
 .pagination { min-height: 48px; display: flex; justify-content: space-between; align-items: center; gap: 16px; padding: 8px 12px; border-top: 1px solid var(--border-light); color: var(--text-muted); background: var(--surface); font-size: 12px; }
@@ -800,6 +822,7 @@ input.immutable-input { width: 100%; color: var(--text); background: var(--surfa
 .withdrawal-segment-option:last-child { border-bottom: 0; }
 .withdrawal-segment-option:hover { background: var(--surface-muted); }
 .withdrawal-segment-option:has(input:checked) { background: var(--primary-soft); }
+.withdrawal-segment-option.withdrawal-segment-readonly { grid-template-columns: minmax(0, 1fr); cursor: default; background: var(--surface-muted); }
 .withdrawal-segment-copy { min-width: 0; display: grid; gap: 2px; }
 .withdrawal-segment-copy strong { overflow-wrap: anywhere; color: var(--text-strong); font-weight: 500; }
 .withdrawal-segment-copy small { color: var(--text-muted); font-size: 11px; }

@@ -963,7 +963,7 @@ const fxToday = "2026-07-27";
     fxStore.set(markerKey, fxRichDemoCaseVersion);
   }
   fxEnsureRichDemoCases();
-  const fxRelationshipConsistencyVersion = 6;
+  const fxRelationshipConsistencyVersion = 7;
   function fxEnsureRelationshipConsistency() {
     const markerKey = "trace-relationship-consistency-version";
     let changed = Number(fxStore.get(markerKey, 0)) < fxRelationshipConsistencyVersion;
@@ -1082,6 +1082,44 @@ const fxToday = "2026-07-27";
       Object.assign(withdrawal, { productId: product.id, product: product.name, batch: product.batch, customerId: customer?.id || product.customerId || null });
       return true;
     }));
+    const productsWithApprovedWithdrawals = new Set();
+    withdrawals.filter(withdrawal => withdrawal.status === "已通过").forEach(withdrawal => {
+      const product = fxProductForRecord(withdrawal);
+      const customer = fxCustomerForRecord(withdrawal) || fxCustomerForRecord(product);
+      if (!product || !customer) return;
+      const segments = Array.isArray(withdrawal.segments) && withdrawal.segments.length
+        ? withdrawal.segments
+        : (withdrawal.resetRanges || []).map(range => ({ range }));
+      segments.forEach(segment => {
+        if (!segment.range) return;
+        const candidateOrders = orders.filter(order => (!segment.orderNo || order.no === segment.orderNo) && fxRecordBelongsToCustomer(order, customer));
+        candidateOrders.forEach(order => (order.activations || []).forEach(activation => {
+          if (activation.status === "已重置" || !fxActivationBelongsToProduct(activation, product)) return;
+          const matchesIdentity = segment.activationId && activation.activationId
+            ? segment.activationId === activation.activationId
+            : activation.range === segment.range;
+          if (!matchesIdentity) return;
+          if (activation.time && (withdrawal.decidedAt || withdrawal.time) && activation.time > (withdrawal.decidedAt || withdrawal.time)) return;
+          Object.assign(activation, {
+            status: "已重置",
+            withdrawalNo: withdrawal.no || activation.withdrawalNo || "",
+            withdrawalReason: withdrawal.reason || activation.withdrawalReason || "",
+            resetTime: withdrawal.decidedAt || withdrawal.time || activation.resetTime || "",
+            resetOperator: withdrawal.operator || activation.resetOperator || "",
+          });
+          productsWithApprovedWithdrawals.add(product);
+          changed = true;
+        }));
+      });
+    });
+    productsWithApprovedWithdrawals.forEach(product => {
+      const stillActive = orders.some(order => order.allocationStatus !== "已撤销" && (order.activations || []).some(activation => activation.status !== "已重置" && fxActivationBelongsToProduct(activation, product)));
+      if (!stillActive && product.status === "已激活") {
+        product.status = "草稿";
+        product.submitted = "";
+        changed = true;
+      }
+    });
     messages.forEach(message => { normalizeCustomerLink(message); if (message.productId || message.batch) normalizeProductLink(message); });
     const retainedProducts = products.filter(product => !placeholderProductNames.has(String(product.name || "").trim()));
     if (retainedProducts.length !== products.length) {
@@ -1280,7 +1318,7 @@ const fxToday = "2026-07-27";
     orderCustomerFilter: "", orderNumberFilter: "", orderFrom: "", orderTo: "", orderSortKey: "", orderSortDirection: "asc",
     orderDateDraftFrom: "", orderDateDraftTo: "", orderCalendarOpen: false,
     orderCalendarLeftMonth: "2026-06-01", orderCalendarRightMonth: "2026-07-01",
-    bindRequestCustomerFilter: "", bindRequestOrderFilter: "", bindRequestProductFilter: "", bindRequestBatchFilter: "", bindRequestStatus: "全部状态", bindRequestCategory: "全部大类",
+    bindRequestCustomerFilter: "", bindRequestOrderFilter: "", bindRequestProductFilter: "", bindRequestBatchFilter: "", bindRequestStatus: "全部状态", bindRequestCurrentStatus: "全部状态", bindRequestCategory: "全部大类",
     bindRequestSortKey: "", bindRequestSortDirection: "asc",
     bindRequestDateFrom: "", bindRequestDateTo: "", bindRequestDateDraftFrom: "", bindRequestDateDraftTo: "",
     orderBindingProductFilter: "", orderBindingBatchFilter: "", orderBindingCategory: "全部大类", orderBindingStatus: "全部状态",
@@ -1309,6 +1347,7 @@ const fxToday = "2026-07-27";
     editorProductId: null, editorDraft: null, editorReadonly: false, editorOwner: "customer", editorTargetOrderNo: null, editorBindRequestId: null,
     editorRequestedSourceRange: "", editorRequestedRange: "", editorRequestedAmount: 0, reviewEditing: false,
     qrDraft: { customerId: null, prefix: "QR", size: "custom", customWidth: 25, customHeight: 25, amount: 500, note: "" },
+    qrGeneration: null,
     generatedOrderNo: null, previewVersion: 1,
     scanExpandedModules: {},
   });
@@ -1856,24 +1895,29 @@ const fxToday = "2026-07-27";
     throw new Error("标准二维码组件未加载，无法生成可扫码二维码");
   }
 
-  function fxDownloadQrPackage(order) {
+  function fxDownloadQrPackage(order, options = {}) {
     const [startCode] = order.range.split("–"); const prefix = startCode.match(/^[A-Z]+/)?.[0] || "QR"; const start = Number(startCode.replace(/\D/g, ""));
+    const total = Number(order.total || 0);
     const width = Number(order.customWidth) || Number.parseFloat(order.size) || 25; const height = Number(order.customHeight) || width; const sizeLabel = order.size || `${width} × ${height} mm`;
+    const isPartial = options.mode && options.mode !== "all";
+    const exportStart = isPartial ? Number(options.startNumber || start) : start;
+    const exportAmount = isPartial ? Number(options.amount || 0) : total;
+    const exportRange = `${fxSerial(prefix, exportStart)}–${fxSerial(prefix, exportStart + exportAmount - 1)}`;
     const allocations = fxCodeBatchAllocations(order);
     const allocationStatus = fxCodeBatchAllocationStatus(order);
-    // Large exports are delegated as one complete job so the browser does not materialize millions of SVG files in memory.
-    if (Number(order.total || 0) > 5000) {
+    // Complete large exports remain asynchronous; partial exports are intentionally bounded for browser printing and review.
+    if (!isPartial && total > 5000) {
       const task = {
         type: "qr-package-export",
         status: "已创建",
         batchNo: order.no,
         serialRange: order.range,
-        amount: Number(order.total || 0),
+        amount: total,
         size: sizeLabel,
         splitRequired: false,
         requestedAt: fxNow(),
       };
-      const readme = `二维码完整压缩包下载任务\n\n批次号：${order.no}\n序列号范围：${order.range}\n二维码数量：${order.total}\n尺寸：${sizeLabel}\n\n本任务不限制单次下载码量，也不拆分码段。生产环境由后台异步生成完整压缩包，避免浏览器一次性占用过多内存。`;
+      const readme = `二维码完整压缩包下载任务\n\n批次号：${order.no}\n序列号范围：${order.range}\n二维码数量：${total}\n尺寸：${sizeLabel}\n\n本任务不限制单次下载码量，也不拆分码段。生产环境由后台异步生成完整压缩包，避免浏览器一次性占用过多内存。`;
       const entries = [
         { name: "download-task.json", data: JSON.stringify(task, null, 2) },
         { name: "README.txt", data: readme },
@@ -1881,16 +1925,18 @@ const fxToday = "2026-07-27";
       fxDownloadBlob(`${order.no}_二维码完整下载任务.zip`, new Blob([fxZip(entries)], { type: "application/zip" }));
       return "queued";
     }
-    const manifest = ["序列号,批次号,分配状态,订单号,客户名称", ...Array.from({ length: order.total }, (_, i) => {
-      const serial = fxSerial(prefix, start + i);
+    const manifest = ["序列号,批次号,分配状态,订单号,客户名称", ...Array.from({ length: exportAmount }, (_, i) => {
+      const serial = fxSerial(prefix, exportStart + i);
       const allocation = allocations.find(item => fxCodeInRange(serial, item.range));
       return `${serial},${order.no},${allocation ? "已分配" : "未分配"},${allocation?.no || ""},${allocation?.customer || ""}`;
     })].join("\n");
-    const samples = order.total; const entries = [
+    const rangeLabel = isPartial ? exportRange : order.range;
+    const entries = [
       { name: "manifest.csv", data: `\ufeff${manifest}` },
-      { name: "README.txt", data: `码段批次：${order.no}\n分配状态：${allocationStatus}\n已分配：${fxCodeBatchAllocatedAmount(order)}\n剩余库存：${fxCodeBatchAvailableAmount(order)}\n码量：${order.total}\n序列范围：${order.range}\n尺寸：${sizeLabel}\n压缩包仅包含二维码核心矩阵 SVG 和完整序列清单，不包含标签模板或额外码样式。序列号保存在 SVG 文件名和 manifest.csv 中，不绘制在二维码图形内。` },
-      ...Array.from({ length: samples }, (_, i) => { const code = fxSerial(prefix, start + i); return { name: `codes/${code}.svg`, data: fxQrSvg(code, undefined, { width, height, size: order.size }) }; }),
+      { name: "README.txt", data: `码段批次：${order.no}\n分配状态：${allocationStatus}\n已分配：${fxCodeBatchAllocatedAmount(order)}\n剩余库存：${fxCodeBatchAvailableAmount(order)}\n下载数量：${exportAmount}\n下载范围：${rangeLabel}\n完整码段范围：${order.range}\n尺寸：${sizeLabel}\n压缩包仅包含二维码核心矩阵 SVG 和序列清单，不包含标签模板或额外码样式。序列号保存在 SVG 文件名和 manifest.csv 中，不绘制在二维码图形内。` },
+      ...Array.from({ length: exportAmount }, (_, i) => { const code = fxSerial(prefix, exportStart + i); return { name: `codes/${code}.svg`, data: fxQrSvg(code, undefined, { width, height, size: order.size }) }; }),
     ];
-    fxDownloadBlob(`${order.no}_二维码核心区块.zip`, new Blob([fxZip(entries)], { type: "application/zip" }));
+    const filename = isPartial ? `${order.no}_二维码样例_${rangeLabel}.zip` : `${order.no}_二维码核心区块.zip`;
+    fxDownloadBlob(filename, new Blob([fxZip(entries)], { type: "application/zip" }));
     return "downloaded";
   }
