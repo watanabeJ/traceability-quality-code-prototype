@@ -1888,9 +1888,10 @@ const fxToday = "2026-07-27";
       const qr = window.qrcode(0, "M");
       qr.addData(payload);
       qr.make();
-      const count = qr.getModuleCount(); const cells = []; const widthMm = Number(options.width) || Number.parseFloat(options.size) || 25; const heightMm = Number(options.height) || widthMm; const viewSize = count + 8;
+      const count = qr.getModuleCount(); const cells = []; const widthMm = Number(options.width) || Number.parseFloat(options.size) || 25; const heightMm = Number(options.height) || widthMm; const viewSize = count + 8; const serial = String(options.serial || "").trim(); const viewHeight = serial ? viewSize + 4 : viewSize;
       for (let row = 0; row < count; row++) for (let col = 0; col < count; col++) if (qr.isDark(row, col)) cells.push(`<rect x="${col + 4}" y="${row + 4}" width="1" height="1"/>`);
-      return `<svg xmlns="http://www.w3.org/2000/svg" width="${widthMm}mm" height="${heightMm}mm" viewBox="0 0 ${viewSize} ${viewSize}" preserveAspectRatio="xMidYMid meet" style="background:#fff"><rect width="100%" height="100%" fill="white"/><g fill="black">${cells.join("")}</g></svg>`;
+      const serialMarkup = serial ? `<text x="${viewSize / 2}" y="${viewSize + 2.8}" text-anchor="middle" font-family="Arial, sans-serif" font-size="2.4" fill="black">${serial.replace(/[&<>"']/g, character => ({ "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;", "'": "&apos;" })[character])}</text>` : "";
+      return `<svg xmlns="http://www.w3.org/2000/svg" width="${widthMm}mm" height="${heightMm}mm" viewBox="0 0 ${viewSize} ${viewHeight}" preserveAspectRatio="xMidYMid meet" style="background:#fff"><rect width="100%" height="100%" fill="white"/><g fill="black">${cells.join("")}</g>${serialMarkup}</svg>`;
     }
     throw new Error("标准二维码组件未加载，无法生成可扫码二维码");
   }
@@ -1933,8 +1934,8 @@ const fxToday = "2026-07-27";
     const rangeLabel = isPartial ? exportRange : order.range;
     const entries = [
       { name: "manifest.csv", data: `\ufeff${manifest}` },
-      { name: "README.txt", data: `码段批次：${order.no}\n分配状态：${allocationStatus}\n已分配：${fxCodeBatchAllocatedAmount(order)}\n剩余库存：${fxCodeBatchAvailableAmount(order)}\n下载数量：${exportAmount}\n下载范围：${rangeLabel}\n完整码段范围：${order.range}\n尺寸：${sizeLabel}\n压缩包仅包含二维码核心矩阵 SVG 和序列清单，不包含标签模板或额外码样式。序列号保存在 SVG 文件名和 manifest.csv 中，不绘制在二维码图形内。` },
-      ...Array.from({ length: exportAmount }, (_, i) => { const code = fxSerial(prefix, exportStart + i); return { name: `codes/${code}.svg`, data: fxQrSvg(code, undefined, { width, height, size: order.size }) }; }),
+      { name: "README.txt", data: `码段批次：${order.no}\n分配状态：${allocationStatus}\n已分配：${fxCodeBatchAllocatedAmount(order)}\n剩余库存：${fxCodeBatchAvailableAmount(order)}\n下载数量：${exportAmount}\n下载范围：${rangeLabel}\n完整码段范围：${order.range}\n尺寸：${sizeLabel}\n压缩包包含带对应序列号的二维码 SVG 和序列清单，不包含标签模板或额外码样式。序列号同时保存在 SVG 文件名和 manifest.csv 中。` },
+      ...Array.from({ length: exportAmount }, (_, i) => { const code = fxSerial(prefix, exportStart + i); return { name: `codes/${code}.svg`, data: fxQrSvg(code, undefined, { width, height, size: order.size, serial: code }) }; }),
     ];
     const filename = isPartial ? `${order.no}_二维码样例_${rangeLabel}.zip` : `${order.no}_二维码核心区块.zip`;
     fxDownloadBlob(filename, new Blob([fxZip(entries)], { type: "application/zip" }));

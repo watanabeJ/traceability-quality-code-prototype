@@ -262,7 +262,9 @@ function fxLoginPage(portal) {
 
   function fxQrCorePreviewContent() {
     const size = fxQrOutputSize();
-    return `${qrMarkup("serial-batch-preview", { size: size.label, width: size.width, height: size.height })}<div class="qr-style-preview-meta"><span>${fxEscape(size.label)}</span></div>`;
+    const previewRange = fxQrRangeData().range;
+    const previewSerial = String(previewRange).split(/\s+[–-]\s+/)[0] || "QR00000001";
+    return `${qrMarkup("serial-batch-preview", { size: size.label, width: size.width, height: size.height, serial: previewSerial })}<div class="qr-style-preview-meta"><span>${fxEscape(size.label)}</span></div>`;
   }
 
   function fxRefreshQrCorePreview() {
