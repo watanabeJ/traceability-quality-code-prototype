@@ -277,6 +277,46 @@
     }
   }
 
+  // Page paths in annotations.json are project-relative. Resolve them from
+  // the deployed project root so switching pages also works under a subpath
+  // (for example a GitHub Pages project URL).
+  function projectRootUrl() {
+    var annotationBase = dataUrlBase();
+    if (annotationBase) {
+      try {
+        return new URL("../", annotationBase).href;
+      } catch (err) {}
+    }
+    try {
+      var current = new URL(".", document.baseURI || window.location.href).href;
+      var marker = "/prototype-multipage/";
+      var markerIndex = current.indexOf(marker);
+      if (markerIndex !== -1) return current.slice(0, markerIndex + marker.length);
+      return new URL("../../", current).href;
+    } catch (err) {
+      return "";
+    }
+  }
+
+  function pageTargetUrl(page) {
+    if (!page) return "";
+    var path = String(page.path || "").trim();
+    var root = projectRootUrl();
+    if (path && root) {
+      try {
+        return new URL(path.replace(/^\/+/, ""), root).href;
+      } catch (err) {}
+    }
+    var route = String(page.route || "").trim();
+    if (!route) return "";
+    route = route.replace(/^\/+/, "").replace(/^prototype-multipage\//, "");
+    try {
+      return new URL(route, root || document.baseURI || window.location.href).href;
+    } catch (err) {
+      return "";
+    }
+  }
+
   function specFetchUrl(ref) {
     var raw = String(ref || "").trim();
     if (/^https?:\/\//i.test(raw)) return raw;
@@ -2412,12 +2452,12 @@
     }
     persistSpecBrowserPreferences();
     try { window.sessionStorage.setItem(specBrowserReopenKey, pageKey); } catch (err) {}
-    var target = page.route || page.path;
+    var target = pageTargetUrl(page);
     if (!target) {
       updateSpecBrowser();
       return;
     }
-    window.location.assign(new URL(target, window.location.origin).href);
+    window.location.assign(target);
   }
 
   function captureSpecBrowserMarkdown() {
