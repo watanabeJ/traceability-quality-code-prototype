@@ -149,6 +149,16 @@
   ],
   "pages": [
     {
+      "pageKey": "P01",
+      "title": "码段库存",
+      "path": "pages/ops/inventory.html",
+      "route": "/prototype-multipage/pages/ops/inventory.html",
+      "role": [
+        "运营人员"
+      ],
+      "elements": []
+    },
+    {
       "pageKey": "P02",
       "title": "客户列表",
       "path": "pages/ops/customers.html",
@@ -299,7 +309,7 @@
     },
     {
       "pageKey": "P04",
-      "title": "创建订单",
+      "title": "生成码段",
       "path": "pages/ops/create-order.html",
       "route": "/prototype-multipage/pages/ops/create-order.html",
       "role": [
@@ -358,7 +368,7 @@
     },
     {
       "pageKey": "P05",
-      "title": "订单码量台账",
+      "title": "订单台账",
       "path": "pages/ops/orders.html",
       "route": "/prototype-multipage/pages/ops/orders.html",
       "role": [
@@ -466,6 +476,16 @@
           "visible": true
         }
       ]
+    },
+    {
+      "pageKey": "P05A",
+      "title": "库存码段详情",
+      "path": "pages/ops/inventory-detail.html",
+      "route": "/prototype-multipage/pages/ops/inventory-detail.html",
+      "role": [
+        "运营人员"
+      ],
+      "elements": []
     },
     {
       "pageKey": "P06",
@@ -869,7 +889,7 @@
     },
     {
       "pageKey": "P12",
-      "title": "站内信",
+      "title": "运营端站内信",
       "path": "pages/ops/messages.html",
       "route": "/prototype-multipage/pages/ops/messages.html",
       "role": [
@@ -928,7 +948,7 @@
     },
     {
       "pageKey": "P13",
-      "title": "个人设置",
+      "title": "运营端个人设置",
       "path": "pages/ops/settings.html",
       "route": "/prototype-multipage/pages/ops/settings.html",
       "role": [
@@ -1014,7 +1034,7 @@
     },
     {
       "pageKey": "P22",
-      "title": "订单台账",
+      "title": "客户订单台账",
       "path": "pages/customer/orders.html",
       "route": "/prototype-multipage/pages/customer/orders.html",
       "role": [
@@ -1144,7 +1164,7 @@
     },
     {
       "pageKey": "P23",
-      "title": "订单详情",
+      "title": "客户订单详情",
       "path": "pages/customer/order-detail.html",
       "route": "/prototype-multipage/pages/customer/order-detail.html",
       "role": [
@@ -1440,7 +1460,7 @@
     },
     {
       "pageKey": "P27",
-      "title": "站内信",
+      "title": "客户端站内信",
       "path": "pages/customer/messages.html",
       "route": "/prototype-multipage/pages/customer/messages.html",
       "role": [
@@ -1499,7 +1519,7 @@
     },
     {
       "pageKey": "P28",
-      "title": "个人设置",
+      "title": "客户端个人设置",
       "path": "pages/customer/settings.html",
       "route": "/prototype-multipage/pages/customer/settings.html",
       "role": [
@@ -1542,7 +1562,7 @@
     },
     {
       "pageKey": "P31",
-      "title": "扫码展示端",
+      "title": "已激活码",
       "path": "pages/scan/active.html",
       "route": "/prototype-multipage/pages/scan/active.html",
       "role": [
@@ -1620,6 +1640,36 @@
         "pages/scan/inactive.html",
         "pages/scan/reset.html"
       ]
+    },
+    {
+      "pageKey": "P32",
+      "title": "扫码预览",
+      "path": "pages/scan/preview.html",
+      "route": "/prototype-multipage/pages/scan/preview.html",
+      "role": [
+        "消费者"
+      ],
+      "elements": []
+    },
+    {
+      "pageKey": "P33",
+      "title": "未激活码",
+      "path": "pages/scan/inactive.html",
+      "route": "/prototype-multipage/pages/scan/inactive.html",
+      "role": [
+        "消费者"
+      ],
+      "elements": []
+    },
+    {
+      "pageKey": "P34",
+      "title": "已重置码",
+      "path": "pages/scan/reset.html",
+      "route": "/prototype-multipage/pages/scan/reset.html",
+      "role": [
+        "消费者"
+      ],
+      "elements": []
     }
   ]
 }

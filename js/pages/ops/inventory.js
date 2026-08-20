@@ -4,5 +4,5 @@ bootstrapPage({
   "portal": "ops",
   "page": "inventory",
   "title": "码段库存",
-  "pageKey": "P05"
+  "pageKey": "P01"
 });

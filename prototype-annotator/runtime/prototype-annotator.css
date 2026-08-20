@@ -243,6 +243,277 @@
   cursor: crosshair !important;
 }
 
+.pa-spec-browser {
+  position: fixed;
+  z-index: 2147483650;
+  min-width: 640px;
+  min-height: 420px;
+  overflow: hidden;
+  resize: none;
+}
+
+.pa-spec-browser-dialog {
+  width: 100%;
+  height: 100%;
+  min-height: 0;
+  display: flex;
+  flex-direction: column;
+  overflow: hidden;
+  border: 1px solid #8796a8;
+  border-radius: 8px;
+  background: #e8edf3;
+  box-shadow: 0 24px 64px rgba(15, 23, 42, 0.34), 0 0 0 1px rgba(71, 84, 103, 0.12);
+}
+
+.pa-spec-browser-header {
+  min-height: 78px;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 20px;
+  padding: 14px 18px;
+  border-bottom: 1px solid #b8c3cf;
+  background: #edf2f7;
+  cursor: move;
+  user-select: none;
+}
+
+.pa-spec-browser-dragging,
+.pa-spec-browser-dragging .pa-spec-browser-header {
+  cursor: grabbing;
+}
+
+.pa-spec-resize-handle {
+  position: absolute;
+  z-index: 5;
+}
+
+.pa-spec-resize-n,
+.pa-spec-resize-s {
+  right: 14px;
+  left: 14px;
+  height: 8px;
+  cursor: ns-resize;
+}
+
+.pa-spec-resize-n { top: 0; }
+.pa-spec-resize-s { bottom: 0; }
+
+.pa-spec-resize-e,
+.pa-spec-resize-w {
+  top: 14px;
+  bottom: 14px;
+  width: 8px;
+  cursor: ew-resize;
+}
+
+.pa-spec-resize-e { right: 0; }
+.pa-spec-resize-w { left: 0; }
+
+.pa-spec-resize-ne,
+.pa-spec-resize-se,
+.pa-spec-resize-sw,
+.pa-spec-resize-nw {
+  width: 16px;
+  height: 16px;
+}
+
+.pa-spec-resize-ne,
+.pa-spec-resize-sw { cursor: nesw-resize; }
+.pa-spec-resize-se,
+.pa-spec-resize-nw { cursor: nwse-resize; }
+.pa-spec-resize-ne { top: 0; right: 0; }
+.pa-spec-resize-se { right: 0; bottom: 0; }
+.pa-spec-resize-sw { bottom: 0; left: 0; }
+.pa-spec-resize-nw { top: 0; left: 0; }
+
+.pa-spec-resize-ne::after,
+.pa-spec-resize-se::after,
+.pa-spec-resize-sw::after,
+.pa-spec-resize-nw::after {
+  position: absolute;
+  width: 6px;
+  height: 6px;
+  content: "";
+  border-color: rgba(71, 84, 103, 0.58);
+  border-style: solid;
+}
+
+.pa-spec-resize-ne::after {
+  top: 3px;
+  right: 3px;
+  border-width: 1px 1px 0 0;
+}
+
+.pa-spec-resize-se::after {
+  right: 3px;
+  bottom: 3px;
+  border-width: 0 1px 1px 0;
+}
+
+.pa-spec-resize-sw::after {
+  bottom: 3px;
+  left: 3px;
+  border-width: 0 0 1px 1px;
+}
+
+.pa-spec-resize-nw::after {
+  top: 3px;
+  left: 3px;
+  border-width: 1px 0 0 1px;
+}
+
+.pa-spec-browser-kicker {
+  margin-bottom: 3px;
+  color: var(--pa-page-strong);
+  font-size: 11px;
+  font-weight: 800;
+}
+
+.pa-spec-browser-header h2 {
+  margin: 0;
+  font-size: 18px;
+  line-height: 1.3;
+}
+
+.pa-spec-browser-header p {
+  margin: 3px 0 0;
+  color: var(--pa-muted);
+  font-size: 12px;
+}
+
+.pa-spec-browser-actions {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  flex: 0 0 auto;
+}
+
+.pa-spec-browser-switcher {
+  flex: 0 0 auto;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  padding: 10px 16px;
+  border-bottom: 1px solid #b8c3cf;
+  background: #dfe6ee;
+}
+
+.pa-spec-browser-switcher select {
+  flex: 1 1 auto;
+  width: auto;
+  min-width: 0;
+  min-height: 38px;
+  padding: 7px 34px 7px 10px;
+  border: 1px solid rgba(60, 60, 67, 0.2);
+  border-radius: 6px;
+  background: #ffffff;
+  color: var(--pa-text);
+  font: 600 13px/1.4 var(--pa-font);
+}
+
+.pa-spec-editor-toggle {
+  flex: 0 0 auto;
+  min-height: 38px;
+  white-space: nowrap;
+}
+
+.pa-spec-browser-workspace {
+  flex: 1 1 auto;
+  min-width: 0;
+  min-height: 0;
+  display: grid;
+  grid-template-columns: minmax(280px, 0.9fr) minmax(340px, 1.1fr);
+  overflow: hidden;
+  background: #e8edf3;
+}
+
+.pa-spec-browser-editor,
+.pa-spec-browser-preview {
+  min-width: 0;
+  min-height: 0;
+  display: flex;
+  flex-direction: column;
+  overflow: hidden;
+}
+
+.pa-spec-browser-editor {
+  border-right: 1px solid #b8c3cf;
+  background: #eef2f6;
+}
+
+.pa-spec-pane-title {
+  flex: 0 0 auto;
+  min-height: 42px;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 8px;
+  padding: 8px 12px;
+  border-bottom: 1px solid #c4ced8;
+  color: var(--pa-muted);
+  background: #e4eaf1;
+  font-size: 11px;
+  font-weight: 800;
+}
+
+.pa-spec-inline-save {
+  min-height: 30px;
+  padding: 4px 12px;
+  font-size: 12px;
+}
+
+.pa-spec-browser-editor textarea {
+  flex: 1 1 auto;
+  width: 100%;
+  min-height: 0;
+  padding: 16px;
+  border: 0;
+  border-radius: 0;
+  outline: none;
+  resize: none;
+  background: #eef2f6;
+  color: #1d2939;
+  font: 13px/1.65 Consolas, "Microsoft YaHei UI", monospace;
+}
+
+.pa-spec-browser-editor textarea:focus {
+  background: #ffffff;
+  box-shadow: inset 0 0 0 2px rgba(0, 113, 227, 0.2);
+}
+
+.pa-spec-browser-preview {
+  background: #fbfcfe;
+}
+
+.pa-spec-browser.pa-spec-editor-collapsed .pa-spec-browser-workspace {
+  grid-template-columns: minmax(0, 1fr);
+}
+
+.pa-spec-browser.pa-spec-editor-collapsed .pa-spec-browser-editor {
+  display: none;
+}
+
+.pa-spec-browser-content {
+  flex: 1 1 auto;
+  min-width: 0;
+  min-height: 0;
+  overflow: auto;
+  padding: 20px 24px 48px;
+  background: #fbfcfe;
+}
+
+.pa-spec-browser-content > :first-child {
+  margin-top: 0;
+}
+
+.pa-spec-browser-loading {
+  padding: 48px 0;
+  color: var(--pa-muted);
+  text-align: center;
+  font-size: 13px;
+}
+
 .pa-target-flash {
   animation: pa-flash 1400ms ease;
 }
@@ -1121,5 +1392,70 @@
 
   .pa-basic-grid {
     grid-template-columns: 1fr;
+  }
+
+  .pa-spec-browser {
+    top: 8px;
+    right: 8px;
+    bottom: 8px;
+    left: 8px;
+    width: auto;
+    height: auto;
+    min-width: 0;
+    min-height: 0;
+    max-width: none;
+    max-height: none;
+    resize: none;
+  }
+
+  .pa-spec-browser-dialog {
+    width: 100%;
+    height: 100%;
+    min-height: 0;
+  }
+
+  .pa-spec-browser-header {
+    min-height: 68px;
+    align-items: flex-start;
+    padding: 11px 12px;
+  }
+
+  .pa-spec-browser-workspace {
+    grid-template-columns: 1fr;
+    grid-template-rows: minmax(180px, 42%) minmax(0, 58%);
+  }
+
+  .pa-spec-browser.pa-spec-editor-collapsed .pa-spec-browser-workspace {
+    grid-template-rows: minmax(0, 1fr);
+  }
+
+  .pa-spec-resize-handle {
+    display: none;
+  }
+
+  .pa-spec-browser-editor {
+    border-right: 0;
+    border-bottom: 1px solid var(--pa-border);
+  }
+
+  .pa-spec-browser-header h2 {
+    font-size: 16px;
+  }
+
+  .pa-spec-browser-actions .pa-panel-button {
+    display: none;
+  }
+
+  .pa-spec-browser-switcher {
+    padding: 8px 10px;
+  }
+
+  .pa-spec-editor-toggle {
+    min-height: 36px;
+    padding-inline: 10px;
+  }
+
+  .pa-spec-browser-content {
+    padding: 18px 16px 40px;
   }
 }

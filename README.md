@@ -18,6 +18,8 @@
 
 当前系统的全链路业务流程见 [`docs/end-to-end-business-flow.md`](docs/end-to-end-business-flow.md)，Mermaid 可编辑源文件见 [`docs/end-to-end-business-flow.mmd`](docs/end-to-end-business-flow.mmd)。
 
+面向正式开发的业务流程、功能规则、数据字典、权限矩阵、状态流转和后端落地说明见 [`docs/development/README.md`](docs/development/README.md)。
+
 ## 目录结构
 
 ```text

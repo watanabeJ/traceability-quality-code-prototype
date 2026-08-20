@@ -17,6 +17,11 @@
     visible: true,
     editMode: false,
     sidebarOpen: false,
+    specBrowserOpen: false,
+    specBrowserPageKey: null,
+    specBrowserPosition: null,
+    specBrowserSize: null,
+    specBrowserEditorCollapsed: false,
     toolbarCollapsed: false,
     toolbarPosition: null,
     sidebarPosition: null,
@@ -30,15 +35,22 @@
   var toolbar = null;
   var card = null;
   var sidebar = null;
+  var specBrowser = null;
   var mutationObserver = null;
   var renderTimer = null;
   var toolbarDrag = null;
   var sidebarDrag = null;
+  var specBrowserDrag = null;
+  var specBrowserResize = null;
+  var specBrowserResizeObserver = null;
+  var specBrowserPreviewTimer = null;
   var toolbarPrefsKey = "prototype-annotator-toolbar";
   var sidebarPrefsKey = "prototype-annotator-sidebar";
+  var specBrowserPrefsKey = "prototype-annotator-spec-window";
+  var specBrowserReopenKey = "prototype-annotator-spec-reopen";
   // Keep route-aware annotation data isolated from drafts saved by the old path-only runtime.
   var draftStorageKey = "prototype-annotations-draft:route-aware-v3";
-  var specDraftStoragePrefix = "prototype-annotator-spec-draft:";
+  var specDraftStoragePrefix = "prototype-annotator-spec-draft:v2:";
   var sidebarMinHeight = 260;
 
   function $(selector, base) {
@@ -175,6 +187,24 @@
     return state.data.annotations
       .filter(function (ann) { return ann.pageKey === state.pageKey; })
       .sort(function (a, b) { return (a.order || 0) - (b.order || 0) || a.id.localeCompare(b.id); });
+  }
+
+  function pageByKey(pageKey) {
+    return (state.data.pages || []).find(function (page) { return page.pageKey === pageKey; }) || null;
+  }
+
+  function pageSpecAnnotation(pageKey) {
+    return (state.data.annotations || []).find(function (ann) {
+      return ann.pageKey === pageKey && isPageOverviewAnnotation(ann);
+    }) || null;
+  }
+
+  function pagePortal(page) {
+    var path = String(page && page.path || "");
+    if (path.indexOf("/ops/") !== -1) return "运营端";
+    if (path.indexOf("/customer/") !== -1) return "客户端";
+    if (path.indexOf("/scan/") !== -1) return "扫码端";
+    return "其他页面";
   }
 
   function contextAnnotations() {
@@ -803,6 +833,7 @@
     ensureToolbar();
     renderBadges();
     if (!options.skipSidebar) renderSidebar();
+    renderSpecBrowser();
   }
 
   function scheduleRender(options) {
@@ -834,6 +865,7 @@
       '<div class="pa-toolbar-actions">',
       '<button type="button" data-pa-action="toggle-visible" title="显示或隐藏页面上的编号标注">显示标注</button>',
       '<button type="button" data-pa-action="toggle-edit" title="标注模式：点击已有编号编辑标注，点击页面元素新增标注">标注模式</button>',
+      '<button type="button" data-pa-action="requirements" title="打开可编辑的页面需求说明窗口">需求说明</button>',
       '<button type="button" data-pa-action="sidebar" title="打开或关闭标注列表">列表</button>',
       '<button type="button" data-pa-action="export" title="导出 annotations.json">导出</button>',
       "</div>",
@@ -847,10 +879,18 @@
     updateToolbar();
   }
 
+  function openRequirements(pageKey) {
+    state.specBrowserOpen = true;
+    state.specBrowserPageKey = pageByKey(pageKey) ? pageKey : state.pageKey;
+    closeCard();
+    render();
+  }
+
   function updateToolbar() {
     root.classList.toggle("pa-annotations-hidden", !state.visible);
     var visibleBtn = $('[data-pa-action="toggle-visible"]', root);
     var editBtn = $('[data-pa-action="toggle-edit"]', root);
+    var requirementsBtn = $('[data-pa-action="requirements"]', root);
     var sidebarBtn = $('[data-pa-action="sidebar"]', root);
     var toggleBtn = $('[data-pa-action="collapse"]', root);
     var summaryText = $(".pa-toolbar-summary-text", root);
@@ -863,6 +903,10 @@
       editBtn.textContent = state.editMode ? "退出标注" : "标注模式";
       editBtn.classList.toggle("pa-active", state.editMode);
       editBtn.setAttribute("aria-pressed", String(state.editMode));
+    }
+    if (requirementsBtn) {
+      requirementsBtn.classList.toggle("pa-active", state.specBrowserOpen);
+      requirementsBtn.setAttribute("aria-pressed", String(state.specBrowserOpen));
     }
     if (sidebarBtn) {
       sidebarBtn.textContent = state.sidebarOpen ? "关闭列表" : "列表";
@@ -895,6 +939,9 @@
     } else if (action === "sidebar") {
       state.sidebarOpen = !state.sidebarOpen;
       render();
+    } else if (action === "requirements") {
+      if (state.specBrowserOpen) closeSpecBrowser();
+      else openRequirements(state.pageKey);
     } else if (action === "export") {
       exportData();
     } else if (action === "collapse") {
@@ -931,6 +978,23 @@
     }
   }
 
+  function loadSpecBrowserPreferences() {
+    try {
+      var raw = window.localStorage.getItem(specBrowserPrefsKey);
+      if (!raw) return;
+      var prefs = JSON.parse(raw);
+      if (prefs.position && typeof prefs.position.left === "number" && typeof prefs.position.top === "number") {
+        state.specBrowserPosition = { left: prefs.position.left, top: prefs.position.top };
+      }
+      if (prefs.size && typeof prefs.size.width === "number" && typeof prefs.size.height === "number") {
+        state.specBrowserSize = { width: prefs.size.width, height: prefs.size.height };
+      }
+      state.specBrowserEditorCollapsed = !!prefs.editorCollapsed;
+    } catch (err) {
+      // Ignore storage failures.
+    }
+  }
+
   function persistToolbarPreferences() {
     try {
       window.localStorage.setItem(toolbarPrefsKey, JSON.stringify({
@@ -950,6 +1014,225 @@
     } catch (err) {
       // Ignore storage failures.
     }
+  }
+
+  function persistSpecBrowserPreferences() {
+    if (specBrowser && window.innerWidth > 720) {
+      var rect = specBrowser.getBoundingClientRect();
+      state.specBrowserPosition = { left: rect.left, top: rect.top };
+      state.specBrowserSize = { width: rect.width, height: rect.height };
+    }
+    try {
+      window.localStorage.setItem(specBrowserPrefsKey, JSON.stringify({
+        position: state.specBrowserPosition,
+        size: state.specBrowserSize,
+        editorCollapsed: state.specBrowserEditorCollapsed
+      }));
+    } catch (err) {
+      // Ignore storage failures.
+    }
+  }
+
+  function applySpecBrowserGeometry() {
+    if (!specBrowser) return;
+    if (window.innerWidth <= 720) {
+      specBrowser.style.left = "";
+      specBrowser.style.top = "";
+      specBrowser.style.width = "";
+      specBrowser.style.height = "";
+      return;
+    }
+    var width = state.specBrowserSize ? state.specBrowserSize.width : Math.min(920, window.innerWidth - 64);
+    var height = state.specBrowserSize ? state.specBrowserSize.height : Math.min(760, window.innerHeight - 96);
+    width = Math.max(640, width);
+    height = Math.max(420, height);
+    var left = state.specBrowserPosition ? state.specBrowserPosition.left : (window.innerWidth - width) / 2;
+    var top = state.specBrowserPosition ? state.specBrowserPosition.top : (window.innerHeight - height) / 2;
+    state.specBrowserPosition = { left: left, top: top };
+    state.specBrowserSize = { width: width, height: height };
+    specBrowser.style.left = left + "px";
+    specBrowser.style.top = top + "px";
+    specBrowser.style.width = width + "px";
+    specBrowser.style.height = height + "px";
+  }
+
+  function canDragSpecBrowserFrom(target) {
+    if (!specBrowser || !target) return false;
+    if (target.closest("button, a, select, input, textarea")) return false;
+    return !!target.closest("[data-pa-spec-drag-handle]");
+  }
+
+  function startSpecBrowserDrag(pointerId, clientX, clientY) {
+    var rect = specBrowser.getBoundingClientRect();
+    specBrowserDrag = {
+      pointerId: pointerId,
+      startX: clientX,
+      startY: clientY,
+      left: rect.left,
+      top: rect.top,
+      width: rect.width,
+      height: rect.height
+    };
+    specBrowser.classList.add("pa-spec-browser-dragging");
+  }
+
+  function moveSpecBrowserDrag(clientX, clientY) {
+    if (!specBrowserDrag || !specBrowser) return;
+    var left = specBrowserDrag.left + clientX - specBrowserDrag.startX;
+    var top = specBrowserDrag.top + clientY - specBrowserDrag.startY;
+    state.specBrowserPosition = { left: left, top: top };
+    specBrowser.style.left = left + "px";
+    specBrowser.style.top = top + "px";
+  }
+
+  function onSpecBrowserPointerDown(event) {
+    if (!canDragSpecBrowserFrom(event.target) || window.innerWidth <= 720) return;
+    if (event.button != null && event.button !== 0) return;
+    startSpecBrowserDrag(event.pointerId, event.clientX, event.clientY);
+    try { specBrowser.setPointerCapture(event.pointerId); } catch (err) { /* Ignore unsupported capture. */ }
+    document.addEventListener("pointermove", onSpecBrowserPointerMove, true);
+    document.addEventListener("pointerup", onSpecBrowserPointerEnd, true);
+    document.addEventListener("pointercancel", onSpecBrowserPointerEnd, true);
+    event.preventDefault();
+  }
+
+  function onSpecBrowserMouseDown(event) {
+    if (specBrowserDrag || !canDragSpecBrowserFrom(event.target) || window.innerWidth <= 720) return;
+    if (event.button != null && event.button !== 0) return;
+    startSpecBrowserDrag("mouse", event.clientX, event.clientY);
+    document.addEventListener("mousemove", onSpecBrowserMouseMove, true);
+    document.addEventListener("mouseup", onSpecBrowserMouseEnd, true);
+    event.preventDefault();
+  }
+
+  function onSpecBrowserPointerMove(event) {
+    if (!specBrowserDrag || event.pointerId !== specBrowserDrag.pointerId) return;
+    moveSpecBrowserDrag(event.clientX, event.clientY);
+  }
+
+  function onSpecBrowserMouseMove(event) {
+    if (!specBrowserDrag || specBrowserDrag.pointerId !== "mouse") return;
+    moveSpecBrowserDrag(event.clientX, event.clientY);
+  }
+
+  function finishSpecBrowserDrag() {
+    if (!specBrowserDrag) return;
+    if (specBrowser) specBrowser.classList.remove("pa-spec-browser-dragging");
+    specBrowserDrag = null;
+    persistSpecBrowserPreferences();
+  }
+
+  function onSpecBrowserPointerEnd(event) {
+    if (!specBrowserDrag || event.pointerId !== specBrowserDrag.pointerId) return;
+    document.removeEventListener("pointermove", onSpecBrowserPointerMove, true);
+    document.removeEventListener("pointerup", onSpecBrowserPointerEnd, true);
+    document.removeEventListener("pointercancel", onSpecBrowserPointerEnd, true);
+    finishSpecBrowserDrag();
+  }
+
+  function onSpecBrowserMouseEnd() {
+    if (!specBrowserDrag || specBrowserDrag.pointerId !== "mouse") return;
+    document.removeEventListener("mousemove", onSpecBrowserMouseMove, true);
+    document.removeEventListener("mouseup", onSpecBrowserMouseEnd, true);
+    finishSpecBrowserDrag();
+  }
+
+  function startSpecBrowserResize(pointerId, clientX, clientY, direction) {
+    var rect = specBrowser.getBoundingClientRect();
+    specBrowserResize = {
+      pointerId: pointerId,
+      direction: direction,
+      startX: clientX,
+      startY: clientY,
+      left: rect.left,
+      top: rect.top,
+      width: rect.width,
+      height: rect.height
+    };
+    specBrowser.classList.add("pa-spec-browser-resizing");
+  }
+
+  function moveSpecBrowserResize(clientX, clientY) {
+    if (!specBrowserResize || !specBrowser) return;
+    var direction = specBrowserResize.direction;
+    var deltaX = clientX - specBrowserResize.startX;
+    var deltaY = clientY - specBrowserResize.startY;
+    var minWidth = 640;
+    var minHeight = 420;
+    var width = specBrowserResize.width;
+    var height = specBrowserResize.height;
+    var left = specBrowserResize.left;
+    var top = specBrowserResize.top;
+    if (direction.indexOf("e") !== -1) width = Math.max(minWidth, specBrowserResize.width + deltaX);
+    if (direction.indexOf("s") !== -1) height = Math.max(minHeight, specBrowserResize.height + deltaY);
+    if (direction.indexOf("w") !== -1) {
+      width = Math.max(minWidth, specBrowserResize.width - deltaX);
+      left = specBrowserResize.left + specBrowserResize.width - width;
+    }
+    if (direction.indexOf("n") !== -1) {
+      height = Math.max(minHeight, specBrowserResize.height - deltaY);
+      top = specBrowserResize.top + specBrowserResize.height - height;
+    }
+    state.specBrowserPosition = { left: left, top: top };
+    state.specBrowserSize = { width: width, height: height };
+    specBrowser.style.left = left + "px";
+    specBrowser.style.top = top + "px";
+    specBrowser.style.width = width + "px";
+    specBrowser.style.height = height + "px";
+  }
+
+  function onSpecBrowserResizePointerDown(event) {
+    if (window.innerWidth <= 720) return;
+    if (event.button != null && event.button !== 0) return;
+    startSpecBrowserResize(event.pointerId, event.clientX, event.clientY, event.currentTarget.getAttribute("data-pa-spec-resize-handle") || "se");
+    try { event.currentTarget.setPointerCapture(event.pointerId); } catch (err) { /* Ignore unsupported capture. */ }
+    document.addEventListener("pointermove", onSpecBrowserResizePointerMove, true);
+    document.addEventListener("pointerup", onSpecBrowserResizePointerEnd, true);
+    document.addEventListener("pointercancel", onSpecBrowserResizePointerEnd, true);
+    event.preventDefault();
+    event.stopPropagation();
+  }
+
+  function onSpecBrowserResizeMouseDown(event) {
+    if (specBrowserResize || window.innerWidth <= 720) return;
+    if (event.button != null && event.button !== 0) return;
+    startSpecBrowserResize("mouse", event.clientX, event.clientY, event.currentTarget.getAttribute("data-pa-spec-resize-handle") || "se");
+    document.addEventListener("mousemove", onSpecBrowserResizeMouseMove, true);
+    document.addEventListener("mouseup", onSpecBrowserResizeMouseEnd, true);
+    event.preventDefault();
+    event.stopPropagation();
+  }
+
+  function onSpecBrowserResizePointerMove(event) {
+    if (!specBrowserResize || event.pointerId !== specBrowserResize.pointerId) return;
+    moveSpecBrowserResize(event.clientX, event.clientY);
+  }
+
+  function onSpecBrowserResizeMouseMove(event) {
+    if (!specBrowserResize || specBrowserResize.pointerId !== "mouse") return;
+    moveSpecBrowserResize(event.clientX, event.clientY);
+  }
+
+  function finishSpecBrowserResize() {
+    if (!specBrowserResize) return;
+    if (specBrowser) specBrowser.classList.remove("pa-spec-browser-resizing");
+    specBrowserResize = null;
+    persistSpecBrowserPreferences();
+  }
+
+  function onSpecBrowserResizePointerEnd(event) {
+    if (!specBrowserResize || event.pointerId !== specBrowserResize.pointerId) return;
+    document.removeEventListener("pointermove", onSpecBrowserResizePointerMove, true);
+    document.removeEventListener("pointerup", onSpecBrowserResizePointerEnd, true);
+    document.removeEventListener("pointercancel", onSpecBrowserResizePointerEnd, true);
+    finishSpecBrowserResize();
+  }
+
+  function onSpecBrowserResizeMouseEnd() {
+    if (!specBrowserResize || specBrowserResize.pointerId !== "mouse") return;
+    document.removeEventListener("mousemove", onSpecBrowserResizeMouseMove, true);
+    document.removeEventListener("mouseup", onSpecBrowserResizeMouseEnd, true);
+    finishSpecBrowserResize();
   }
 
   function resetSidebarPosition() {
@@ -2077,6 +2360,251 @@
     state.activeId = null;
   }
 
+  function specBrowserGroups() {
+    var groups = [];
+    (state.data.pages || []).forEach(function (page) {
+      var label = pagePortal(page);
+      var group = groups.find(function (item) { return item.label === label; });
+      if (!group) {
+        group = { label: label, pages: [] };
+        groups.push(group);
+      }
+      group.pages.push(page);
+    });
+    return groups;
+  }
+
+  function renderSpecBrowserOptions() {
+    return specBrowserGroups().map(function (group) {
+      return [
+        '<optgroup label="' + escapeHtml(group.label) + '">',
+        group.pages.map(function (page) {
+          return '<option value="' + escapeHtml(page.pageKey) + '">' + escapeHtml(page.title) + ' · ' + escapeHtml(page.pageKey) + '</option>';
+        }).join(""),
+        '</optgroup>'
+      ].join("");
+    }).join("");
+  }
+
+  function closeSpecBrowser() {
+    state.specBrowserOpen = false;
+    state.specBrowserPageKey = null;
+    if (specBrowserPreviewTimer) clearTimeout(specBrowserPreviewTimer);
+    if (specBrowserResizeObserver) specBrowserResizeObserver.disconnect();
+    specBrowserResizeObserver = null;
+    if (specBrowser) specBrowser.remove();
+    specBrowser = null;
+    updateToolbar();
+  }
+
+  function selectSpecBrowserPage(pageKey) {
+    var page = pageByKey(pageKey);
+    if (!page) return;
+    var currentAnnotation = specBrowser && specBrowser.__annotation;
+    var markdown = captureSpecBrowserMarkdown();
+    if (currentAnnotation && markdown !== specBrowser.__loadedMarkdown) {
+      persistSpecDraft(specRefFor(currentAnnotation), markdown, "page-navigation");
+    }
+    state.specBrowserPageKey = pageKey;
+    if (pageKey === state.pageKey) {
+      updateSpecBrowser();
+      return;
+    }
+    persistSpecBrowserPreferences();
+    try { window.sessionStorage.setItem(specBrowserReopenKey, pageKey); } catch (err) {}
+    var target = page.route || page.path;
+    if (!target) {
+      updateSpecBrowser();
+      return;
+    }
+    window.location.assign(new URL(target, window.location.origin).href);
+  }
+
+  function captureSpecBrowserMarkdown() {
+    if (!specBrowser || !specBrowser.__annotation) return "";
+    var editor = $("[data-pa-spec-editor]", specBrowser);
+    var markdown = editor ? editor.value : (specBrowser.__markdown || "");
+    var ref = specRefFor(specBrowser.__annotation);
+    specBrowser.__markdown = markdown;
+    if (ref) state.specCache[ref] = markdown;
+    return markdown;
+  }
+
+  function renderSpecBrowserMarkdown(markdown) {
+    if (!specBrowser) return;
+    var editor = $("[data-pa-spec-editor]", specBrowser);
+    var content = $("[data-pa-spec-content]", specBrowser);
+    specBrowser.__markdown = markdown;
+    specBrowser.__loadedMarkdown = markdown;
+    if (editor && editor.value !== markdown) editor.value = markdown;
+    if (content) {
+      content.innerHTML = renderMarkdown(markdown);
+      content.scrollTop = 0;
+      renderMermaid(content);
+    }
+  }
+
+  function scheduleSpecBrowserPreview(markdown) {
+    if (specBrowserPreviewTimer) clearTimeout(specBrowserPreviewTimer);
+    specBrowserPreviewTimer = setTimeout(function () {
+      if (!specBrowser) return;
+      var content = $("[data-pa-spec-content]", specBrowser);
+      if (!content) return;
+      content.innerHTML = renderMarkdown(markdown);
+      renderMermaid(content);
+    }, 220);
+  }
+
+  function syncSpecBrowserEditorState() {
+    if (!specBrowser) return;
+    specBrowser.classList.toggle("pa-spec-editor-collapsed", state.specBrowserEditorCollapsed);
+    var button = $("[data-pa-spec-toggle-editor]", specBrowser);
+    if (!button) return;
+    button.textContent = state.specBrowserEditorCollapsed ? "展开编辑" : "收起编辑";
+    button.setAttribute("aria-expanded", String(!state.specBrowserEditorCollapsed));
+    button.setAttribute("title", state.specBrowserEditorCollapsed ? "展开 Markdown 编辑区" : "收起 Markdown 编辑区");
+  }
+
+  function toggleSpecBrowserEditor() {
+    captureSpecBrowserMarkdown();
+    state.specBrowserEditorCollapsed = !state.specBrowserEditorCollapsed;
+    syncSpecBrowserEditorState();
+    persistSpecBrowserPreferences();
+  }
+
+  function saveSpecBrowserMarkdown() {
+    if (!specBrowser || !specBrowser.__annotation) return;
+    var annotation = specBrowser.__annotation;
+    var markdown = captureSpecBrowserMarkdown();
+    var saveButton = $("[data-pa-spec-save]", specBrowser);
+    if (saveButton) {
+      saveButton.disabled = true;
+      saveButton.textContent = "保存中...";
+    }
+    persistSpecMarkdown(annotation, markdown).then(function (result) {
+      if (specBrowser) specBrowser.__loadedMarkdown = markdown;
+      toast(result && result.persisted ? "页面说明已保存到 Markdown 文件" : "页面说明已保留为浏览器草稿");
+    }).catch(function (err) {
+      toast("保存失败，内容已保留在编辑器中：" + (err && err.message ? err.message : String(err)));
+    }).finally(function () {
+      if (!saveButton) return;
+      saveButton.disabled = false;
+      saveButton.textContent = "保存";
+    });
+  }
+
+  function updateSpecBrowser() {
+    if (!specBrowser || !state.specBrowserOpen) return;
+    var selectedKey = state.specBrowserPageKey || state.pageKey;
+    var page = pageByKey(selectedKey);
+    if (!page) return;
+    state.specBrowserPageKey = page.pageKey;
+    specBrowser.__pageKey = page.pageKey;
+
+    var pageSelect = $("[data-pa-spec-page-select]", specBrowser);
+    var title = $("[data-pa-spec-title]", specBrowser);
+    var meta = $("[data-pa-spec-meta]", specBrowser);
+    var editor = $("[data-pa-spec-editor]", specBrowser);
+    var content = $("[data-pa-spec-content]", specBrowser);
+    if (pageSelect) pageSelect.value = page.pageKey;
+    if (title) title.textContent = page.title + "需求说明";
+    if (meta) meta.textContent = pagePortal(page) + " · " + page.pageKey;
+    if (!content) return;
+
+    var annotation = pageSpecAnnotation(page.pageKey);
+    specBrowser.__annotation = annotation || null;
+    if (!annotation) {
+      renderSpecBrowserMarkdown("## 暂无需求说明\n\n该页面还没有关联独立 Markdown 文件。");
+      if (editor) editor.disabled = true;
+      return;
+    }
+    if (editor) editor.disabled = false;
+    content.innerHTML = '<div class="pa-spec-browser-loading">正在加载需求说明...</div>';
+    if (editor) editor.value = "正在加载需求说明...";
+    var requestedKey = page.pageKey;
+    loadSpecMarkdown(annotation).then(function (markdown) {
+      if (!specBrowser || state.specBrowserPageKey !== requestedKey) return;
+      renderSpecBrowserMarkdown(markdown);
+    }).catch(function (err) {
+      if (!specBrowser || state.specBrowserPageKey !== requestedKey) return;
+      renderSpecBrowserMarkdown("## 页面说明加载失败\n\n- 文件：" + specRefFor(annotation) + "\n- 错误：" + (err && err.message ? err.message : String(err)));
+    });
+  }
+
+  function renderSpecBrowser() {
+    if (!state.specBrowserOpen) {
+      if (specBrowser) specBrowser.remove();
+      specBrowser = null;
+      return;
+    }
+    if (specBrowser) {
+      var selectedKey = state.specBrowserPageKey || state.pageKey;
+      if (specBrowser.__pageKey !== selectedKey) updateSpecBrowser();
+      return;
+    }
+    specBrowser = document.createElement("div");
+    specBrowser.className = "pa-ui pa-spec-browser";
+    specBrowser.innerHTML = [
+      '<section class="pa-spec-browser-dialog" role="dialog" aria-modal="false" aria-label="页面需求说明编辑窗口">',
+      '<header class="pa-spec-browser-header" data-pa-spec-drag-handle title="拖动需求说明窗口">',
+      '<div><div class="pa-spec-browser-kicker">页面需求</div><h2 data-pa-spec-title>需求说明</h2><p data-pa-spec-meta></p></div>',
+      '<div class="pa-spec-browser-actions"><button type="button" class="pa-icon-button" data-pa-spec-close title="关闭" aria-label="关闭">×</button></div>',
+      '</header>',
+      '<div class="pa-spec-browser-switcher"><select data-pa-spec-page-select aria-label="切换页面需求说明">' + renderSpecBrowserOptions() + '</select><button type="button" class="pa-panel-button pa-spec-editor-toggle" data-pa-spec-toggle-editor aria-expanded="true">收起编辑</button></div>',
+      '<div class="pa-spec-browser-workspace">',
+      '<section class="pa-spec-browser-editor"><div class="pa-spec-pane-title"><span>Markdown 编辑</span><button type="button" class="pa-panel-button pa-primary pa-spec-inline-save" data-pa-spec-save>保存</button></div><textarea data-pa-spec-editor aria-label="编辑页面需求说明"></textarea></section>',
+      '<section class="pa-spec-browser-preview"><div class="pa-spec-pane-title">实时预览</div><article class="pa-spec-browser-content pa-markdown" data-pa-spec-content></article></section>',
+      '</div>',
+      '</section>',
+      '<div class="pa-spec-resize-handle pa-spec-resize-n" data-pa-spec-resize-handle="n" title="向上缩放" aria-hidden="true"></div>',
+      '<div class="pa-spec-resize-handle pa-spec-resize-e" data-pa-spec-resize-handle="e" title="向右缩放" aria-hidden="true"></div>',
+      '<div class="pa-spec-resize-handle pa-spec-resize-s" data-pa-spec-resize-handle="s" title="向下缩放" aria-hidden="true"></div>',
+      '<div class="pa-spec-resize-handle pa-spec-resize-w" data-pa-spec-resize-handle="w" title="向左缩放" aria-hidden="true"></div>',
+      '<div class="pa-spec-resize-handle pa-spec-resize-ne" data-pa-spec-resize-handle="ne" title="向右上缩放" aria-hidden="true"></div>',
+      '<div class="pa-spec-resize-handle pa-spec-resize-se" data-pa-spec-resize-handle="se" title="向右下缩放" aria-hidden="true"></div>',
+      '<div class="pa-spec-resize-handle pa-spec-resize-sw" data-pa-spec-resize-handle="sw" title="向左下缩放" aria-hidden="true"></div>',
+      '<div class="pa-spec-resize-handle pa-spec-resize-nw" data-pa-spec-resize-handle="nw" title="向左上缩放" aria-hidden="true"></div>'
+    ].join("");
+    specBrowser.addEventListener("click", function (event) {
+      if (event.target.closest("[data-pa-spec-close]")) closeSpecBrowser();
+      else if (event.target.closest("[data-pa-spec-save]")) saveSpecBrowserMarkdown();
+      else if (event.target.closest("[data-pa-spec-toggle-editor]")) toggleSpecBrowserEditor();
+    });
+    specBrowser.addEventListener("change", function (event) {
+      if (event.target.matches("[data-pa-spec-page-select]")) selectSpecBrowserPage(event.target.value);
+    });
+    specBrowser.addEventListener("input", function (event) {
+      if (!event.target.matches("[data-pa-spec-editor]")) return;
+      var markdown = event.target.value;
+      specBrowser.__markdown = markdown;
+      if (specBrowser.__annotation) {
+        var ref = specRefFor(specBrowser.__annotation);
+        if (ref) state.specCache[ref] = markdown;
+      }
+      scheduleSpecBrowserPreview(markdown);
+    });
+    specBrowser.addEventListener("pointerdown", onSpecBrowserPointerDown);
+    specBrowser.addEventListener("mousedown", onSpecBrowserMouseDown);
+    $all("[data-pa-spec-resize-handle]", specBrowser).forEach(function (resizeHandle) {
+      resizeHandle.addEventListener("pointerdown", onSpecBrowserResizePointerDown);
+      resizeHandle.addEventListener("mousedown", onSpecBrowserResizeMouseDown);
+    });
+    root.appendChild(specBrowser);
+    applySpecBrowserGeometry();
+    syncSpecBrowserEditorState();
+    if (window.ResizeObserver) {
+      specBrowserResizeObserver = new ResizeObserver(function () {
+        if (!specBrowser || window.innerWidth <= 720 || specBrowserDrag || specBrowserResize) return;
+        var rect = specBrowser.getBoundingClientRect();
+        state.specBrowserSize = { width: rect.width, height: rect.height };
+        state.specBrowserPosition = { left: rect.left, top: rect.top };
+        persistSpecBrowserPreferences();
+      });
+      specBrowserResizeObserver.observe(specBrowser);
+    }
+    updateSpecBrowser();
+  }
+
   function renderMarkdown(markdown) {
     if (window.PrototypeAnnotatorMarkdown) return window.PrototypeAnnotatorMarkdown.render(markdown);
     return "<p>" + escapeHtml(markdown) + "</p>";
@@ -2345,6 +2873,7 @@
     document.addEventListener("keydown", function (event) {
       if (event.key === "Escape") {
         closeCard();
+        if (state.specBrowserOpen) closeSpecBrowser();
         if (state.sidebarOpen) {
           state.sidebarOpen = false;
           render();
@@ -2361,6 +2890,7 @@
     window.addEventListener("resize", function () {
       scheduleRender();
       syncSidebarLayout();
+      if (state.specBrowserOpen) applySpecBrowserGeometry();
       if (state.toolbarPosition) {
         applyToolbarPosition();
         persistToolbarPreferences();
@@ -2405,6 +2935,7 @@
     var nextPageKey = detectPageKey();
     if (!nextPageKey || nextPageKey === state.pageKey) return false;
     state.pageKey = nextPageKey;
+    if (state.specBrowserOpen) state.specBrowserPageKey = nextPageKey;
     closeCard();
     return true;
   }
@@ -2434,6 +2965,14 @@
       state.pageKey = detectPageKey();
       loadToolbarPreferences();
       loadSidebarPreferences();
+      loadSpecBrowserPreferences();
+      try {
+        if (window.sessionStorage.getItem(specBrowserReopenKey)) {
+          window.sessionStorage.removeItem(specBrowserReopenKey);
+          state.specBrowserOpen = true;
+          state.specBrowserPageKey = state.pageKey;
+        }
+      } catch (err) {}
       render();
       setupGlobalEvents();
       window.PrototypeAnnotator = {
@@ -2444,6 +2983,7 @@
           render();
         },
         refresh: render,
+        openRequirements: openRequirements,
         exportData: exportData
       };
     });

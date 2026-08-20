@@ -37,6 +37,15 @@
   },
   "pages": [
     {
+      "pageKey": "P01",
+      "title": "码段库存",
+      "path": "pages/ops/inventory.html",
+      "route": "/prototype-multipage/pages/ops/inventory.html",
+      "role": [
+        "运营人员"
+      ]
+    },
+    {
       "pageKey": "P02",
       "title": "客户列表",
       "path": "pages/ops/customers.html",
@@ -56,7 +65,7 @@
     },
     {
       "pageKey": "P04",
-      "title": "创建订单",
+      "title": "生成码段",
       "path": "pages/ops/create-order.html",
       "route": "/prototype-multipage/pages/ops/create-order.html",
       "role": [
@@ -65,9 +74,18 @@
     },
     {
       "pageKey": "P05",
-      "title": "订单码量台账",
+      "title": "订单台账",
       "path": "pages/ops/orders.html",
       "route": "/prototype-multipage/pages/ops/orders.html",
+      "role": [
+        "运营人员"
+      ]
+    },
+    {
+      "pageKey": "P05A",
+      "title": "库存码段详情",
+      "path": "pages/ops/inventory-detail.html",
+      "route": "/prototype-multipage/pages/ops/inventory-detail.html",
       "role": [
         "运营人员"
       ]
@@ -119,7 +137,7 @@
     },
     {
       "pageKey": "P12",
-      "title": "站内信",
+      "title": "运营端站内信",
       "path": "pages/ops/messages.html",
       "route": "/prototype-multipage/pages/ops/messages.html",
       "role": [
@@ -128,7 +146,7 @@
     },
     {
       "pageKey": "P13",
-      "title": "个人设置",
+      "title": "运营端个人设置",
       "path": "pages/ops/settings.html",
       "route": "/prototype-multipage/pages/ops/settings.html",
       "role": [
@@ -146,7 +164,7 @@
     },
     {
       "pageKey": "P22",
-      "title": "订单台账",
+      "title": "客户订单台账",
       "path": "pages/customer/orders.html",
       "route": "/prototype-multipage/pages/customer/orders.html",
       "role": [
@@ -155,7 +173,7 @@
     },
     {
       "pageKey": "P23",
-      "title": "订单详情",
+      "title": "客户订单详情",
       "path": "pages/customer/order-detail.html",
       "route": "/prototype-multipage/pages/customer/order-detail.html",
       "role": [
@@ -182,7 +200,7 @@
     },
     {
       "pageKey": "P27",
-      "title": "站内信",
+      "title": "客户端站内信",
       "path": "pages/customer/messages.html",
       "route": "/prototype-multipage/pages/customer/messages.html",
       "role": [
@@ -191,7 +209,7 @@
     },
     {
       "pageKey": "P28",
-      "title": "个人设置",
+      "title": "客户端个人设置",
       "path": "pages/customer/settings.html",
       "route": "/prototype-multipage/pages/customer/settings.html",
       "role": [
@@ -200,7 +218,7 @@
     },
     {
       "pageKey": "P31",
-      "title": "扫码展示端",
+      "title": "已激活码",
       "path": "pages/scan/active.html",
       "route": "/prototype-multipage/pages/scan/active.html",
       "role": [
@@ -211,6 +229,33 @@
         "pages/scan/active.html",
         "pages/scan/inactive.html",
         "pages/scan/reset.html"
+      ]
+    },
+    {
+      "pageKey": "P32",
+      "title": "扫码预览",
+      "path": "pages/scan/preview.html",
+      "route": "/prototype-multipage/pages/scan/preview.html",
+      "role": [
+        "消费者"
+      ]
+    },
+    {
+      "pageKey": "P33",
+      "title": "未激活码",
+      "path": "pages/scan/inactive.html",
+      "route": "/prototype-multipage/pages/scan/inactive.html",
+      "role": [
+        "消费者"
+      ]
+    },
+    {
+      "pageKey": "P34",
+      "title": "已重置码",
+      "path": "pages/scan/reset.html",
+      "route": "/prototype-multipage/pages/scan/reset.html",
+      "role": [
+        "消费者"
       ]
     }
   ],
@@ -365,13 +410,12 @@
       "pageKey": "P02",
       "annotationType": "P",
       "target": {
-        "selector": ".page-header h1",
+        "selector": "body",
         "fallbackText": "客户列表",
         "strategy": "css"
       },
-      "title": "客户列表页面说明",
-      "contentMarkdown": "### 页面功能介绍\n\n运营人员维护客户资料、登录状态，并从客户维度查看码量汇总。\n\n### 核心内容\n\n列表展示客户名称、账号、联系电话、状态、总量、已激活、绑定申请中和剩余可用。\n\n### 业务流程\n\n新建或编辑客户后回到列表；可从客户行进入详情、创建订单或切换账号状态。\n\n### 主要操作\n\n字段筛选、状态筛选、重置、导出、新建客户、查看详情、编辑、创建订单、启用或禁用。\n\n### 待确认\n\n当前原型已明确页面操作与状态；后续如接入真实接口，应保持字段口径和状态名称一致。",
-      "maintenancePolicy": "annotation-owned",
+      "title": "客户列表需求说明",
+      "maintenancePolicy": "spec-owned",
       "kind": "note",
       "dimension": "Page overview",
       "topics": [
@@ -400,7 +444,13 @@
       },
       "createdBy": "ai",
       "updatedAt": "2026-08-05T09:00:00Z",
-      "order": 1
+      "order": 1,
+      "specRef": "specs/P02-客户列表.md",
+      "contentSource": {
+        "type": "markdown-file",
+        "ref": "specs/P02-客户列表.md",
+        "format": "markdown"
+      }
     },
     {
       "id": "ANN-P02-002",
@@ -899,13 +949,12 @@
       "pageKey": "P03",
       "annotationType": "P",
       "target": {
-        "selector": ".page-header h1",
+        "selector": "body",
         "fallbackText": "客户详情",
         "strategy": "css"
       },
-      "title": "客户详情页面说明",
-      "contentMarkdown": "### 页面功能介绍\n\n从客户列表进入，集中查看客户完整资料和全部订单。\n\n### 核心内容\n\n上半区展示客户资料、账号状态和已激活产品数量；下半区展示该客户全部订单及码量状态。\n\n### 业务流程\n\n可返回客户列表、为启用客户创建订单，或从订单操作进入绑定和订单详情。\n\n### 主要操作\n\n返回、创建订单、查看订单、绑定产品。\n\n### 待确认\n\n当前原型已明确页面操作与状态；后续接入真实接口时，应保持字段口径、状态名称和权限边界一致。",
-      "maintenancePolicy": "annotation-owned",
+      "title": "客户详情需求说明",
+      "maintenancePolicy": "spec-owned",
       "kind": "note",
       "dimension": "Page overview",
       "topics": [
@@ -934,7 +983,13 @@
       },
       "createdBy": "ai",
       "updatedAt": "2026-08-07T02:51:59Z",
-      "order": 1
+      "order": 1,
+      "specRef": "specs/P03-客户详情.md",
+      "contentSource": {
+        "type": "markdown-file",
+        "ref": "specs/P03-客户详情.md",
+        "format": "markdown"
+      }
     },
     {
       "id": "ANN-P03-002",
@@ -1082,13 +1137,12 @@
       "pageKey": "P04",
       "annotationType": "P",
       "target": {
-        "selector": ".page-header h1",
+        "selector": "body",
         "fallbackText": "创建订单",
         "strategy": "css"
       },
-      "title": "创建订单页面说明",
-      "contentMarkdown": "### 页面功能介绍\n\n为启用客户创建连续序列号订单并生成二维码压缩包。\n\n### 核心内容\n\n表单包含客户选择、生成数量、备注、序列号预览、二维码样式、印刷尺寸和实时预览。\n\n### 业务流程\n\n选择客户并填写订单信息，创建成功后可查看订单、下载二维码压缩包或完成返回订单台账。\n\n### 主要操作\n\n字段筛选客户、填写数量与备注、选择二维码样式和尺寸、创建订单、查看生成订单、下载、完成。\n\n### 待确认\n\n当前原型已明确页面操作与状态；后续如接入真实接口，应保持字段口径和状态名称一致。",
-      "maintenancePolicy": "annotation-owned",
+      "title": "生成码段需求说明",
+      "maintenancePolicy": "spec-owned",
       "kind": "note",
       "dimension": "Page overview",
       "topics": [
@@ -1117,7 +1171,13 @@
       },
       "createdBy": "ai",
       "updatedAt": "2026-08-05T09:00:00Z",
-      "order": 1
+      "order": 1,
+      "specRef": "specs/P04-生成码段.md",
+      "contentSource": {
+        "type": "markdown-file",
+        "ref": "specs/P04-生成码段.md",
+        "format": "markdown"
+      }
     },
     {
       "id": "ANN-P04-002",
@@ -1360,13 +1420,12 @@
       "pageKey": "P05",
       "annotationType": "P",
       "target": {
-        "selector": ".page-header h1",
+        "selector": "body",
         "fallbackText": "订单码量台账",
         "strategy": "css"
       },
-      "title": "订单码量台账页面说明",
-      "contentMarkdown": "### 页面功能介绍\n\n按订单核对客户码段额度、激活量、绑定申请中数量和剩余可用量。\n\n### 核心内容\n\n每行展示订单号、客户名称、创建时间、序列号范围、总量及三种码量状态。\n\n### 业务流程\n\n可创建订单、筛选和排序，点击客户返回客户列表，点击绑定申请中查看明细，或进入订单详情。\n\n### 主要操作\n\n创建订单、导出、字段筛选、日期筛选、数值排序、客户跳转、绑定产品、查看详情。\n\n### 待确认\n\n当前原型已明确页面操作与状态；后续如接入真实接口，应保持字段口径和状态名称一致。",
-      "maintenancePolicy": "annotation-owned",
+      "title": "订单台账需求说明",
+      "maintenancePolicy": "spec-owned",
       "kind": "note",
       "dimension": "Page overview",
       "topics": [
@@ -1395,7 +1454,13 @@
       },
       "createdBy": "ai",
       "updatedAt": "2026-08-05T09:00:00Z",
-      "order": 1
+      "order": 1,
+      "specRef": "specs/P05-订单台账.md",
+      "contentSource": {
+        "type": "markdown-file",
+        "ref": "specs/P05-订单台账.md",
+        "format": "markdown"
+      }
     },
     {
       "id": "ANN-P05-002",
@@ -1919,13 +1984,12 @@
       "pageKey": "P06",
       "annotationType": "P",
       "target": {
-        "selector": ".page-header h1",
+        "selector": "body",
         "fallbackText": "订单详情",
         "strategy": "css"
       },
-      "title": "订单详情页面说明",
-      "contentMarkdown": "### 页面功能介绍\n\n查看单笔订单完整信息与统一的产品绑定记录。\n\n### 核心内容\n\n订单信息展示总量、已激活、绑定申请中和剩余可用；绑定记录展示产品、大类、批次、码段、数量、操作人、时间和状态。\n\n### 业务流程\n\n可继续绑定产品；根据状态进入绑定审核详情、查看只读资料、预览码、编辑退回记录或查看撤回重置原因。\n\n### 主要操作\n\n返回台账、绑定产品、搜索和筛选绑定记录、查看或编辑产品资料、预览码、审核、撤回产品、查看重置原因。\n\n### 待确认\n\n当前原型已明确页面操作与状态；后续接入真实接口时，应保持字段口径、状态名称和权限边界一致。",
-      "maintenancePolicy": "annotation-owned",
+      "title": "订单详情需求说明",
+      "maintenancePolicy": "spec-owned",
       "kind": "note",
       "dimension": "Page overview",
       "topics": [
@@ -1954,7 +2018,13 @@
       },
       "createdBy": "ai",
       "updatedAt": "2026-08-07T02:51:59Z",
-      "order": 1
+      "order": 1,
+      "specRef": "specs/P06-订单详情.md",
+      "contentSource": {
+        "type": "markdown-file",
+        "ref": "specs/P06-订单详情.md",
+        "format": "markdown"
+      }
     },
     {
       "id": "ANN-P06-002",
@@ -2270,13 +2340,12 @@
       "pageKey": "P08",
       "annotationType": "P",
       "target": {
-        "selector": ".page-header h1",
+        "selector": "body",
         "fallbackText": "绑定审核详情",
         "strategy": "css"
       },
-      "title": "绑定审核详情页面说明",
-      "contentMarkdown": "### 页面功能介绍\n\n统一核对产品资料和本次绑定信息，并执行审核、查看或材料编辑。\n\n### 核心内容\n\n五个产品资料模块按扫码端展示顺序呈现；审核动作同时关联订单、申请数量与申请码段。\n\n### 业务流程\n\n从绑定审核列表或订单详情进入；待审核记录可通过并激活或驳回，已激活记录可查看或由运营端编辑材料。\n\n### 主要操作\n\n返回绑定审核、切换资料模块、预览码、编辑材料、通过并激活、驳回。\n\n### 待确认\n\n当前原型已明确页面操作与状态；后续接入真实接口时，应保持字段口径、状态名称和权限边界一致。",
-      "maintenancePolicy": "annotation-owned",
+      "title": "绑定审核详情需求说明",
+      "maintenancePolicy": "spec-owned",
       "kind": "note",
       "dimension": "Page overview",
       "topics": [
@@ -2305,7 +2374,13 @@
       },
       "createdBy": "ai",
       "updatedAt": "2026-08-07T02:51:59Z",
-      "order": 1
+      "order": 1,
+      "specRef": "specs/P08-绑定审核详情.md",
+      "contentSource": {
+        "type": "markdown-file",
+        "ref": "specs/P08-绑定审核详情.md",
+        "format": "markdown"
+      }
     },
     {
       "id": "ANN-P08-002",
@@ -2839,13 +2914,12 @@
       "pageKey": "P09",
       "annotationType": "P",
       "target": {
-        "selector": ".page-header h1",
+        "selector": "body",
         "fallbackText": "绑定审核",
         "strategy": "css"
       },
-      "title": "绑定审核页面说明",
-      "contentMarkdown": "### 页面功能介绍\n\n统一审核产品资料、关联订单、申请数量与绑定码段。\n\n### 核心内容\n\n列表展示产品名称、批次、大类、客户、订单、申请码段、数量、时间、状态和操作。\n\n### 业务流程\n\n待审核记录进入详情同步审核产品与绑定信息；已激活和已驳回记录进入相同详情查看，符合权限的记录可编辑材料。\n\n### 主要操作\n\n字段筛选、产品大类筛选、数量排序、日期筛选、状态筛选、查看订单、审核、查看、编辑。\n\n### 待确认\n\n当前原型已明确页面操作与状态；后续接入真实接口时，应保持字段口径、状态名称和权限边界一致。",
-      "maintenancePolicy": "annotation-owned",
+      "title": "绑定审核需求说明",
+      "maintenancePolicy": "spec-owned",
       "kind": "note",
       "dimension": "Page overview",
       "topics": [
@@ -2874,7 +2948,13 @@
       },
       "createdBy": "ai",
       "updatedAt": "2026-08-07T02:51:59Z",
-      "order": 1
+      "order": 1,
+      "specRef": "specs/P09-绑定审核.md",
+      "contentSource": {
+        "type": "markdown-file",
+        "ref": "specs/P09-绑定审核.md",
+        "format": "markdown"
+      }
     },
     {
       "id": "ANN-P09-002",
@@ -3279,13 +3359,12 @@
       "pageKey": "P10",
       "annotationType": "P",
       "target": {
-        "selector": ".page-header h1",
+        "selector": "body",
         "fallbackText": "撤回审核",
         "strategy": "css"
       },
-      "title": "撤回审核页面说明",
-      "contentMarkdown": "### 页面功能介绍\n\n审批客户针对某一产品的一个或多个已绑码段发起的撤回申请。\n\n### 核心内容\n\n列表明确展示产品、批次、具体撤回码段、客户、原因、申请时间、状态和操作。\n\n### 业务流程\n\n待审批记录通过时再次核对具体码段并逐段重置；驳回时填写原因，处理结果自动通知客户。\n\n### 主要操作\n\n字段筛选、日期筛选、状态筛选、查看具体码段、通过、驳回和查看处理结果。\n\n### 待确认\n\n当前原型已明确页面操作与状态；后续接入真实接口时，应保持字段口径、状态名称和权限边界一致。",
-      "maintenancePolicy": "annotation-owned",
+      "title": "撤回审核需求说明",
+      "maintenancePolicy": "spec-owned",
       "kind": "note",
       "dimension": "Page overview",
       "topics": [
@@ -3314,7 +3393,13 @@
       },
       "createdBy": "ai",
       "updatedAt": "2026-08-07T02:51:59Z",
-      "order": 1
+      "order": 1,
+      "specRef": "specs/P10-撤回审核.md",
+      "contentSource": {
+        "type": "markdown-file",
+        "ref": "specs/P10-撤回审核.md",
+        "format": "markdown"
+      }
     },
     {
       "id": "ANN-P10-002",
@@ -3640,13 +3725,12 @@
       "pageKey": "P11",
       "annotationType": "P",
       "target": {
-        "selector": ".page-header h1",
+        "selector": "body",
         "fallbackText": "运营账号管理",
         "strategy": "css"
       },
-      "title": "运营账号管理页面说明",
-      "contentMarkdown": "### 页面功能介绍\n\n维护运营人员登录账号、状态和密码。\n\n### 核心内容\n\n列表展示姓名、账号、状态；当前登录账号不能在列表中禁用自身。\n\n### 业务流程\n\n新建或编辑账号后返回列表；状态切换和密码重置均经过确认。\n\n### 主要操作\n\n字段筛选、重置、状态筛选、新建、编辑、启用或禁用、重置密码。\n\n### 待确认\n\n当前原型已明确页面操作与状态；后续如接入真实接口，应保持字段口径和状态名称一致。",
-      "maintenancePolicy": "annotation-owned",
+      "title": "运营账号管理需求说明",
+      "maintenancePolicy": "spec-owned",
       "kind": "note",
       "dimension": "Page overview",
       "topics": [
@@ -3675,7 +3759,13 @@
       },
       "createdBy": "ai",
       "updatedAt": "2026-08-05T09:00:00Z",
-      "order": 1
+      "order": 1,
+      "specRef": "specs/P11-运营账号管理.md",
+      "contentSource": {
+        "type": "markdown-file",
+        "ref": "specs/P11-运营账号管理.md",
+        "format": "markdown"
+      }
     },
     {
       "id": "ANN-P11-002",
@@ -3877,13 +3967,12 @@
       "pageKey": "P12",
       "annotationType": "P",
       "target": {
-        "selector": ".page-header h1",
+        "selector": "body",
         "fallbackText": "站内信",
         "strategy": "css"
       },
-      "title": "站内信页面说明",
-      "contentMarkdown": "### 页面功能介绍\n\n查看系统向客户发送的审核、绑定和撤回结果通知。\n\n### 核心内容\n\n列表展示标题、摘要、接收客户、发送时间、类型和客户阅读状态。\n\n### 业务流程\n\n通过筛选定位消息，点击标题或摘要打开信件详情；可勾选后批量删除。\n\n### 主要操作\n\n字段筛选、日期和类型筛选、勾选、批量删除、查看信件。\n\n### 待确认\n\n当前原型已明确页面操作与状态；后续如接入真实接口，应保持字段口径和状态名称一致。",
-      "maintenancePolicy": "annotation-owned",
+      "title": "运营端站内信需求说明",
+      "maintenancePolicy": "spec-owned",
       "kind": "note",
       "dimension": "Page overview",
       "topics": [
@@ -3912,7 +4001,13 @@
       },
       "createdBy": "ai",
       "updatedAt": "2026-08-05T09:00:00Z",
-      "order": 1
+      "order": 1,
+      "specRef": "specs/P12-运营端站内信.md",
+      "contentSource": {
+        "type": "markdown-file",
+        "ref": "specs/P12-运营端站内信.md",
+        "format": "markdown"
+      }
     },
     {
       "id": "ANN-P12-002",
@@ -4145,13 +4240,12 @@
       "pageKey": "P13",
       "annotationType": "P",
       "target": {
-        "selector": ".page-header h1",
+        "selector": "body",
         "fallbackText": "个人设置",
         "strategy": "css"
       },
-      "title": "个人设置页面说明",
-      "contentMarkdown": "### 页面功能介绍\n\n运营人员查看当前账号并修改自己的登录密码。\n\n### 核心内容\n\n密码表单包含当前密码、新密码和确认密码，右侧展示当前账号信息。\n\n### 业务流程\n\n输入原密码和两次新密码，校验成功后保存；下一次登录使用新密码。\n\n### 主要操作\n\n填写密码、保存密码、通过顶部按钮退出登录。\n\n### 待确认\n\n当前原型已明确页面操作与状态；后续如接入真实接口，应保持字段口径和状态名称一致。",
-      "maintenancePolicy": "annotation-owned",
+      "title": "运营端个人设置需求说明",
+      "maintenancePolicy": "spec-owned",
       "kind": "note",
       "dimension": "Page overview",
       "topics": [
@@ -4180,7 +4274,13 @@
       },
       "createdBy": "ai",
       "updatedAt": "2026-08-05T09:00:00Z",
-      "order": 1
+      "order": 1,
+      "specRef": "specs/P13-运营端个人设置.md",
+      "contentSource": {
+        "type": "markdown-file",
+        "ref": "specs/P13-运营端个人设置.md",
+        "format": "markdown"
+      }
     },
     {
       "id": "ANN-P13-002",
@@ -4329,13 +4429,12 @@
       "pageKey": "P21",
       "annotationType": "P",
       "target": {
-        "selector": ".page-header h1",
+        "selector": "body",
         "fallbackText": "数据概览",
         "strategy": "css"
       },
-      "title": "数据概览页面说明",
-      "contentMarkdown": "### 页面功能介绍\n\n客户查看本企业订单与码量的实时汇总。\n\n### 核心内容\n\n五个指标展示订单总量、码段总量、已激活、绑定申请中和剩余可用；下方展示最近订单与绑定申请状态。\n\n### 业务流程\n\n点击指标、最近订单或申请状态进入订单台账和订单详情。\n\n### 主要操作\n\n指标下钻、最近订单排序与跳转、查看绑定申请状态。\n\n### 待确认\n\n当前原型已明确页面操作与状态；后续接入真实接口时，应保持字段口径、状态名称和权限边界一致。",
-      "maintenancePolicy": "annotation-owned",
+      "title": "数据概览需求说明",
+      "maintenancePolicy": "spec-owned",
       "kind": "note",
       "dimension": "Page overview",
       "topics": [
@@ -4364,7 +4463,13 @@
       },
       "createdBy": "ai",
       "updatedAt": "2026-08-07T02:51:59Z",
-      "order": 1
+      "order": 1,
+      "specRef": "specs/P21-数据概览.md",
+      "contentSource": {
+        "type": "markdown-file",
+        "ref": "specs/P21-数据概览.md",
+        "format": "markdown"
+      }
     },
     {
       "id": "ANN-P21-002",
@@ -4512,13 +4617,12 @@
       "pageKey": "P22",
       "annotationType": "P",
       "target": {
-        "selector": ".page-header h1",
+        "selector": "body",
         "fallbackText": "订单台账",
         "strategy": "css"
       },
-      "title": "订单台账页面说明",
-      "contentMarkdown": "### 页面功能介绍\n\n客户查看本企业订单码量和统一产品绑定申请情况。\n\n### 核心内容\n\n订单行展示总量、已激活、绑定申请中和剩余可用，并提供申请绑定与详情入口。\n\n### 业务流程\n\n发起申请时先选择绑定已有产品或新建产品并绑定；两种方式均预览申请码段并进入统一绑定审核。\n\n### 主要操作\n\n日期筛选、码量排序、导出、查看申请中明细、选择绑定方式、提交绑定申请和进入订单详情。\n\n### 待确认\n\n当前原型已明确页面操作与状态；后续接入真实接口时，应保持字段口径、状态名称和权限边界一致。",
-      "maintenancePolicy": "annotation-owned",
+      "title": "客户订单台账需求说明",
+      "maintenancePolicy": "spec-owned",
       "kind": "note",
       "dimension": "Page overview",
       "topics": [
@@ -4547,7 +4651,13 @@
       },
       "createdBy": "ai",
       "updatedAt": "2026-08-07T02:51:59Z",
-      "order": 1
+      "order": 1,
+      "specRef": "specs/P22-客户订单台账.md",
+      "contentSource": {
+        "type": "markdown-file",
+        "ref": "specs/P22-客户订单台账.md",
+        "format": "markdown"
+      }
     },
     {
       "id": "ANN-P22-002",
@@ -5155,13 +5265,12 @@
       "pageKey": "P23",
       "annotationType": "P",
       "target": {
-        "selector": ".page-header h1",
+        "selector": "body",
         "fallbackText": "订单详情",
         "strategy": "css"
       },
-      "title": "订单详情页面说明",
-      "contentMarkdown": "### 页面功能介绍\n\n客户查看本企业单笔订单信息和统一产品绑定记录。\n\n### 核心内容\n\n订单信息展示四类码量；绑定记录统一展示产品、批次、码段、数量、操作人、时间、状态和状态化操作。\n\n### 业务流程\n\n可返回、继续申请绑定，并按草稿、待审核、已激活或已驳回状态编辑、查看、预览、提交或撤回。\n\n### 主要操作\n\n返回、申请绑定、编辑或查看产品、预览码、提交审核、撤回申请、撤回产品、查看重置原因。\n\n### 待确认\n\n当前原型已明确页面操作与状态；后续接入真实接口时，应保持字段口径、状态名称和权限边界一致。",
-      "maintenancePolicy": "annotation-owned",
+      "title": "客户订单详情需求说明",
+      "maintenancePolicy": "spec-owned",
       "kind": "note",
       "dimension": "Page overview",
       "topics": [
@@ -5190,7 +5299,13 @@
       },
       "createdBy": "ai",
       "updatedAt": "2026-08-07T02:51:59Z",
-      "order": 1
+      "order": 1,
+      "specRef": "specs/P23-客户订单详情.md",
+      "contentSource": {
+        "type": "markdown-file",
+        "ref": "specs/P23-客户订单详情.md",
+        "format": "markdown"
+      }
     },
     {
       "id": "ANN-P23-002",
@@ -5459,13 +5574,12 @@
       "pageKey": "P25",
       "annotationType": "P",
       "target": {
-        "selector": ".page-header h1",
+        "selector": "body",
         "fallbackText": "产品编辑与查看",
         "strategy": "css"
       },
-      "title": "产品编辑与查看页面说明",
-      "contentMarkdown": "### 页面功能介绍\n\n按六个模块维护或只读查看产品资料与绑定设置。\n\n### 核心内容\n\n前五个模块对应扫码端产品内容，第六个绑定设置展示只读关联订单、申请数量、可用范围提示和申请码段预览。\n\n### 业务流程\n\n从订单申请入口或绑定记录进入；草稿和已驳回可编辑，待审核和已激活只读；保存草稿或提交后返回订单上下文。\n\n### 主要操作\n\n返回、切换六个模块、编辑字段、上传附件、保存草稿、预览码和提交统一绑定审核。\n\n### 待确认\n\n当前原型已明确页面操作与状态；后续接入真实接口时，应保持字段口径、状态名称和权限边界一致。",
-      "maintenancePolicy": "annotation-owned",
+      "title": "产品编辑与查看需求说明",
+      "maintenancePolicy": "spec-owned",
       "kind": "note",
       "dimension": "Page overview",
       "topics": [
@@ -5494,7 +5608,13 @@
       },
       "createdBy": "ai",
       "updatedAt": "2026-08-07T02:51:59Z",
-      "order": 1
+      "order": 1,
+      "specRef": "specs/P25-产品编辑与查看.md",
+      "contentSource": {
+        "type": "markdown-file",
+        "ref": "specs/P25-产品编辑与查看.md",
+        "format": "markdown"
+      }
     },
     {
       "id": "ANN-P25-002",
@@ -6183,13 +6303,12 @@
       "pageKey": "P26",
       "annotationType": "P",
       "target": {
-        "selector": ".page-header h1",
+        "selector": "body",
         "fallbackText": "撤回申请",
         "strategy": "css"
       },
-      "title": "撤回申请页面说明",
-      "contentMarkdown": "### 页面功能介绍\n\n客户对已激活产品的一个或多个已绑码段发起撤回申请并跟踪结果。\n\n### 核心内容\n\n列表展示申请编号、产品、批次、具体码段、原因、申请时间、状态和处理说明。\n\n### 业务流程\n\n选择产品后单选、多选或全选已绑码段，填写原因提交；运营端审核通过后仅重置所选码段。\n\n### 主要操作\n\n发起申请、日期筛选、选择产品、勾选码段、全选、填写原因、提交和查看结果。\n\n### 待确认\n\n当前原型已明确页面操作与状态；后续接入真实接口时，应保持字段口径、状态名称和权限边界一致。",
-      "maintenancePolicy": "annotation-owned",
+      "title": "撤回申请需求说明",
+      "maintenancePolicy": "spec-owned",
       "kind": "note",
       "dimension": "Page overview",
       "topics": [
@@ -6218,7 +6337,13 @@
       },
       "createdBy": "ai",
       "updatedAt": "2026-08-07T02:51:59Z",
-      "order": 1
+      "order": 1,
+      "specRef": "specs/P26-撤回申请.md",
+      "contentSource": {
+        "type": "markdown-file",
+        "ref": "specs/P26-撤回申请.md",
+        "format": "markdown"
+      }
     },
     {
       "id": "ANN-P26-002",
@@ -6600,13 +6725,12 @@
       "pageKey": "P27",
       "annotationType": "P",
       "target": {
-        "selector": ".page-header h1",
+        "selector": "body",
         "fallbackText": "站内信",
         "strategy": "css"
       },
-      "title": "站内信页面说明",
-      "contentMarkdown": "### 页面功能介绍\n\n客户接收产品审核、绑定和撤回处理结果。\n\n### 核心内容\n\n列表展示阅读状态、标题、摘要、接收时间和消息类型。\n\n### 业务流程\n\n筛选或搜索消息，点击标题或摘要阅读完整通知；可批量标记已读或删除。\n\n### 主要操作\n\n字段筛选、日期与类型筛选、勾选、批量已读、批量删除和查看信件。\n\n### 待确认\n\n当前原型已明确页面操作与状态；后续如接入真实接口，应保持字段口径和状态名称一致。",
-      "maintenancePolicy": "annotation-owned",
+      "title": "客户端站内信需求说明",
+      "maintenancePolicy": "spec-owned",
       "kind": "note",
       "dimension": "Page overview",
       "topics": [
@@ -6635,7 +6759,13 @@
       },
       "createdBy": "ai",
       "updatedAt": "2026-08-05T09:00:00Z",
-      "order": 1
+      "order": 1,
+      "specRef": "specs/P27-客户端站内信.md",
+      "contentSource": {
+        "type": "markdown-file",
+        "ref": "specs/P27-客户端站内信.md",
+        "format": "markdown"
+      }
     },
     {
       "id": "ANN-P27-002",
@@ -6868,13 +6998,12 @@
       "pageKey": "P28",
       "annotationType": "P",
       "target": {
-        "selector": ".page-header h1",
+        "selector": "body",
         "fallbackText": "个人设置",
         "strategy": "css"
       },
-      "title": "个人设置页面说明",
-      "contentMarkdown": "### 页面功能介绍\n\n客户查看当前企业账号并修改自己的登录密码。\n\n### 核心内容\n\n密码表单和当前账号信息仅作用于本企业登录主体。\n\n### 业务流程\n\n验证当前密码，输入并确认新密码后保存；下次登录使用新密码。\n\n### 主要操作\n\n填写密码、保存密码和退出登录。\n\n### 待确认\n\n当前原型已明确页面操作与状态；后续如接入真实接口，应保持字段口径和状态名称一致。",
-      "maintenancePolicy": "annotation-owned",
+      "title": "客户端个人设置需求说明",
+      "maintenancePolicy": "spec-owned",
       "kind": "note",
       "dimension": "Page overview",
       "topics": [
@@ -6903,7 +7032,13 @@
       },
       "createdBy": "ai",
       "updatedAt": "2026-08-05T09:00:00Z",
-      "order": 1
+      "order": 1,
+      "specRef": "specs/P28-客户端个人设置.md",
+      "contentSource": {
+        "type": "markdown-file",
+        "ref": "specs/P28-客户端个人设置.md",
+        "format": "markdown"
+      }
     },
     {
       "id": "ANN-P28-002",
@@ -7052,7 +7187,7 @@
       "pageKey": "P31",
       "annotationType": "P",
       "target": {
-        "selector": ".scan-shell .mobile-topbar h1",
+        "selector": "body",
         "fallbackText": "扫码展示端",
         "strategy": "css",
         "boundsHint": {
@@ -7060,9 +7195,8 @@
           "text": "扫码展示端"
         }
       },
-      "title": "扫码展示端页面说明",
-      "contentMarkdown": "### 页面功能介绍\n\n消费者扫描单码后查看公开产品资料和当前码状态。\n\n### 核心内容\n\n已激活码展示产品主图、码号和动态资料；未激活、已重置与预览状态分别展示对应说明。\n\n### 业务流程\n\n系统识别单码状态；已激活进入资料浏览，图片可查看，PDF 直接嵌入展示。\n\n### 主要操作\n\n切换资料模块、展开更多字段、查看图片和直接阅读 PDF。\n\n### 待确认\n\n当前原型已明确页面操作与状态；后续接入真实接口时，应保持字段口径、状态名称和权限边界一致。",
-      "maintenancePolicy": "annotation-owned",
+      "title": "已激活码需求说明",
+      "maintenancePolicy": "spec-owned",
       "kind": "note",
       "dimension": "Page overview",
       "topics": [
@@ -7091,7 +7225,13 @@
       },
       "createdBy": "ai",
       "updatedAt": "2026-08-07T02:51:59Z",
-      "order": 1
+      "order": 1,
+      "specRef": "specs/P31-已激活码.md",
+      "contentSource": {
+        "type": "markdown-file",
+        "ref": "specs/P31-已激活码.md",
+        "format": "markdown"
+      }
     },
     {
       "id": "ANN-P31-002",
@@ -7401,6 +7541,111 @@
         "fallbackText": "扫码状态"
       },
       "contentMarkdown": "### 状态说明\n\n预览码用于客户提交前自查效果；已激活码展示正式产品信息；未激活码提示尚未关联产品；已重置码提示原绑定信息已撤回。\n\n### 业务规则\n\n只有审核通过并激活的码段才进入正式展示；撤回通过后的码段进入已重置状态，等待后续重新绑定。"
+    },
+    {
+      "id": "ANN-P01-001",
+      "pageKey": "P01",
+      "annotationType": "P",
+      "target": {
+        "selector": "body"
+      },
+      "title": "码段库存需求说明",
+      "visible": true,
+      "kind": "note",
+      "priority": "medium",
+      "createdBy": "ai",
+      "order": 1,
+      "specRef": "specs/P01-码段库存.md",
+      "contentSource": {
+        "type": "markdown-file",
+        "ref": "specs/P01-码段库存.md",
+        "format": "markdown"
+      },
+      "maintenancePolicy": "spec-owned"
+    },
+    {
+      "id": "ANN-P05A-001",
+      "pageKey": "P05A",
+      "annotationType": "P",
+      "target": {
+        "selector": "body"
+      },
+      "title": "库存码段详情需求说明",
+      "visible": true,
+      "kind": "note",
+      "priority": "medium",
+      "createdBy": "ai",
+      "order": 1,
+      "specRef": "specs/P05A-库存码段详情.md",
+      "contentSource": {
+        "type": "markdown-file",
+        "ref": "specs/P05A-库存码段详情.md",
+        "format": "markdown"
+      },
+      "maintenancePolicy": "spec-owned"
+    },
+    {
+      "id": "ANN-P32-001",
+      "pageKey": "P32",
+      "annotationType": "P",
+      "target": {
+        "selector": "body"
+      },
+      "title": "扫码预览需求说明",
+      "visible": true,
+      "kind": "note",
+      "priority": "medium",
+      "createdBy": "ai",
+      "order": 1,
+      "specRef": "specs/P32-扫码预览.md",
+      "contentSource": {
+        "type": "markdown-file",
+        "ref": "specs/P32-扫码预览.md",
+        "format": "markdown"
+      },
+      "maintenancePolicy": "spec-owned"
+    },
+    {
+      "id": "ANN-P33-001",
+      "pageKey": "P33",
+      "annotationType": "P",
+      "target": {
+        "selector": "body"
+      },
+      "title": "未激活码需求说明",
+      "visible": true,
+      "kind": "note",
+      "priority": "medium",
+      "createdBy": "ai",
+      "order": 1,
+      "specRef": "specs/P33-未激活码.md",
+      "contentSource": {
+        "type": "markdown-file",
+        "ref": "specs/P33-未激活码.md",
+        "format": "markdown"
+      },
+      "maintenancePolicy": "spec-owned"
+    },
+    {
+      "id": "ANN-P34-001",
+      "pageKey": "P34",
+      "annotationType": "P",
+      "target": {
+        "selector": "body"
+      },
+      "title": "已重置码需求说明",
+      "visible": true,
+      "kind": "note",
+      "priority": "medium",
+      "createdBy": "ai",
+      "order": 1,
+      "specRef": "specs/P34-已重置码.md",
+      "contentSource": {
+        "type": "markdown-file",
+        "ref": "specs/P34-已重置码.md",
+        "format": "markdown"
+      },
+      "maintenancePolicy": "spec-owned"
     }
   ],
   "root": "C:\\Users\\钟长鸿\\Documents\\溯源系统\\prototype-multipage"

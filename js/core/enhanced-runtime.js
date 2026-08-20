@@ -33,6 +33,7 @@ render = function () {
     syncCurrentRoute();
     if (window.lucide) { window.lucide.createIcons({ attrs: { "aria-hidden": "true" } }); document.documentElement.classList.add("icons-loaded"); }
     restorePortalSwitcherPosition();
+    if (state.portal === "scan" && typeof fxSetupScanSticky === "function") fxSetupScanSticky();
   };
 
   function fxEnhanceCustomerDocumentLinks() {

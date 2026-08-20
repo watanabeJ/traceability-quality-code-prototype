@@ -139,6 +139,60 @@ const fxScanParams = new URLSearchParams(location.search);
   function fxScanBrandBanner() {
     return `<div class="scan-brand-banner"><img src="assets/scan-brand-banner.png?v=v6q9x3cz" alt="溯源质控码追溯系统"></div>`;
   }
+  let fxScanStickyCleanup = null;
+  function fxSetupScanSticky() {
+    if (fxScanStickyCleanup) fxScanStickyCleanup();
+    fxScanStickyCleanup = null;
+
+    const shell = document.querySelector(".scan-shell");
+    const topbar = shell?.querySelector(".mobile-topbar");
+    const info = shell?.querySelector(".scan-sticky-info");
+    if (!shell || !topbar || !info) return;
+
+    const topbarPlaceholder = document.createElement("div");
+    const infoPlaceholder = document.createElement("div");
+    topbarPlaceholder.className = "scan-sticky-placeholder";
+    infoPlaceholder.className = "scan-sticky-placeholder";
+    topbar.before(topbarPlaceholder);
+    info.before(infoPlaceholder);
+
+    let frame = 0;
+    const sync = () => {
+      frame = 0;
+      const shellRect = shell.getBoundingClientRect();
+      const fixedLeft = `${shellRect.left + shell.clientLeft}px`;
+      const fixedWidth = `${shell.clientWidth}px`;
+      shell.style.setProperty("--scan-fixed-left", fixedLeft);
+      shell.style.setProperty("--scan-fixed-width", fixedWidth);
+
+      const pinTopbar = topbarPlaceholder.getBoundingClientRect().top <= 0;
+      topbar.classList.toggle("is-scroll-fixed", pinTopbar);
+      topbarPlaceholder.style.height = pinTopbar ? `${topbar.offsetHeight}px` : "0px";
+
+      const pinInfo = infoPlaceholder.getBoundingClientRect().top <= 48;
+      info.classList.toggle("is-scroll-fixed", pinInfo);
+      infoPlaceholder.style.height = pinInfo ? `${info.offsetHeight}px` : "0px";
+    };
+    const schedule = () => {
+      if (!frame) frame = requestAnimationFrame(sync);
+    };
+
+    window.addEventListener("scroll", schedule, { passive: true });
+    window.addEventListener("resize", schedule, { passive: true });
+    document.addEventListener("scroll", schedule, true);
+    sync();
+
+    fxScanStickyCleanup = () => {
+      if (frame) cancelAnimationFrame(frame);
+      window.removeEventListener("scroll", schedule);
+      window.removeEventListener("resize", schedule);
+      document.removeEventListener("scroll", schedule, true);
+      topbar.classList.remove("is-scroll-fixed");
+      info.classList.remove("is-scroll-fixed");
+      topbarPlaceholder.remove();
+      infoPlaceholder.remove();
+    };
+  }
   scanActive = function () {
     const tabs = fxScanModules.filter(([, , , visible]) => visible(fxScanDetails));
     if (!tabs.some(([key]) => key === state.scanTab)) state.scanTab = tabs[0]?.[0] || "product";
@@ -149,7 +203,7 @@ const fxScanParams = new URLSearchParams(location.search);
       : fxRequestedSerial
         ? `<div class="scan-meta"><div><span>总查询次数</span><strong>${formatNumber(state.scanCount || 1)}</strong></div><div><span>溯源质控码</span><strong class="mono">${fxEscape(fxRequestedSerial)}</strong></div></div>`
         : `<div class="scan-preview-note">当前为扫码端演示入口；扫描溯源质控码后将按单码记录查询次数。</div>`;
-    return `<div class="scan-shell"><div class="mobile-topbar"><span></span><h1>溯源质控码</h1><span></span></div>${fxScanBrandBanner()}<div class="product-summary">${statusMeta}<h2>${fxEscape(fxScanDetails.productName || "未命名产品")}</h2>${scanMeta}</div><nav class="tabs" aria-label="溯源内容模块">${tabs.map(([key, label]) => `<button type="button" class="tab ${state.scanTab === key ? "active" : ""}" data-action="scan-tab" data-tab="${key}">${label}</button>`).join("")}</nav><div class="scan-content">${active ? active[2]() : `<section class="content-section"><div class="empty"><h3>暂无公开资料</h3><p>当前产品尚未配置可展示内容。</p></div></section>`}</div></div>`;
+    return `<div class="scan-shell"><div class="mobile-topbar"><span></span><h1>溯源质控码</h1><span></span></div>${fxScanBrandBanner()}<div class="scan-sticky-info"><div class="product-summary">${statusMeta}<h2>${fxEscape(fxScanDetails.productName || "未命名产品")}</h2>${scanMeta}</div><nav class="tabs" aria-label="溯源内容模块">${tabs.map(([key, label]) => `<button type="button" class="tab ${state.scanTab === key ? "active" : ""}" data-action="scan-tab" data-tab="${key}">${label}</button>`).join("")}</nav></div><div class="scan-content">${active ? active[2]() : `<section class="content-section"><div class="empty"><h3>暂无公开资料</h3><p>当前产品尚未配置可展示内容。</p></div></section>`}</div></div>`;
   };
   scanStateMarkup = function (type) {
     const inactive = type === "inactive";
