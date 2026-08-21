@@ -248,7 +248,6 @@ document.addEventListener("click", (event) => {
     return;
   }
   if (action === "open-design") return window.open("../DESIGN/preview.html", "_blank");
-  if (action === "show-notifications") return setNav("messages");
   if (action === "refresh") return showToast("数据已刷新");
   if (action === "export") return showToast("导出任务已创建");
   if (action === "download") return showToast("下载已开始");

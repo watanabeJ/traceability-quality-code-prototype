@@ -24,13 +24,19 @@ function globalBar() {
   const currentUser = state.portal === "customer"
     ? customers.find(item => item.account === state.currentAccount)
     : fxOperators.find(item => item.account === state.currentAccount);
-  const accountName = currentUser?.name?.slice(0, 2) || "账号";
-  const currentCustomer = state.portal === "customer" ? currentUser : null;
-  const unread = state.portal === "customer" ? messages.filter(item => item.unread && (!item.recipient || item.recipient === currentCustomer?.name)).length : messages.filter(item => item.unread).length;
-  const unreadBadge = unread ? `<span class="notification-badge" aria-label="${unread} 条未读消息">${unread > 99 ? "99+" : unread}</span>` : "";
+  const accountName = currentUser?.name || "当前账号";
   const accountActions = state.portal === "scan" ? "" : `
-        <button class="icon-button notification-button" type="button" title="${unread ? `${unread} 条未读消息` : "暂无未读消息"}" aria-label="${unread ? `通知，${unread} 条未读消息` : "通知，无未读消息"}" data-action="show-notifications">${icon("bell", "!")}${unreadBadge}</button>
-        <button class="avatar avatar-button" type="button" data-nav="settings" title="个人设置" aria-label="打开个人设置">${accountName}</button>`;
+        <details class="account-menu">
+          <summary class="account-menu-trigger" aria-label="账号菜单">
+            <span class="avatar account-menu-avatar">${icon("user", "人")}</span>
+            <span class="account-menu-name">${fxEscape(accountName)}</span>
+            ${icon("chevron-down", "⌄", "account-menu-chevron")}
+          </summary>
+          <div class="account-menu-panel">
+            <button type="button" class="account-menu-item" data-action="fx-open-password-modal">${icon("key-round", "⚿")}<span>修改密码</span></button>
+            <button type="button" class="account-menu-item danger" data-action="fx-logout">${icon("log-out", "↩")}<span>退出登录</span></button>
+          </div>
+        </details>`;
   return `
     <header class="global-bar">
       <div class="brand">

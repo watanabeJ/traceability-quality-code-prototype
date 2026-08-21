@@ -11,7 +11,7 @@ const pageFiles = {
   customer: { overview: "pages/customer/overview.html", orders: "pages/customer/orders.html", "order-detail": "pages/customer/order-detail.html", editor: "pages/customer/editor.html", withdrawals: "pages/customer/withdrawals.html", messages: "pages/customer/messages.html", settings: "pages/customer/settings.html" },
 };
 
-const pageTitles = Object.fromEntries([["ops:customers","溯源质控码平台 · 客户列表"],["ops:customer-detail","溯源质控码平台 · 客户详情"],["ops:codes","溯源质控码平台 · 生成码段"],["ops:inventory","溯源质控码平台 · 码段库存"],["ops:inventory-detail","溯源质控码平台 · 库存码段详情"],["ops:orders","溯源质控码平台 · 订单台账"],["ops:order-detail","溯源质控码平台 · 订单详情"],["ops:review-detail","溯源质控码平台 · 绑定审核详情"],["ops:bind-requests","溯源质控码平台 · 绑定审核"],["ops:withdrawals","溯源质控码平台 · 撤回审核"],["ops:operators","溯源质控码平台 · 运营账号管理"],["ops:messages","溯源质控码平台 · 站内信"],["ops:settings","溯源质控码平台 · 个人设置"],["customer:overview","溯源质控码平台 · 数据概览"],["customer:orders","溯源质控码平台 · 订单台账"],["customer:order-detail","溯源质控码平台 · 订单详情"],["customer:editor","溯源质控码平台 · 产品编辑与查看"],["customer:withdrawals","溯源质控码平台 · 撤回申请"],["customer:messages","溯源质控码平台 · 站内信"],["customer:settings","溯源质控码平台 · 个人设置"]]);
+const pageTitles = Object.fromEntries([["ops:customers","溯源质控码平台 · 客户列表"],["ops:customer-detail","溯源质控码平台 · 客户详情"],["ops:codes","溯源质控码平台 · 生成码段"],["ops:inventory","溯源质控码平台 · 码段库存"],["ops:inventory-detail","溯源质控码平台 · 库存码段详情"],["ops:orders","溯源质控码平台 · 订单台账"],["ops:order-detail","溯源质控码平台 · 订单详情"],["ops:review-detail","溯源质控码平台 · 绑定审核详情"],["ops:bind-requests","溯源质控码平台 · 绑定审核"],["ops:withdrawals","溯源质控码平台 · 撤回审核"],["ops:operators","溯源质控码平台 · 运营账号管理"],["ops:messages","溯源质控码平台 · 站内信"],["ops:settings","溯源质控码平台 · 修改登录密码"],["customer:overview","溯源质控码平台 · 数据概览"],["customer:orders","溯源质控码平台 · 订单台账"],["customer:order-detail","溯源质控码平台 · 订单详情"],["customer:editor","溯源质控码平台 · 产品编辑与查看"],["customer:withdrawals","溯源质控码平台 · 撤回申请"],["customer:messages","溯源质控码平台 · 站内信"],["customer:settings","溯源质控码平台 · 修改登录密码"]]);
 
 const entryPortal = portalEntries[document.body.dataset.entryPortal] ? document.body.dataset.entryPortal : "ops";
 const initialPage = document.body.dataset.initialPage || (entryPortal === "customer" ? "overview" : "inventory");
@@ -81,14 +81,12 @@ const nav = {
     ["withdrawals", "rotate-ccw", "撤回审核"],
     ["operators", "users-round", "运营账号管理"],
     ["messages", "mail", "站内信"],
-    ["settings", "settings", "个人设置"],
   ],
   customer: [
     ["overview", "layout-dashboard", "数据概览"],
     ["orders", "receipt-text", "订单台账"],
     ["withdrawals", "rotate-ccw", "撤回申请"],
     ["messages", "mail", "站内信"],
-    ["settings", "settings", "个人设置"],
   ],
 };
 

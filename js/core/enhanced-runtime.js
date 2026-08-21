@@ -20,10 +20,13 @@ render = function () {
     if (entryPortal !== "scan" && !state.authenticated) app.innerHTML = fxLoginPage(entryPortal);
     else app.innerHTML = state.portal === "ops" ? renderOps() : state.portal === "customer" ? renderCustomer() : renderScan();
     fxEnhanceCustomerDocumentLinks();
+    fxEnhanceAccountForms(app);
     if ((state.portal === "ops" && state.opsPage === "messages") || (state.portal === "customer" && state.customerPage === "messages")) app.insertAdjacentHTML("beforeend", fxMessageCalendar());
     if (state.portal === "ops" && state.opsPage === "operators") app.insertAdjacentHTML("beforeend", fxOperatorCalendar());
     if (state.portal === "ops" && ["inventory", "orders"].includes(state.opsPage)) app.insertAdjacentHTML("beforeend", fxOrderCalendar());
-    if ((state.portal === "ops" && ["inventory-detail", "bind-requests", "withdrawals", "reviews", "order-detail"].includes(state.opsPage)) || (state.portal === "customer" && ["orders", "products", "withdrawals"].includes(state.customerPage))) app.insertAdjacentHTML("beforeend", fxCustomerCalendar());
+    if ((state.portal === "ops" && ["inventory-detail", "bind-requests", "withdrawals", "reviews", "order-detail"].includes(state.opsPage)) || (state.portal === "customer" && ["orders", "products", "withdrawals", "order-detail"].includes(state.customerPage))) app.insertAdjacentHTML("beforeend", fxCustomerCalendar());
+    fxExtractTableFilters(app);
+    fxSyncFilterPlaceholders(app);
     normalizeRenderedControls(app);
     numberRenderedTables(app);
     numberRenderedLists(app);
@@ -35,6 +38,95 @@ render = function () {
     restorePortalSwitcherPosition();
     if (state.portal === "scan" && typeof fxSetupScanSticky === "function") fxSetupScanSticky();
   };
+
+  function fxExtractTableFilters(root) {
+    root.querySelectorAll("table").forEach(table => {
+      const filterHeadings = [...table.querySelectorAll("thead .table-heading")].filter(heading =>
+        heading.querySelector(".header-filter-control:not(.header-sort-button)")
+      );
+      if (!filterHeadings.length) return;
+
+      const localSection = table.closest(".detail-section");
+      const page = table.closest(".page");
+      let toolbar = localSection?.querySelector(":scope > .toolbar") || page?.querySelector(":scope > .toolbar");
+      if (!toolbar) {
+        toolbar = document.createElement("div");
+        toolbar.className = "toolbar list-filter-toolbar";
+        const shell = table.closest(".table-shell, .panel");
+        shell?.parentElement?.insertBefore(toolbar, shell);
+      }
+      if (!toolbar) return;
+
+      let filters = toolbar.querySelector(".filters");
+      if (!filters) {
+        filters = document.createElement("div");
+        filters.className = "filters extracted-table-filters";
+        toolbar.prepend(filters);
+      } else {
+        filters.classList.add("extracted-table-filters");
+      }
+      const resetButton = filters.querySelector(".list-reset-button");
+
+      filterHeadings.forEach(heading => {
+        const label = heading.querySelector(":scope > span")?.textContent.trim() || "筛选";
+        const control = heading.querySelector(".header-filter-control:not(.header-sort-button)");
+        const select = control.querySelector("select");
+        let field;
+        if (select) {
+          field = document.createElement("label");
+          field.className = "toolbar-filter-field";
+          const fieldLabel = document.createElement("span");
+          fieldLabel.className = "filter-field-label";
+          fieldLabel.textContent = label;
+          field.append(fieldLabel, select);
+        } else {
+          field = document.createElement("div");
+          field.className = "toolbar-date-range-field";
+          const fieldLabel = document.createElement("span");
+          fieldLabel.className = "filter-field-label";
+          fieldLabel.textContent = label;
+          control.classList.remove("header-filter-control", "operator-date-trigger", "order-date-trigger", "message-date-trigger");
+          control.classList.add("toolbar-date-filter", "toolbar-date-range-trigger");
+          control.title = `筛选${label}`;
+          control.setAttribute("aria-label", `筛选${label}`);
+          const rangeText = document.createElement("span");
+          rangeText.className = "toolbar-date-range-text";
+          rangeText.textContent = fxToolbarDateRangeText(control);
+          control.classList.toggle("is-placeholder", rangeText.textContent === "请选择");
+          control.prepend(rangeText);
+          field.append(fieldLabel, control);
+        }
+        filters.insertBefore(field, resetButton);
+        heading.replaceWith(label);
+      });
+    });
+  }
+
+  function fxToolbarDateRangeText(control) {
+    const action = control?.dataset?.action || "";
+    if (action === "fx-open-order-calendar") return fxFormatToolbarDateRange(state.orderFrom, state.orderTo);
+    if (action === "fx-open-operator-calendar") return fxFormatToolbarDateRange(state.operatorDateFrom, state.operatorDateTo);
+    if (action === "fx-open-message-calendar") return fxFormatToolbarDateRange(state.messageDateFrom, state.messageDateTo);
+    if (action === "fx-open-customer-calendar" && typeof fxCustomerDateRange === "function") {
+      const range = fxCustomerDateRange(control.dataset.dateContext || "");
+      return fxFormatToolbarDateRange(range.from, range.to);
+    }
+    return "请选择";
+  }
+
+  function fxFormatToolbarDateRange(from, to) {
+    if (from && to) return from === to ? from : `${from} 至 ${to}`;
+    if (from) return `${from} 起`;
+    if (to) return `截至 ${to}`;
+    return "请选择";
+  }
+
+  function fxSyncFilterPlaceholders(root) {
+    root.querySelectorAll(".filters select").forEach(select => {
+      const selectedText = select.selectedOptions?.[0]?.textContent?.trim() || select.value || "";
+      select.classList.toggle("is-placeholder", /^(全部|请选择)/.test(selectedText));
+    });
+  }
 
   function fxEnhanceCustomerDocumentLinks() {
     if (entryPortal !== "ops" || state.opsPage !== "customer-detail") return;
@@ -62,6 +154,33 @@ render = function () {
       }
       container.replaceChildren(link);
     });
+  }
+
+  function fxEnhanceAccountForms(root) {
+    const password = root.querySelector("#fx-customer-password");
+    const name = root.querySelector("#fx-customer-name");
+    const account = root.querySelector("#fx-customer-account:not(:disabled)");
+    const phone = root.querySelector("#fx-customer-phone");
+    if (name) name.placeholder = "请输入客户名称";
+    if (account) {
+      account.placeholder = "请输入登录账号";
+      account.minLength = 4; account.maxLength = 20; account.pattern = "[A-Za-z0-9_]{4,20}";
+    }
+    if (phone) {
+      phone.placeholder = "请输入手机号"; phone.inputMode = "tel"; phone.maxLength = 13;
+      const label = phone.closest(".field")?.querySelector("label"); if (label) label.textContent = "手机号";
+    }
+    if (!password) return;
+    password.placeholder = "请输入密码"; password.minLength = 8; password.maxLength = 20;
+    const passwordField = password.closest(".field");
+    if (passwordField && !passwordField.querySelector(".field-help")) {
+      const help = document.createElement("span"); help.className = "field-help"; help.textContent = "密码长度为8～20位，需包含字母和数字"; passwordField.append(help);
+    }
+    if (!root.querySelector("#fx-customer-confirm-password") && passwordField) {
+      const confirmField = document.createElement("div"); confirmField.className = "field full";
+      confirmField.innerHTML = `<label class="required" for="fx-customer-confirm-password">确认密码</label><input id="fx-customer-confirm-password" type="password" minlength="8" maxlength="20" value="${fxEscape(password.value)}" autocomplete="new-password" placeholder="请再次输入密码">`;
+      passwordField.after(confirmField);
+    }
   }
 
   window.addEventListener("storage", event => {
@@ -176,6 +295,61 @@ render = function () {
   });
 
   function fxRead(id) { return document.getElementById(id)?.value?.trim() || ""; }
+  function fxLoginAccountError(account) {
+    if (!account) return "请输入账号";
+    if (!/^[A-Za-z0-9_]{4,20}$/.test(account)) return "账号长度为4～20位，仅支持字母、数字和下划线";
+    return "";
+  }
+  function fxLoginPasswordError(password) {
+    if (!password) return "请输入密码";
+    if (password.length < 8 || password.length > 20) return "密码长度为8～20位";
+    return "";
+  }
+  function fxRegistrationAccountError(account) {
+    if (!account) return "请输入登录账号";
+    if (!/^[A-Za-z0-9_]{4,20}$/.test(account)) return "账号长度为4～20位，仅支持字母、数字和下划线";
+    return "";
+  }
+  function fxRegistrationPasswordError(password) {
+    if (!password) return "请输入密码";
+    if (password.length < 8) return "密码长度不能少于8位";
+    if (password.length > 20) return "密码长度不能超过20位";
+    if (!/[A-Za-z]/.test(password) || !/\d/.test(password)) return "密码需包含字母和数字";
+    return "";
+  }
+  function fxOperatorNameError(name) {
+    if (!name) return "请输入用户名";
+    if (name.length < 2) return "用户名长度不能少于2位";
+    if (name.length > 20) return "用户名长度不能超过20位";
+    if (!/^[\u4E00-\u9FFFA-Za-z0-9]+$/.test(name)) return "用户名仅支持中文、字母和数字";
+    return "";
+  }
+  function fxMobileError(phone) {
+    if (!phone) return "请输入手机号";
+    if (!/^1[3-9]\d{9}$/.test(phone.replace(/\s+/g, ""))) return "请输入正确的手机号";
+    return "";
+  }
+  function fxAccountExists(account, currentId = null, type = "") {
+    return fxOperators.some(item => item.account === account && !(type === "operator" && Number(item.id) === Number(currentId)))
+      || customers.some(item => item.account === account && !(type === "customer" && Number(item.id) === Number(currentId)));
+  }
+  function fxCustomerAccountSubmissionError() {
+    const item = customers.find(row => row.id === state.selectedCustomerId);
+    const name = fxRead("fx-customer-name"), account = item?.account || fxRead("fx-customer-account"), phone = fxRead("fx-customer-phone");
+    if (!name) return "请输入客户名称";
+    if (!item) {
+      const accountError = fxRegistrationAccountError(account); if (accountError) return accountError;
+      if (fxAccountExists(account)) return "该账号已存在，请更换其他账号";
+    }
+    const phoneError = fxMobileError(phone); if (phoneError) return phoneError;
+    if (!item) {
+      const password = fxRead("fx-customer-password"), confirmPassword = fxRead("fx-customer-confirm-password");
+      const passwordError = fxRegistrationPasswordError(password); if (passwordError) return passwordError;
+      if (!confirmPassword) return "请再次输入密码";
+      if (password !== confirmPassword) return "两次输入的密码不一致";
+    }
+    return "";
+  }
   function fxOpenConfirm(data) { state.modalData = data; state.modal = "fx-confirm"; render(); }
   function fxGeneratedBatchNo() { return state.generatedCodeBatchNo || state.generatedOrderNo || ""; }
   function fxSetGeneratedBatchNo(value) {
@@ -523,6 +697,7 @@ render = function () {
       if (entryPortal === "ops" && !fxEnabledOperatorSession()) return showToast("当前运营账号状态异常，请重新登录");
       if (entryPortal === "customer" && !fxEnabledCustomerSession()) return showToast("当前客户账号状态异常，请重新登录");
     }
+    if (action === "fx-open-password-modal") { state.modal = "fx-password"; return render(); }
     if (action === "fx-toggle-withdrawal-ranges") {
       const popover = document.getElementById(target.dataset.popoverId || "");
       if (!popover || typeof popover.showPopover !== "function") return;
@@ -590,14 +765,26 @@ render = function () {
     }
     if (action === "fx-select-allocation-range") return;
     if (action === "fx-toggle-scan-fields") { const module = target.dataset.module; state.scanExpandedModules = { ...(state.scanExpandedModules || {}), [module]: !state.scanExpandedModules?.[module] }; return render(); }
-    if (action === "fx-login") { const account = fxRead("fx-login-account"), password = fxRead("fx-login-password"); const list = entryPortal === "ops" ? fxOperators : customers; const user = list.find(item => item.account === account); if (!user || user.password !== password) return showToast("账号或密码错误"); if (user.status !== "启用") return showToast("该账号已禁用，请联系管理员"); state.authenticated = true; state.currentAccount = user.account; fxStore.sessionSet(`trace-auth-${entryPortal}`, "1"); fxStore.sessionSet(`trace-account-${entryPortal}`, user.account); state.modal = null; state.modalData = null; state.selectedOrderNo = null; state.selectedBindRequestId = null; state.selectedWithdrawalIndex = null; state.drawerProductId = null; state.editorProductId = null; state.editorDraft = null; fxClearEditorBinding(); restoreFromLocation(); render(); return showToast("登录成功"); }
+    if (action === "fx-login") {
+      const account = fxRead("fx-login-account"), password = fxRead("fx-login-password");
+      const accountError = fxLoginAccountError(account); if (accountError) return showToast(accountError);
+      const passwordError = fxLoginPasswordError(password); if (passwordError) return showToast(passwordError);
+      const list = entryPortal === "ops" ? fxOperators : customers;
+      const user = list.find(item => item.account === account);
+      if (!user) return showToast("账号不存在，请检查后重试");
+      if (user.status === "锁定") return showToast("当前账号已被锁定，请联系管理员");
+      if (user.status !== "启用") return showToast("当前账号已被禁用，请联系管理员");
+      if (user.password !== password) return showToast("账号或密码错误");
+      state.authenticated = true; state.currentAccount = user.account; fxStore.sessionSet(`trace-auth-${entryPortal}`, "1"); fxStore.sessionSet(`trace-account-${entryPortal}`, user.account); state.modal = null; state.modalData = null; state.selectedOrderNo = null; state.selectedBindRequestId = null; state.selectedWithdrawalIndex = null; state.drawerProductId = null; state.editorProductId = null; state.editorDraft = null; fxClearEditorBinding(); restoreFromLocation(); render(); return showToast("登录成功");
+    }
     if (action === "fx-logout") { state.authenticated = false; fxStore.sessionSet(`trace-auth-${entryPortal}`, "0"); state.modal = null; state.modalData = null; state.selectedOrderNo = null; state.selectedBindRequestId = null; state.selectedWithdrawalIndex = null; state.drawerProductId = null; state.editorProductId = null; state.editorDraft = null; fxClearEditorBinding(); render(); return; }
     if (action === "fx-new-operator") { if (!fxEnabledOperatorSession()) return showToast("当前账号无权执行此操作"); state.selectedOperatorId = null; state.modal = "fx-operator"; return render(); }
     if (action === "fx-edit-operator") { if (!fxEnabledOperatorSession()) return showToast("当前账号无权执行此操作"); state.selectedOperatorId = Number(target.dataset.id); state.modal = "fx-operator"; return render(); }
     if (action === "fx-confirm-operator") {
       if (!fxEnabledOperatorSession()) return showToast("当前账号无权执行此操作");
       const name = fxRead("fx-operator-name"); let item = fxOperators.find(row => row.id === state.selectedOperatorId); const account = item?.account || fxRead("fx-operator-account");
-      if (!name || !account) return showToast("请填写姓名和登录账号");
+      const nameError = fxOperatorNameError(name); if (nameError) return showToast(nameError);
+      if (!item) { const accountError = fxRegistrationAccountError(account); if (accountError) return showToast(accountError); }
       if (item) {
         if (fxIsCurrentOperator(item)) {
           item.name = name;
@@ -611,13 +798,14 @@ render = function () {
           item.name = name;
         }
       } else {
-        if (fxOperators.some(row => row.account === account)) return showToast("登录账号已存在");
-        const password = fxRead("fx-operator-password"); if (password.length < 8) return showToast("初始密码至少 8 位");
+        if (fxAccountExists(account)) return showToast("该账号已存在，请更换其他账号");
+        const password = fxRead("fx-operator-password"); const passwordError = fxRegistrationPasswordError(password); if (passwordError) return showToast(passwordError);
+        const confirmPassword = fxRead("fx-operator-confirm-password"); if (!confirmPassword) return showToast("请再次输入密码"); if (password !== confirmPassword) return showToast("两次输入的密码不一致");
         fxOperators.unshift({ id: Date.now(), name, account, password, status: "启用", lastLogin: "尚未登录" });
       }
       fxSaveOperators(); state.modal = null; render(); return showToast("运营账号已保存");
     }
-    if (action === "fx-reset-operator-password") { if (!fxEnabledOperatorSession()) return showToast("当前账号无权执行此操作"); const item = fxOperators.find(row => row.id === Number(target.dataset.id)); if (!item) return showToast("运营账号不存在"); if (fxIsCurrentOperator(item)) return showToast("当前账号请在个人设置中修改密码"); state.modalData = { kind: "reset-operator", id: item.id, requiresPassword: true, title: "重置运营账号密码", subtitle: "重置其他运营账号密码前，需要验证当前登录密码。", subject: `${item.name}（${item.account}）`, operation: "重置为初始密码 Trace@2026", danger: true }; state.modal = "fx-confirm"; return render(); }
+    if (action === "fx-reset-operator-password") { if (!fxEnabledOperatorSession()) return showToast("当前账号无权执行此操作"); const item = fxOperators.find(row => row.id === Number(target.dataset.id)); if (!item) return showToast("运营账号不存在"); if (fxIsCurrentOperator(item)) return showToast("当前账号请点击右上角头像修改密码"); state.modalData = { kind: "reset-operator", id: item.id, requiresPassword: true, title: "重置运营账号密码", subtitle: "重置其他运营账号密码前，需要验证当前登录密码。", subject: `${item.name}（${item.account}）`, operation: "重置为初始密码 Trace@2026", danger: true }; state.modal = "fx-confirm"; return render(); }
     if (action === "fx-toggle-operator") {
       if (!fxEnabledOperatorSession()) return showToast("当前账号无权执行此操作");
       const item = fxOperators.find(row => row.id === Number(target.dataset.id));
@@ -652,7 +840,7 @@ render = function () {
     if (action === "fx-view-customer-products") { const item = customers.find(row => row.name === target.dataset.customer); if (!item) return showToast("客户账号不存在"); state.modal = null; state.bindRequestCustomerFilter = item.name; state.bindRequestOrderFilter = ""; state.bindRequestProductFilter = ""; state.bindRequestBatchFilter = ""; state.bindRequestStatus = "全部状态"; state.opsPage = "bind-requests"; render(); return showToast(`正在查看 ${item.name} 的绑定申请`); }
     if (action === "fx-find-customer-account") { const item = customers.find(row => row.name === target.dataset.customer); if (!item) return showToast("客户账号不存在"); state.customerNameFilter = item.name; state.customerAccountFilter = ""; state.customerPhoneFilter = ""; state.opsPage = "customers"; render(); return; }
     if (["fx-confirm-customer", "fx-reset-customer-password", "fx-toggle-customer"].includes(action) && !fxEnabledOperatorSession()) return showToast("当前账号无权执行此操作");
-    if (action === "fx-confirm-customer") { const name = fxRead("fx-customer-name"), phone = fxRead("fx-customer-phone"); let item = customers.find(row => row.id === state.selectedCustomerId); const account = item?.account || fxRead("fx-customer-account"); if (!name || !account || !phone) return showToast("请完整填写客户名称、账号和联系电话"); const licenseFile = document.getElementById("fx-customer-license")?.files?.[0]; const legalFile = document.getElementById("fx-customer-legal")?.files?.[0]; const selectedFiles = [licenseFile, legalFile].filter(Boolean); const invalid = selectedFiles.find(file => !(file.type.startsWith("image/") || file.type === "application/pdf" || /\.pdf$/i.test(file.name))); if (invalid) return showToast(`不支持证照文件：${invalid.name}`); const oversized = selectedFiles.find(file => file.size > 10 * 1024 * 1024); if (oversized) return showToast(`证照文件超过 10 MB：${oversized.name}`); if (!item && (!licenseFile || !legalFile)) return showToast("请上传营业执照和法人身份证"); if (!item && customers.some(row => row.account === account)) return showToast("客户登录账号已存在"); const password = item ? item.password : fxRead("fx-customer-password"); if (!item && password.length < 8) return showToast("初始密码至少 8 位"); try { const toAttachment = async file => file ? { name: file.name, type: file.type || fxFileType(file.name), size: file.size, src: await fxReadFileData(file) } : null; const license = await toAttachment(licenseFile); const legal = await toAttachment(legalFile); if (item) { const previousName = item.name; Object.assign(item, { name, phone, license: license || item.license, legalId: legal || item.legalId }); if (previousName !== name) { orders.forEach(record => { if (fxRecordBelongsToCustomer(record, item) || record.customer === previousName) Object.assign(record, { customerId: item.id, customer: name }); }); products.forEach(record => { if (fxRecordBelongsToCustomer(record, item) || record.company === previousName) Object.assign(record, { customerId: item.id, company: name }); }); bindRequests.forEach(record => { if (fxRecordBelongsToCustomer(record, item) || record.customer === previousName) Object.assign(record, { customerId: item.id, customer: name }); }); withdrawals.forEach(record => { if (fxRecordBelongsToCustomer(record, item) || record.customer === previousName) Object.assign(record, { customerId: item.id, customer: name }); }); messages.forEach(record => { if (fxRecordBelongsToCustomer(record, item) || record.recipient === previousName || record.customer === previousName) Object.assign(record, { customerId: item.id, recipient: record.recipient === previousName ? name : record.recipient, customer: record.customer === previousName ? name : record.customer }); }); } } else { item = { id: Date.now(), name, account, phone, password, status: "启用", total: 0, active: 0, license, legalId: legal }; customers.unshift(item); } state.modal = null; render(); return showToast("客户账号与真实证照附件已保存"); } catch (_) { return showToast("证照文件读取失败，请重新选择"); } }
+    if (action === "fx-confirm-customer") { const submissionError = fxCustomerAccountSubmissionError(); if (submissionError) return showToast(submissionError); const name = fxRead("fx-customer-name"), phone = fxRead("fx-customer-phone").replace(/\s+/g, ""); let item = customers.find(row => row.id === state.selectedCustomerId); const account = item?.account || fxRead("fx-customer-account"); const password = item ? item.password : fxRead("fx-customer-password"); const licenseFile = document.getElementById("fx-customer-license")?.files?.[0]; const legalFile = document.getElementById("fx-customer-legal")?.files?.[0]; const selectedFiles = [licenseFile, legalFile].filter(Boolean); const invalid = selectedFiles.find(file => !(file.type.startsWith("image/") || file.type === "application/pdf" || /\.pdf$/i.test(file.name))); if (invalid) return showToast(`不支持证照文件：${invalid.name}`); const oversized = selectedFiles.find(file => file.size > 10 * 1024 * 1024); if (oversized) return showToast(`证照文件超过 10 MB：${oversized.name}`); if (!item && (!licenseFile || !legalFile)) return showToast("请上传营业执照和法人身份证"); try { const toAttachment = async file => file ? { name: file.name, type: file.type || fxFileType(file.name), size: file.size, src: await fxReadFileData(file) } : null; const license = await toAttachment(licenseFile); const legal = await toAttachment(legalFile); if (item) { const previousName = item.name; Object.assign(item, { name, phone, license: license || item.license, legalId: legal || item.legalId }); if (previousName !== name) { orders.forEach(record => { if (fxRecordBelongsToCustomer(record, item) || record.customer === previousName) Object.assign(record, { customerId: item.id, customer: name }); }); products.forEach(record => { if (fxRecordBelongsToCustomer(record, item) || record.company === previousName) Object.assign(record, { customerId: item.id, company: name }); }); bindRequests.forEach(record => { if (fxRecordBelongsToCustomer(record, item) || record.customer === previousName) Object.assign(record, { customerId: item.id, customer: name }); }); withdrawals.forEach(record => { if (fxRecordBelongsToCustomer(record, item) || record.customer === previousName) Object.assign(record, { customerId: item.id, customer: name }); }); messages.forEach(record => { if (fxRecordBelongsToCustomer(record, item) || record.recipient === previousName || record.customer === previousName) Object.assign(record, { customerId: item.id, recipient: record.recipient === previousName ? name : record.recipient, customer: record.customer === previousName ? name : record.customer }); }); } } else { item = { id: Date.now(), name, account, phone, password, status: "启用", total: 0, active: 0, license, legalId: legal }; customers.unshift(item); } state.modal = null; render(); return showToast("客户账号与真实证照附件已保存"); } catch (_) { return showToast("证照文件读取失败，请重新选择"); } }
     if (action === "fx-reset-customer-password") { const item = customers.find(row => row.id === Number(target.dataset.id)); state.modalData = { kind: "reset-customer", id: item.id, title: "重置客户账号密码", subject: `${item.name}（${item.account}）`, operation: "重置为初始密码 Trace@2026", danger: true }; state.modal = "fx-confirm"; return render(); }
     if (action === "fx-toggle-customer") { const item = customers.find(row => row.id === Number(target.dataset.id)); state.modalData = { kind: "toggle-customer", id: item.id, title: `${item.status === "启用" ? "禁用" : "启用"}客户账号`, subject: item.name, operation: item.status === "启用" ? "禁用后客户无法登录" : "恢复客户后台登录权限", danger: item.status === "启用" }; state.modal = "fx-confirm"; return render(); }
     if (action === "fx-open-operator-calendar") {
@@ -816,7 +1004,7 @@ render = function () {
         if (!current || current.status !== "启用") return showToast("当前登录账号状态异常，请重新登录");
         const item = fxOperators.find(row => row.id === Number(data.id));
         if (!item) return showToast("运营账号不存在");
-        if (fxIsCurrentOperator(item)) return showToast("当前账号请在个人设置中修改密码");
+        if (fxIsCurrentOperator(item)) return showToast("当前账号请点击右上角头像修改密码");
         if (fxRead("fx-operator-action-password") !== current.password) return showToast("当前登录密码不正确");
         item.password = "Trace@2026";
       }
@@ -1370,7 +1558,17 @@ render = function () {
     if (action === "fx-view-withdrawal") { const index = Number(target.dataset.index); const item = withdrawals[index]; if (!item || (fxEnabledCustomerSession() && !fxRecordBelongsToCustomer(item, fxCurrentCustomer()))) return showToast("撤回申请不存在或无权查看"); state.selectedWithdrawalIndex = index; state.modal = "fx-withdrawal-detail"; return render(); }
     if (action === "fx-mark-read") { if (!fxEnabledCustomerSession()) return showToast("当前账号无权执行此操作"); messages.filter(item => fxRecordBelongsToCustomer(item, fxCurrentCustomer())).forEach(item => item.unread = false); fxSaveBusiness(); render(); return showToast("全部消息已标记为已读"); }
     if (action === "fx-read-message") { const item = messages.find(row => row.id === Number(target.dataset.id) && (fxEnabledOperatorSession() ? fxIsCustomerMessage(row) : fxEnabledCustomerSession() && fxRecordBelongsToCustomer(row, fxCurrentCustomer()) && !fxIsApplicationSubmissionMessage(row))); if (!item) return showToast("站内信不存在或无权查看"); if (fxEnabledCustomerSession()) { item.unread = false; fxSaveBusiness(); } state.selectedMessageId = item.id; state.modal = "fx-message"; return render(); }
-    if (action === "fx-save-password") { const current = fxRead("fx-current-password"), next = fxRead("fx-new-password"), confirm = fxRead("fx-confirm-password"); const account = entryPortal === "ops" ? (fxEnabledOperatorSession() ? fxCurrentOperator() : null) : (fxEnabledCustomerSession() ? fxCurrentCustomer() : null); if (!account) return showToast("当前登录账号状态异常，请重新登录"); if (current !== account.password) return showToast("当前密码不正确"); if (next.length < 8 || !/[A-Za-z]/.test(next) || !/\d/.test(next)) return showToast("新密码至少 8 位且包含字母和数字"); if (next !== confirm) return showToast("两次输入的新密码不一致"); account.password = next; fxSaveOperators(); fxSaveBusiness(); return showToast("登录密码已更新"); }
+    if (action === "fx-save-password") {
+      const current = fxRead("fx-current-password"), next = fxRead("fx-new-password"), confirm = fxRead("fx-confirm-password");
+      const account = entryPortal === "ops" ? (fxEnabledOperatorSession() ? fxCurrentOperator() : null) : (fxEnabledCustomerSession() ? fxCurrentCustomer() : null);
+      if (!account) return showToast("当前登录账号状态异常，请重新登录");
+      if (!current) return showToast("请输入当前密码");
+      if (current !== account.password) return showToast("当前密码不正确");
+      const passwordError = fxRegistrationPasswordError(next); if (passwordError) return showToast(passwordError);
+      if (!confirm) return showToast("请再次输入密码");
+      if (next !== confirm) return showToast("两次输入的密码不一致");
+      account.password = next; fxSaveOperators(); fxSaveBusiness(); state.modal = null; render(); return showToast("登录密码已更新");
+    }
     if (action === "fx-export-customer-orders") { const rows = fxCustomerOrders(); fxDownloadExcel(`订单台账_${fxToday}.xls`, ["订单号", "分配时间", "序列号范围", "订单码量", "已激活", "绑定申请中", "剩余可用"], rows.map(item => [item.no, item.allocatedAt || item.createdAt || item.created || "", item.range, item.total, item.active, fxOrderPendingAmount(item), fxOrderAvailableAmount(item)])); return showToast("订单台账已导出"); }
     if (action === "fx-customer-product-status") { state.customerPage = "orders"; return render(); }
     if (action === "fx-new-product") return showToast("请从订单台账选择订单后发起新建产品绑定申请");

@@ -281,6 +281,17 @@
   // the deployed project root so switching pages also works under a subpath
   // (for example a GitHub Pages project URL).
   function projectRootUrl() {
+    // The current page is authoritative when the host publishes either the
+    // repository root or the prototype-multipage directory itself.
+    try {
+      var currentUrl = new URL(window.location.href);
+      var pagesMarker = "/pages/";
+      var pagesIndex = currentUrl.pathname.indexOf(pagesMarker);
+      if (pagesIndex !== -1) {
+        return currentUrl.origin + currentUrl.pathname.slice(0, pagesIndex + 1);
+      }
+    } catch (err) {}
+
     var annotationBase = dataUrlBase();
     if (annotationBase) {
       try {
@@ -298,23 +309,102 @@
     }
   }
 
-  function pageTargetUrl(page) {
-    if (!page) return "";
-    var path = String(page.path || "").trim();
+  function addUniqueUrl(list, seen, url) {
+    if (!url || seen[url]) return;
+    seen[url] = true;
+    list.push(url);
+  }
+
+  function pageTargetUrls(page) {
+    if (!page) return [];
+    var path = String(page.path || "").trim().replace(/^\/+/, "");
+    var route = String(page.route || "").trim().replace(/^\/+/, "").replace(/^prototype-multipage\//, "");
+    var roots = [];
     var root = projectRootUrl();
-    if (path && root) {
+    if (root) roots.push(root);
+    var annotationBase = dataUrlBase();
+    if (annotationBase) {
       try {
-        return new URL(path.replace(/^\/+/, ""), root).href;
+        roots.push(new URL("../", annotationBase).href);
       } catch (err) {}
     }
-    var route = String(page.route || "").trim();
-    if (!route) return "";
-    route = route.replace(/^\/+/, "").replace(/^prototype-multipage\//, "");
     try {
-      return new URL(route, root || document.baseURI || window.location.href).href;
-    } catch (err) {
-      return "";
-    }
+      var currentUrl = new URL(window.location.href);
+      roots.push(currentUrl.origin + "/");
+      var pagesMarker = "/pages/";
+      var pagesIndex = currentUrl.pathname.indexOf(pagesMarker);
+      if (pagesIndex !== -1) {
+        roots.push(currentUrl.origin + currentUrl.pathname.slice(0, pagesIndex + 1));
+      }
+      var prototypeMarker = "/prototype-multipage/";
+      var prototypeIndex = currentUrl.pathname.indexOf(prototypeMarker);
+      if (prototypeIndex !== -1) {
+        roots.push(currentUrl.origin + currentUrl.pathname.slice(0, prototypeIndex + prototypeMarker.length));
+      }
+    } catch (err) {}
+    try {
+      roots.push(new URL(".", document.baseURI || window.location.href).href);
+    } catch (err) {}
+
+    var urls = [];
+    var seen = {};
+    roots.forEach(function (candidateRoot) {
+      if (!candidateRoot) return;
+      if (path) {
+        try {
+          addUniqueUrl(urls, seen, new URL(path, candidateRoot).href);
+        } catch (err) {}
+      }
+      if (route) {
+        try {
+          addUniqueUrl(urls, seen, new URL(route, candidateRoot).href);
+        } catch (err) {}
+      }
+    });
+    return urls;
+  }
+
+  function pageTargetUrl(page) {
+    var urls = pageTargetUrls(page);
+    return urls[0] || "";
+  }
+
+  function pageTargetExists(url) {
+    if (!url) return Promise.resolve(false);
+    return fetch(url, {
+      method: "HEAD",
+      cache: "no-store",
+      credentials: "same-origin"
+    }).then(function (response) {
+      if (response.ok) return true;
+      if (response.status === 405 || response.status === 403) {
+        return fetch(url, {
+          method: "GET",
+          cache: "no-store",
+          credentials: "same-origin"
+        }).then(function (getResponse) {
+          return getResponse.ok;
+        }).catch(function () {
+          return false;
+        });
+      }
+      return false;
+    }).catch(function () {
+      return false;
+    });
+  }
+
+  function resolvePageTargetUrl(page) {
+    var urls = pageTargetUrls(page);
+    if (!urls.length) return Promise.resolve("");
+    return urls.reduce(function (promise, url) {
+      return promise.then(function (resolved) {
+        if (resolved) return resolved;
+        return pageTargetExists(url).then(function (exists) {
+          return exists ? url : "";
+        });
+      });
+    }, Promise.resolve(""));
   }
 
   function specFetchUrl(ref) {
@@ -2452,12 +2542,14 @@
     }
     persistSpecBrowserPreferences();
     try { window.sessionStorage.setItem(specBrowserReopenKey, pageKey); } catch (err) {}
-    var target = pageTargetUrl(page);
-    if (!target) {
-      updateSpecBrowser();
-      return;
-    }
-    window.location.assign(target);
+    resolvePageTargetUrl(page).then(function (target) {
+      if (!target) target = pageTargetUrl(page);
+      if (!target) {
+        updateSpecBrowser();
+        return;
+      }
+      window.location.assign(target);
+    });
   }
 
   function captureSpecBrowserMarkdown() {

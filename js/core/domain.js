@@ -1298,8 +1298,7 @@ const fxToday = "2026-07-27";
     ["bind-requests", "clipboard-check", "绑定审核"],
     ["withdrawals", "rotate-ccw", "撤回审核"],
     ["operators", "users-round", "运营账号管理"],
-    ["messages", "mail", "站内信"],
-    ["settings", "settings", "个人设置"]
+    ["messages", "mail", "站内信"]
   );
   nav.customer.splice(0, nav.customer.length, ...nav.customer.filter(item => item[0] !== "products"));
   if (!nav.customer.some(item => item[0] === "orders")) nav.customer.splice(1, 0, ["orders", "receipt-text", "订单台账"]);

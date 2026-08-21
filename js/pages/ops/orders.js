@@ -1,4 +1,4 @@
-﻿import { bootstrapPage } from "../../bootstrap.js?v=v6q9x3e64";
+import { bootstrapPage } from "../../bootstrap.js?v=v6q9x3f08";
 
 bootstrapPage({
   "portal": "ops",
