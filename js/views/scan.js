@@ -143,55 +143,8 @@ const fxScanParams = new URLSearchParams(location.search);
   function fxSetupScanSticky() {
     if (fxScanStickyCleanup) fxScanStickyCleanup();
     fxScanStickyCleanup = null;
-
-    const shell = document.querySelector(".scan-shell");
-    const topbar = shell?.querySelector(".mobile-topbar");
-    const info = shell?.querySelector(".scan-sticky-info");
-    if (!shell || !topbar || !info) return;
-
-    const topbarPlaceholder = document.createElement("div");
-    const infoPlaceholder = document.createElement("div");
-    topbarPlaceholder.className = "scan-sticky-placeholder";
-    infoPlaceholder.className = "scan-sticky-placeholder";
-    topbar.before(topbarPlaceholder);
-    info.before(infoPlaceholder);
-
-    let frame = 0;
-    const sync = () => {
-      frame = 0;
-      const shellRect = shell.getBoundingClientRect();
-      const fixedLeft = `${shellRect.left + shell.clientLeft}px`;
-      const fixedWidth = `${shell.clientWidth}px`;
-      shell.style.setProperty("--scan-fixed-left", fixedLeft);
-      shell.style.setProperty("--scan-fixed-width", fixedWidth);
-
-      const pinTopbar = topbarPlaceholder.getBoundingClientRect().top <= 0;
-      topbar.classList.toggle("is-scroll-fixed", pinTopbar);
-      topbarPlaceholder.style.height = pinTopbar ? `${topbar.offsetHeight}px` : "0px";
-
-      const pinInfo = infoPlaceholder.getBoundingClientRect().top <= 48;
-      info.classList.toggle("is-scroll-fixed", pinInfo);
-      infoPlaceholder.style.height = pinInfo ? `${info.offsetHeight}px` : "0px";
-    };
-    const schedule = () => {
-      if (!frame) frame = requestAnimationFrame(sync);
-    };
-
-    window.addEventListener("scroll", schedule, { passive: true });
-    window.addEventListener("resize", schedule, { passive: true });
-    document.addEventListener("scroll", schedule, true);
-    sync();
-
-    fxScanStickyCleanup = () => {
-      if (frame) cancelAnimationFrame(frame);
-      window.removeEventListener("scroll", schedule);
-      window.removeEventListener("resize", schedule);
-      document.removeEventListener("scroll", schedule, true);
-      topbar.classList.remove("is-scroll-fixed");
-      info.classList.remove("is-scroll-fixed");
-      topbarPlaceholder.remove();
-      infoPlaceholder.remove();
-    };
+    document.querySelectorAll(".mobile-topbar.is-scroll-fixed, .scan-sticky-info.is-scroll-fixed").forEach(item => item.classList.remove("is-scroll-fixed"));
+    document.querySelectorAll(".scan-sticky-placeholder").forEach(item => item.remove());
   }
   scanActive = function () {
     const tabs = fxScanModules.filter(([, , , visible]) => visible(fxScanDetails));

@@ -2,7 +2,7 @@
 
 function fxLoginPage(portal) {
     const isCustomer = portal === "customer";
-    return `<main class="login-page"><section class="login-card"><div class="login-brand"><span class="brand-mark" aria-hidden="true"><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i></span><div><strong>溯源质控码平台</strong><span>${isCustomer ? "客户后台" : "运营方后台"}</span></div></div><div class="login-copy"><h1>账号密码登录</h1><p>${isCustomer ? "使用运营方分配的客户账号登录。" : "仅限运营方内部账号登录。"}</p></div><div class="form-grid"><div class="field full"><label class="required" for="fx-login-account">登录账号</label><input id="fx-login-account" autocomplete="username" minlength="4" maxlength="20" pattern="[A-Za-z0-9_]{4,20}" placeholder="请输入账号" value="${isCustomer ? "yunling" : "operator_01"}"></div><div class="field full"><label class="required" for="fx-login-password">登录密码</label><input id="fx-login-password" type="password" autocomplete="current-password" minlength="8" maxlength="20" placeholder="请输入密码" value="Trace@2026"><span class="field-help">密码长度为8～20位，需包含字母和数字</span></div><div class="field full"><button class="button primary login-submit" data-action="fx-login">登录${isCustomer ? "客户" : "运营"}后台</button></div></div></section>${portalSwitcher()}</main>`;
+    return `<main class="login-page"><section class="login-card"><div class="login-brand"><span class="brand-mark" aria-hidden="true"><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i></span><div><strong>溯源质控码平台</strong><span>${isCustomer ? "客户后台" : "运营方后台"}</span></div></div><div class="form-grid"><div class="field full"><label class="required" for="fx-login-account">登录账号</label><input id="fx-login-account" autocomplete="username" minlength="4" maxlength="20" pattern="[A-Za-z0-9_]{4,20}" placeholder="请输入账号" value="${isCustomer ? "yunling" : "operator_01"}"></div><div class="field full"><label class="required" for="fx-login-password">登录密码</label><input id="fx-login-password" type="password" autocomplete="current-password" minlength="8" maxlength="20" placeholder="请输入密码" value="Trace@2026"></div><div class="field full"><button class="button primary login-submit" data-action="fx-login">登录</button></div></div></section>${portalSwitcher()}</main>`;
   }
 
   globalBar = function () {
@@ -33,8 +33,8 @@ function fxLoginPage(portal) {
       ...pendingReviews.slice(0, 3).map(item => `<button class="list-item list-button" data-nav="bind-requests"><span class="list-icon">${icon("clipboard-check", "✓")}</span><div class="list-content"><div class="list-title">${fxEscape(item.product)}</div><div class="list-meta">${fxEscape(item.customer)} · 绑定待审核</div></div></button>`),
       ...pendingWithdrawals.slice(0, 2).map(item => `<button class="list-item list-button" data-nav="withdrawals"><span class="list-icon">${icon("rotate-ccw", "↻")}</span><div class="list-content"><div class="list-title">${fxEscape(item.product)}</div><div class="list-meta">${fxEscape(item.customer)} · 撤回待审批</div></div></button>`),
     ].join("") || `<div class="empty"><p>暂无待处理事项</p></div>`;
-    const recentBatches = [...codeBatches].sort((left, right) => String(right.createdAt || right.created || "").localeCompare(String(left.createdAt || left.created || ""))).slice(0, 6).map(item => `<tr><td><button class="text-action mono" data-action="fx-open-code-batch-detail" data-no="${fxEscape(item.no)}">${fxEscape(item.range || "—")}</button></td><td>${formatNumber(item.total)}</td><td>${formatNumber(fxCodeBatchAllocatedAmount(item))}</td><td>${status(fxCodeBatchAllocationStatus(item))}</td></tr>`).join("") || fxEmpty(4, "暂无库存码段");
-    return `<div class="page">${pageHeader("运营概览", `${fxToday} · 平台实时业务状态`, `<button class="button primary" data-action="go-reviews">${icon("clipboard-check", "✓")}处理待审核</button>`)}${fxOverviewMetricStrip([{ label: "库存码段", value: formatNumber(codeBatches.length), note: "平台生成记录", icon: "receipt-text", nav: "inventory" }, { label: "生成码量", value: formatNumber(totalCodes), note: "全部库存码段", icon: "qr-code", nav: "inventory" }, { label: "已分配", value: formatNumber(allocatedCodes), note: totalCodes ? `${Math.round(allocatedCodes / totalCodes * 100)}%` : "0%", icon: "send", up: true, nav: "orders" }, { label: "剩余库存", value: formatNumber(inventoryCodes), note: "待运营分配", icon: "circle-dashed", nav: "inventory" }])}<div class="section-row"><section class="panel"><div class="panel-header"><h2>最近生成码段</h2><button class="button small" data-nav="inventory">查看全部</button></div><div class="table-scroll"><table><thead><tr><th>序列号范围</th><th>生成数量</th><th>已分配</th><th>状态</th></tr></thead><tbody>${recentBatches}</tbody></table></div></section><section class="panel"><div class="panel-header"><h2>待办事项</h2></div><div class="panel-body list">${todoItems}</div></section></div></div>`;
+    const recentBatches = [...codeBatches].sort((left, right) => String(right.createdAt || right.created || "").localeCompare(String(left.createdAt || left.created || ""))).slice(0, 6).map(item => `<tr><td class="code-range-cell"><button class="text-action mono" data-action="fx-open-code-batch-detail" data-no="${fxEscape(item.no)}">${fxEscape(item.range || "—")}</button></td><td>${formatNumber(item.total)}</td><td>${formatNumber(fxCodeBatchAllocatedAmount(item))}</td><td>${status(fxCodeBatchAllocationStatus(item))}</td></tr>`).join("") || fxEmpty(4, "暂无库存码段");
+    return `<div class="page">${pageHeader("运营概览", `${fxToday} · 平台实时业务状态`, `<button class="button primary" data-action="go-reviews">${icon("clipboard-check", "✓")}处理待审核</button>`)}${fxOverviewMetricStrip([{ label: "库存码段", value: formatNumber(codeBatches.length), note: "平台生成记录", icon: "receipt-text", nav: "inventory" }, { label: "生成码量", value: formatNumber(totalCodes), note: "全部库存码段", icon: "qr-code", nav: "inventory" }, { label: "已分配", value: formatNumber(allocatedCodes), note: totalCodes ? `${Math.round(allocatedCodes / totalCodes * 100)}%` : "0%", icon: "send", up: true, nav: "orders" }, { label: "剩余库存", value: formatNumber(inventoryCodes), note: "待运营分配", icon: "circle-dashed", nav: "inventory" }])}<div class="section-row"><section class="panel"><div class="panel-header"><h2>最近生成码段</h2><button class="button small" data-nav="inventory">查看全部</button></div><div class="table-scroll"><table class="overview-code-range-table code-range-table"><thead><tr><th>序列号范围</th><th>生成数量</th><th>已分配</th><th>状态</th></tr></thead><tbody>${recentBatches}</tbody></table></div></section><section class="panel"><div class="panel-header"><h2>待办事项</h2></div><div class="panel-body list">${todoItems}</div></section></div></div>`;
   };
 
   qrMarkup = function (seed = "preview", options = {}) {
@@ -53,6 +53,10 @@ function fxLoginPage(portal) {
     const optionMarkup = options.map(value => `<option value="${fxEscape(value)}" ${current === value ? "selected" : ""}>${fxEscape(value)}</option>`).join("");
     const active = !String(current).startsWith("全部");
     return `<div class="table-heading"><span>${label}</span><label class="header-filter-control ${active ? "active" : ""}" title="筛选${label}">${icon("list-filter", "≡")}<select data-table-filter="${filter}" aria-label="筛选${label}">${optionMarkup}</select></label></div>`;
+  }
+  function fxToolbarSelectFilter(label, filter, options, current) {
+    const optionMarkup = options.map(value => `<option value="${fxEscape(value)}" ${current === value ? "selected" : ""}>${fxEscape(value)}</option>`).join("");
+    return `<label class="toolbar-filter-field"><span class="filter-field-label">${fxEscape(label)}</span><select data-table-filter="${filter}" aria-label="筛选${fxEscape(label)}">${optionMarkup}</select></label>`;
   }
   function fxCombinedPendingProducts(orderNo, excludeProductId = null) {
     return products.filter(product =>
@@ -116,10 +120,18 @@ function fxLoginPage(portal) {
   function fxCanRecallCodeAllocation(order) {
     return !fxCodeAllocationRecallBlockReason(order);
   }
+  function fxDisabledAction(label, reason = "当前状态不可操作", className = "") {
+    const title = reason || "当前状态不可操作";
+    return `<button class="text-action ${className}" type="button" disabled aria-disabled="true" title="${fxEscape(title)}">${fxEscape(label)}</button>`;
+  }
+  function fxDisabledButton(label, reason = "当前状态不可操作", className = "") {
+    const title = reason || "当前状态不可操作";
+    return `<button class="button ${className}" type="button" disabled aria-disabled="true" title="${fxEscape(title)}">${fxEscape(label)}</button>`;
+  }
   function fxAllocationRecallAction(order) {
     const reason = fxCodeAllocationRecallBlockReason(order);
     return reason
-      ? ""
+      ? fxDisabledAction("撤销分配", reason, "danger-text")
       : `<button class="text-action danger-text" type="button" data-action="fx-open-allocation-recall" data-no="${fxEscape(order.no)}">撤销分配</button>`;
   }
   function fxSortValue(item, key) {
@@ -200,7 +212,7 @@ function fxLoginPage(portal) {
         && (state.customerStatus === "全部状态" || item.status === state.customerStatus))
       .map(item => ({ ...item, ...fxCustomerCodeSummary(item) }));
     rows = fxSortedRows(rows, "customer");
-    return `<div class="page">${pageHeader("客户列表", "管理客户资料、账号状态与码段使用概况", `<button class="button primary" data-action="fx-new-customer">${icon("plus", "+")}新建客户</button><button class="button" data-action="fx-export-customers">${icon("download", "↓")}导出列表</button>`)}<div class="toolbar"><div class="filters customer-search-filters">${fxFilterInput("fx-customer-name-search", state.customerNameFilter, "搜索客户名称")}${fxFilterInput("fx-customer-account-search", state.customerAccountFilter, "搜索账号")}${fxFilterInput("fx-customer-phone-search", state.customerPhoneFilter, "搜索联系电话")}<button type="button" class="button small list-reset-button" data-action="fx-reset-list" data-reset-context="customers">${icon("rotate-ccw", "↻")}重置</button></div></div><div class="table-shell"><div class="table-scroll"><table class="customer-account-table"><thead><tr><th>客户名称</th><th>账号</th><th>联系电话</th><th>${fxTableSelectHeader("状态", "customerStatus", ["全部状态", "启用", "禁用"], state.customerStatus)}</th><th>订单码量</th><th>已激活</th><th>绑定申请中</th><th>剩余可用</th><th class="action-column">账号操作</th></tr></thead><tbody>${rows.length ? rows.map(item => `<tr><td><div class="cell-main">${fxEscape(item.name)}</div></td><td class="mono">${fxEscape(item.account)}</td><td>${fxEscape(item.phone)}</td><td>${status(item.status)}</td><td>${formatNumber(item.total)}</td><td>${formatNumber(item.active)}</td><td>${formatNumber(item.pending)}</td><td>${formatNumber(item.available)}</td><td class="action-column"><div class="table-actions"><button class="text-action" data-action="fx-view-customer-detail" data-id="${item.id}">详情</button><button class="text-action" data-action="fx-edit-customer" data-id="${item.id}">编辑</button><button class="text-action" data-action="fx-choose-allocation-batch" data-customer-id="${item.id}" ${item.status === "启用" ? "" : `disabled title="客户账号已禁用"`}>分配码段</button><button class="text-action ${item.status === "启用" ? "danger-text" : "success-text"}" data-action="fx-toggle-customer" data-id="${item.id}">${item.status === "启用" ? "禁用" : "启用"}</button></div></td></tr>`).join("") : fxEmpty(9, "未找到客户")}</tbody></table></div>${pagination(rows.length)}</div></div>`;
+    return `<div class="page">${pageHeader("客户列表", "管理客户资料、账号状态与码段使用概况", `<button class="button primary" data-action="fx-new-customer">${icon("plus", "+")}新建客户</button><button class="button" data-action="fx-export-customers">${icon("download", "↓")}导出列表</button>`)}<div class="toolbar"><div class="filters customer-search-filters">${fxFilterInput("fx-customer-name-search", state.customerNameFilter, "搜索客户名称")}${fxFilterInput("fx-customer-account-search", state.customerAccountFilter, "搜索账号")}${fxFilterInput("fx-customer-phone-search", state.customerPhoneFilter, "搜索联系电话")}<button type="button" class="button small list-reset-button" data-action="fx-reset-list" data-reset-context="customers">${icon("rotate-ccw", "↻")}重置</button></div></div><div class="table-shell"><div class="table-scroll"><table class="customer-account-table"><thead><tr><th>客户名称</th><th>账号</th><th>联系电话</th><th>${fxTableSelectHeader("状态", "customerStatus", ["全部状态", "启用", "禁用"], state.customerStatus)}</th><th>订单码量</th><th>已激活</th><th>绑定申请中</th><th>剩余可用</th><th class="action-column">操作</th></tr></thead><tbody>${rows.length ? rows.map(item => `<tr><td><div class="cell-main">${fxEscape(item.name)}</div></td><td class="mono">${fxEscape(item.account)}</td><td>${fxEscape(item.phone)}</td><td>${status(item.status)}</td><td>${formatNumber(item.total)}</td><td>${formatNumber(item.active)}</td><td>${formatNumber(item.pending)}</td><td>${formatNumber(item.available)}</td><td class="action-column"><div class="table-actions"><button class="text-action" data-action="fx-view-customer-detail" data-id="${item.id}">详情</button><button class="text-action" data-action="fx-edit-customer" data-id="${item.id}">编辑</button><button class="text-action" data-action="fx-choose-allocation-batch" data-customer-id="${item.id}" ${item.status === "启用" ? "" : `disabled title="客户账号已禁用"`}>分配码段</button><button class="text-action ${item.status === "启用" ? "danger-text" : "success-text"}" data-action="fx-toggle-customer" data-id="${item.id}">${item.status === "启用" ? "禁用" : "启用"}</button></div></td></tr>`).join("") : fxEmpty(9, "未找到客户")}</tbody></table></div>${pagination(rows.length)}</div></div>`;
   };
 
   function fxCustomerPickerLabel(item) { return item.name; }
@@ -251,6 +263,53 @@ function fxLoginPage(portal) {
     const first = typeof fxNextCodeSerialNumber === "function" ? fxNextCodeSerialNumber(prefix) : 1;
     return { amount, range: `${fxSerial(prefix, first)} – ${fxSerial(prefix, first + amount - 1)}` };
   }
+  function fxChineseIntegerUppercase(value) {
+    const amount = Math.trunc(Number(value) || 0);
+    if (amount === 0) return "零";
+    const digits = ["零", "壹", "贰", "叁", "肆", "伍", "陆", "柒", "捌", "玖"];
+    const units = ["", "拾", "佰", "仟"];
+    const sectionUnits = ["", "万", "亿", "兆"];
+    const sectionText = section => {
+      let text = "";
+      let zeroPending = false;
+      for (let index = 3; index >= 0; index -= 1) {
+        const digit = Math.floor(section / Math.pow(10, index)) % 10;
+        if (!digit) {
+          if (text) zeroPending = true;
+          continue;
+        }
+        if (zeroPending) text += digits[0];
+        text += `${digits[digit]}${units[index]}`;
+        zeroPending = false;
+      }
+      return text;
+    };
+    const sections = [];
+    let number = amount;
+    while (number > 0) {
+      sections.push(number % 10000);
+      number = Math.floor(number / 10000);
+    }
+    let text = "";
+    let zeroPending = false;
+    for (let index = sections.length - 1; index >= 0; index -= 1) {
+      const section = sections[index];
+      if (!section) {
+        if (text) zeroPending = true;
+        continue;
+      }
+      if (zeroPending || (text && section < 1000)) text += digits[0];
+      text += `${sectionText(section)}${sectionUnits[index]}`;
+      zeroPending = false;
+    }
+    return text;
+  }
+  function fxQrAmountPreviewText(rawAmount = state.qrDraft.amount) {
+    const amount = Number(rawAmount);
+    if (!Number.isSafeInteger(amount) || amount < 1) return "中文大写：请输入有效数量";
+    if (amount > 10000000) return "中文大写：超过单批上限";
+    return `中文大写：${fxChineseIntegerUppercase(amount)}枚`;
+  }
 
   function fxQrOutputSize() {
     const width = Math.max(8, Number(state.qrDraft.customWidth) || 25);
@@ -282,15 +341,20 @@ function fxLoginPage(portal) {
       const batch = fxInventoryBatches().find(item => item.no === generatedBatchNo);
       return `<div class="result-center"><div class="success-mark">${icon("check", "✓", "icon-lg")}</div><h2>码段已生成</h2><p class="muted">序列号范围 ${fxEscape(batch?.range || "—")}，共 ${formatNumber(batch?.total || 0)} 枚。</p></div>`;
     }
-    return `<div class="order-create-form"><section class="order-create-section"><h2>生成信息</h2><div class="form-grid"><div class="field qr-order-field"><label class="required" for="fx-qr-amount">生成数量</label><input id="fx-qr-amount" type="number" min="1" max="10000000" step="1" value="${amount}"></div><div class="field qr-order-field"><label for="fx-qr-note">备注</label><input id="fx-qr-note" value="${fxEscape(state.qrDraft.note)}" placeholder="例如：8 月备货码段"></div><div class="field full"><label for="fx-qr-range-preview">序列号预览</label><input id="fx-qr-range-preview" class="mono immutable-input" value="${range}" readonly aria-readonly="true" aria-live="polite"></div></div></section><section class="order-create-section"><div class="form-grid"><div class="field full"><label class="required" for="fx-qr-width">尺寸</label><div class="qr-size-inputs"><input id="fx-qr-width" type="number" min="8" max="300" step="0.1" value="${state.qrDraft.customWidth || 25}" placeholder="宽度" aria-label="尺寸宽度，单位毫米"><span aria-hidden="true">×</span><input id="fx-qr-height" type="number" min="8" max="300" step="0.1" value="${state.qrDraft.customHeight || 25}" placeholder="高度" aria-label="尺寸高度，单位毫米"><span>mm</span></div></div><div class="field full"><label>二维码预览</label><div id="fx-qr-core-preview" class="qr-style-preview" aria-live="polite">${fxQrCorePreviewContent()}</div></div></div></section></div>`;
+    return `<div class="order-create-form"><section class="order-create-section"><h2>生成信息</h2><div class="form-grid"><div class="field qr-order-field"><label class="required" for="fx-qr-amount">生成数量</label><input id="fx-qr-amount" type="number" min="1" max="10000000" step="1" value="${amount}"><span id="fx-qr-amount-uppercase" class="field-help qr-amount-uppercase-preview" aria-live="polite">${fxEscape(fxQrAmountPreviewText(amount))}</span></div><div class="field qr-order-field"><label for="fx-qr-note">备注</label><input id="fx-qr-note" value="${fxEscape(state.qrDraft.note)}" placeholder="例如：8 月备货码段"></div><div class="field full"><label for="fx-qr-range-preview">序列号预览</label><input id="fx-qr-range-preview" class="mono immutable-input" value="${range}" readonly aria-readonly="true" aria-live="polite"></div></div></section><section class="order-create-section"><div class="form-grid"><div class="field full"><label class="required" for="fx-qr-width">尺寸</label><div class="qr-size-inputs"><input id="fx-qr-width" type="number" min="8" max="300" step="0.1" value="${state.qrDraft.customWidth || 25}" placeholder="宽度" aria-label="尺寸宽度，单位毫米"><span aria-hidden="true">×</span><input id="fx-qr-height" type="number" min="8" max="300" step="0.1" value="${state.qrDraft.customHeight || 25}" placeholder="高度" aria-label="尺寸高度，单位毫米"><span>mm</span></div></div><div class="field full"><label>二维码预览</label><div id="fx-qr-core-preview" class="qr-style-preview" aria-live="polite">${fxQrCorePreviewContent()}</div></div></div></section></div>`;
   };
 
   opsCodes = function () {
     const generatedBatchNo = fxGeneratedCodeBatchNo();
+    const generatedBatch = generatedBatchNo ? fxInventoryBatches().find(item => item.no === generatedBatchNo) : null;
+    const generatedDownloadActions = `<button class="button" data-action="fx-download-qr-partial" data-no="${fxEscape(generatedBatchNo)}">${icon("download", "↓")}部分下载</button><button class="button" data-action="fx-download-qr-full" data-no="${fxEscape(generatedBatchNo)}">${icon("archive", "↓")}下载完整压缩包</button>`;
+    const generatedAllocateAction = generatedBatch && fxCodeBatchRemainingAmount(generatedBatch) > 0
+      ? `<button class="button primary" data-action="fx-open-code-allocation" data-no="${fxEscape(generatedBatchNo)}">${icon("send", "→")}分配给客户</button>`
+      : generatedBatchNo ? fxDisabledButton("分配给客户", "当前码段没有剩余库存", "primary") : "";
     const actions = state.qrGeneration
       ? `<span class="muted">生成完成后可继续下载或分配</span>`
       : generatedBatchNo
-        ? `<button class="button" data-action="fx-new-qr">${icon("plus", "+")}继续生成</button><button class="button" data-action="fx-open-code-batch-detail" data-no="${fxEscape(generatedBatchNo)}">查看该码段</button><button class="button" data-action="fx-download-qr-partial">${icon("download", "↓")}部分下载</button><button class="button" data-action="fx-download-qr-full">${icon("archive", "↓")}下载完整压缩包</button><button class="button primary" data-action="fx-open-code-allocation" data-no="${fxEscape(generatedBatchNo)}">${icon("send", "→")}分配给客户</button>`
+        ? `<button class="button" data-action="fx-new-qr">${icon("plus", "+")}继续生成</button><button class="button" data-action="fx-open-code-batch-detail" data-no="${fxEscape(generatedBatchNo)}">查看该码段</button>${generatedDownloadActions}${generatedAllocateAction}`
         : `<button class="button primary" data-action="fx-create-order">${icon("qr-code", "▦")}生成码段</button>`;
     return `<div class="page">${pageHeader("生成码段", "批量生成带唯一序列号的二维码核心区块", `<button class="button" data-action="go-inventory">${icon("arrow-left", "←")}返回码段库存</button>`)}<section class="wizard-shell"><div class="wizard-content">${qrStepContent()}</div><div class="wizard-actions"><div></div><div>${actions}</div></div></section></div>`;
   };
@@ -313,10 +377,14 @@ function fxLoginPage(portal) {
       const canAllocate = item.remaining > 0;
       const allocateLabel = allocationTarget ? `分配给${allocationTarget.name}` : "分配客户";
       const targetAttribute = allocationTarget ? ` data-customer-id="${allocationTarget.id}"` : "";
-      return `<tr data-code-range="${fxEscape(item.range || "")}"><td class="mono">${fxEscape(item.range || "—")}</td><td>${fxEscape(item.createdAt || item.created || "—")}</td><td>${formatNumber(item.total)}</td><td>${formatNumber(item.allocated)}</td><td>${formatNumber(item.remaining)}</td><td>${status(batchStatus)}</td><td>${fxEscape(item.size || "—")}</td><td class="action-column"><div class="table-actions">${canAllocate ? `<button class="text-action" data-action="fx-open-code-allocation" data-no="${fxEscape(item.no)}"${targetAttribute}>${fxEscape(allocateLabel)}</button>` : ""}<button class="text-action" data-action="fx-open-code-batch-detail" data-no="${fxEscape(item.no)}">详情</button></div></td></tr>`;
+      const allocateAction = canAllocate
+        ? `<button class="text-action" data-action="fx-open-code-allocation" data-no="${fxEscape(item.no)}"${targetAttribute}>${fxEscape(allocateLabel)}</button>`
+        : fxDisabledAction(allocateLabel, "当前码段没有剩余库存");
+      const downloadAction = `<button class="text-action" data-action="fx-open-code-batch-download" data-no="${fxEscape(item.no)}">下载</button>`;
+      return `<tr data-code-range="${fxEscape(item.range || "")}"><td class="mono code-range-cell">${fxEscape(item.range || "—")}</td><td>${fxEscape(item.createdAt || item.created || "—")}</td><td>${formatNumber(item.total)}</td><td>${formatNumber(item.allocated)}</td><td>${formatNumber(item.remaining)}</td><td>${status(batchStatus)}</td><td>${fxEscape(item.size || "—")}</td><td class="action-column"><div class="table-actions">${allocateAction}${downloadAction}<button class="text-action" data-action="fx-open-code-batch-detail" data-no="${fxEscape(item.no)}">详情</button></div></td></tr>`;
     }).join("") : fxEmpty(8, "未找到库存码段");
     const allocationBanner = allocationTarget ? `<div class="allocation-target-banner"><div><strong>正在为 ${fxEscape(allocationTarget.name)} 选择库存码段</strong><span>请在下方码段中选择“分配给该客户”。</span></div><button class="button small" data-action="fx-cancel-allocation-target">取消选择</button></div>` : "";
-    return `<div class="page">${pageHeader("码段库存", "查看平台已生成码段并按需分配给客户", `<button class="button primary" data-action="go-codes">${icon("qr-code", "▦")}生成码段</button><button class="button" data-action="fx-export-orders">${icon("download", "↓")}导出列表</button>`)}${allocationBanner}<div class="toolbar"><div class="filters order-search-filters">${fxFilterInput("fx-inventory-range-search", state.inventoryRangeFilter, "搜索序列号范围")}<button type="button" class="button small list-reset-button" data-action="fx-reset-list" data-reset-context="inventory">${icon("rotate-ccw", "↻")}重置</button></div></div><div class="table-shell"><div class="table-scroll"><table class="order-table"><thead><tr><th>序列号范围</th><th>${fxOrderCreatedHeader()}</th><th>生成数量</th><th>已分配</th><th>剩余库存</th><th>${fxTableSelectHeader("状态", "inventoryStatus", ["全部状态", "未分配", "部分分配", "已分配"], state.inventoryStatus)}</th><th>尺寸</th><th class="action-column">操作</th></tr></thead><tbody>${body}</tbody></table></div>${pagination(rows.length)}</div></div>`;
+    return `<div class="page">${pageHeader("码段库存", "查看平台已生成码段并按需分配给客户", `<button class="button primary" data-action="fx-new-qr">${icon("qr-code", "▦")}生成码段</button><button class="button" data-action="fx-export-orders">${icon("download", "↓")}导出列表</button>`)}${allocationBanner}<div class="toolbar"><div class="filters order-search-filters">${fxFilterInput("fx-inventory-range-search", state.inventoryRangeFilter, "搜索序列号范围")}<button type="button" class="button small list-reset-button" data-action="fx-reset-list" data-reset-context="inventory">${icon("rotate-ccw", "↻")}重置</button></div></div><div class="table-shell"><div class="table-scroll"><table class="order-table inventory-table code-range-table"><thead><tr><th>序列号范围</th><th>${fxOrderCreatedHeader()}</th><th>生成数量</th><th>已分配</th><th>剩余库存</th><th>${fxTableSelectHeader("状态", "inventoryStatus", ["全部状态", "未分配", "部分分配", "已分配"], state.inventoryStatus)}</th><th>尺寸</th><th class="action-column">操作</th></tr></thead><tbody>${body}</tbody></table></div>${pagination(rows.length)}</div></div>`;
   };
 
   opsOrders = function () {
@@ -327,9 +395,13 @@ function fxLoginPage(portal) {
     const body = rows.length ? rows.map(item => {
       const pending = fxOrderPendingAmount(item);
       const remaining = fxOrderAvailableAmount(item);
-      return `<tr><td class="mono">${fxEscape(item.no)}</td><td>${fxEscape(item.customer || "—")}</td><td>${fxEscape(item.allocatedAt || item.createdAt || item.created || "—")}</td><td class="mono">${fxEscape(item.range || "—")}</td><td>${formatNumber(item.total)}</td><td>${formatNumber(item.active)}</td><td>${formatNumber(pending)}</td><td>${formatNumber(remaining)}</td><td class="action-column"><div class="table-actions">${remaining > 0 ? `<button class="text-action" data-action="fx-ops-bind-order" data-no="${fxEscape(item.no)}">绑定产品</button>` : ""}<button class="text-action" data-action="fx-order-detail" data-no="${fxEscape(item.no)}">详情</button></div></td></tr>`;
+      const bindAction = remaining > 0
+        ? `<button class="text-action" data-action="fx-ops-bind-order" data-no="${fxEscape(item.no)}">绑定产品</button>`
+        : fxDisabledAction("绑定产品", "当前订单没有剩余可用码量");
+      const recallAction = fxAllocationRecallAction(item);
+      return `<tr><td class="mono">${fxEscape(item.no)}</td><td>${fxEscape(item.customer || "—")}</td><td>${fxEscape(item.allocatedAt || item.createdAt || item.created || "—")}</td><td class="mono code-range-cell">${fxEscape(fxAllocationRangeLabel(item) || "—")}</td><td>${formatNumber(item.total)}</td><td>${formatNumber(item.active)}</td><td>${formatNumber(pending)}</td><td>${formatNumber(remaining)}</td><td class="action-column"><div class="table-actions">${bindAction}${recallAction}<button class="text-action" data-action="fx-order-detail" data-no="${fxEscape(item.no)}">详情</button></div></td></tr>`;
     }).join("") : fxEmpty(9, "未找到订单记录");
-    return `<div class="page">${pageHeader("订单台账", "查看运营端向客户分配码段形成的订单及使用情况", `<button class="button" data-action="fx-export-order-ledger">${icon("download", "↓")}导出台账</button>`)}<div class="toolbar"><div class="filters order-search-filters">${fxFilterInput("fx-order-customer-search", state.orderCustomerFilter, "搜索客户名称")}${fxFilterInput("fx-order-number-search", state.orderNumberFilter, "搜索订单号")}<button type="button" class="button small list-reset-button" data-action="fx-reset-list" data-reset-context="orders">${icon("rotate-ccw", "↻")}重置</button></div></div><div class="table-shell"><div class="table-scroll"><table class="order-table"><thead><tr><th>订单号</th><th>客户名称</th><th>${fxOrderCreatedHeader()}</th><th>序列号范围</th><th>订单码量</th><th>已激活</th><th>绑定申请中</th><th>剩余可用</th><th class="action-column">操作</th></tr></thead><tbody>${body}</tbody></table></div>${pagination(rows.length)}</div></div>`;
+    return `<div class="page">${pageHeader("订单台账", "查看运营端向客户分配码段形成的订单及使用情况", `<button class="button" data-action="fx-export-order-ledger">${icon("download", "↓")}导出台账</button>`)}<div class="toolbar"><div class="filters order-search-filters">${fxFilterInput("fx-order-customer-search", state.orderCustomerFilter, "搜索客户名称")}${fxFilterInput("fx-order-number-search", state.orderNumberFilter, "搜索订单号")}<button type="button" class="button small list-reset-button" data-action="fx-reset-list" data-reset-context="orders">${icon("rotate-ccw", "↻")}重置</button></div></div><div class="table-shell"><div class="table-scroll"><table class="order-table ops-order-table code-range-table"><thead><tr><th>订单号</th><th>客户名称</th><th>${fxOrderCreatedHeader()}</th><th>序列号范围</th><th>订单码量</th><th>已激活</th><th>绑定申请中</th><th>剩余可用</th><th class="action-column">操作</th></tr></thead><tbody>${body}</tbody></table></div>${pagination(rows.length)}</div></div>`;
   };
 
   function fxBindingReviewStatus(value) {
@@ -392,7 +464,7 @@ function fxLoginPage(portal) {
     const reviewAction = `<button class="text-action" data-action="fx-open-binding-review-product" ${context}>${reviewStatus === "待审核" ? "审核" : "查看"}</button>`;
     const editAction = ["待审核", "已激活"].includes(reviewStatus)
       ? `<button class="text-action" data-action="fx-edit-binding-review-product" ${context}>编辑</button>`
-      : "";
+      : fxDisabledAction("编辑", "当前状态不支持编辑产品资料");
     return `${reviewAction}${editAction}`;
   }
 
@@ -424,10 +496,22 @@ function fxLoginPage(portal) {
         const product = fxBindingReviewProduct(request);
         const reviewStatus = fxBindingReviewStatus(request.status);
         const actions = fxBindingReviewActions(request, product, reviewStatus);
-        return `<tr><td>${fxEscape(request.product)}</td><td class="mono">${fxEscape(request.batch || "—")}</td><td>${fxEscape(product?.category || "—")}</td><td>${fxEscape(request.customer)}</td><td><button class="text-action mono" data-action="fx-order-detail" data-no="${fxEscape(request.orderNo)}">${fxEscape(request.orderNo)}</button></td><td class="mono">${fxEscape(range || "—")}</td><td>${formatNumber(request.amount)}</td><td>${fxEscape(request.time || "—")}</td><td>${status(reviewStatus)}</td><td>${status(request.currentBindingStatus)}</td><td class="action-column"><div class="table-actions">${actions}</div></td></tr>`;
+        return `<tr><td>${fxEscape(request.product)}</td><td class="mono">${fxEscape(request.batch || "—")}</td><td>${fxEscape(product?.category || "—")}</td><td>${fxEscape(request.customer)}</td><td><button class="text-action mono" data-action="fx-order-detail" data-no="${fxEscape(request.orderNo)}">${fxEscape(request.orderNo)}</button></td><td class="mono code-range-cell">${fxEscape(range || "—")}</td><td>${formatNumber(request.amount)}</td><td>${fxEscape(request.time || "—")}</td><td>${status(reviewStatus)}</td><td>${status(request.currentBindingStatus)}</td><td class="action-column"><div class="table-actions">${actions}</div></td></tr>`;
       }).join("")
       : fxEmpty(11, "未找到绑定申请");
-    return `<div class="page">${pageHeader("绑定审核", "统一审核产品资料、关联订单、申请数量与绑定码段")}<div class="toolbar"><div class="filters bind-request-search-filters">${fxFilterInput("fx-bind-request-customer-search", state.bindRequestCustomerFilter, "搜索客户名称")}${fxFilterInput("fx-bind-request-order-search", state.bindRequestOrderFilter, "搜索订单号")}${fxFilterInput("fx-bind-request-product-search", state.bindRequestProductFilter, "搜索产品名称")}${fxFilterInput("fx-bind-request-batch-search", state.bindRequestBatchFilter, "搜索产品批次")}<button type="button" class="button small list-reset-button" data-action="fx-reset-list" data-reset-context="bind-requests">${icon("rotate-ccw", "↻")}重置</button></div></div><div class="table-shell"><div class="table-scroll"><table class="bind-request-table"><thead><tr><th>产品名称</th><th>产品批次</th><th>${fxTableSelectHeader("产品大类", "bindRequestCategory", ["全部大类", "农产品", "养殖品", "加工食品", "工业品", "医疗卫生用品"], state.bindRequestCategory)}</th><th>客户名称</th><th>订单号</th><th>申请码段</th><th>申请数量</th><th>${fxCustomerDateHeader("申请时间", "bindRequest")}</th><th>${fxTableSelectHeader("审核状态", "bindRequestStatus", ["全部状态", "待审核", "已激活", "已驳回"], state.bindRequestStatus)}</th><th>${fxTableSelectHeader("当前绑定状态", "bindRequestCurrentStatus", ["全部状态", "待激活", "未绑定", "已激活", "撤回申请中", "部分撤回", "已撤回"], state.bindRequestCurrentStatus)}</th><th class="action-column">操作</th></tr></thead><tbody>${body}</tbody></table></div>${pagination(rows.length)}</div></div>`;
+    const advancedOpen = Boolean(state.bindRequestAdvancedOpen);
+    const advancedActive = Boolean(
+      state.bindRequestBatchFilter ||
+      state.bindRequestCategory !== "全部大类" ||
+      state.bindRequestStatus !== "全部状态" ||
+      state.bindRequestCurrentStatus !== "全部状态" ||
+      state.bindRequestDateFrom ||
+      state.bindRequestDateTo
+    );
+    const advancedFilters = advancedOpen
+      ? `<div class="advanced-filter-group">${fxFilterInput("fx-bind-request-batch-search", state.bindRequestBatchFilter, "搜索产品批次")}${fxToolbarSelectFilter("产品大类", "bindRequestCategory", ["全部大类", "农产品", "养殖品", "加工食品", "工业品", "医疗卫生用品"], state.bindRequestCategory)}${fxToolbarCustomerDateFilter("申请时间", "bindRequest")}${fxToolbarSelectFilter("审核状态", "bindRequestStatus", ["全部状态", "待审核", "已激活", "已驳回"], state.bindRequestStatus)}${fxToolbarSelectFilter("当前绑定状态", "bindRequestCurrentStatus", ["全部状态", "待激活", "未绑定", "已激活", "撤回申请中", "部分撤回", "已撤回"], state.bindRequestCurrentStatus)}</div>`
+      : "";
+    return `<div class="page">${pageHeader("绑定审核", "统一审核产品资料、关联订单、申请数量与绑定码段")}<div class="toolbar"><div class="filters bind-request-search-filters">${fxFilterInput("fx-bind-request-customer-search", state.bindRequestCustomerFilter, "搜索客户名称")}${fxFilterInput("fx-bind-request-order-search", state.bindRequestOrderFilter, "搜索订单号")}${fxFilterInput("fx-bind-request-product-search", state.bindRequestProductFilter, "搜索产品名称")}<button type="button" class="button small list-reset-button" data-action="fx-reset-list" data-reset-context="bind-requests">${icon("rotate-ccw", "↻")}重置</button><button type="button" class="button small advanced-filter-button ${advancedOpen ? "is-open" : ""} ${advancedActive ? "active" : ""}" data-action="fx-toggle-bind-request-advanced" aria-expanded="${advancedOpen}">${icon(advancedOpen ? "chevron-up" : "sliders-horizontal", advancedOpen ? "⌃" : "≡")}${advancedOpen ? "收起筛选" : "高级筛选"}</button>${advancedFilters}</div></div><div class="table-shell"><div class="table-scroll"><table class="bind-request-table code-range-table"><thead><tr><th>产品名称</th><th>产品批次</th><th>产品大类</th><th>客户名称</th><th>订单号</th><th>申请码段</th><th>申请数量</th><th>申请时间</th><th>审核状态</th><th>当前绑定状态</th><th class="action-column">操作</th></tr></thead><tbody>${body}</tbody></table></div>${pagination(rows.length)}</div></div>`;
   }
 
   function fxFilteredReviews() {
@@ -539,7 +623,8 @@ function fxLoginPage(portal) {
     const ranges = [...new Set(fxResolvedWithdrawalSegments(item).map(segment => segment.range).filter(Boolean))];
     if (!ranges.length) return `<span class="muted">未记录具体码段</span>`;
     if (ranges.length === 1) return `<span class="withdrawal-range-primary mono" title="${fxEscape(ranges[0])}">${fxEscape(ranges[0])}</span>`;
-    const popoverId = `fx-withdrawal-ranges-${Number(item.index)}`;
+    const popoverKey = String(item?.index ?? item?.id ?? item?.no ?? ranges.join("-")).replace(/[^a-zA-Z0-9_-]/g, "-");
+    const popoverId = `fx-withdrawal-ranges-${popoverKey || "item"}`;
     return `<div class="withdrawal-range-summary"><span class="withdrawal-range-primary mono" title="${fxEscape(ranges[0])}">${fxEscape(ranges[0])}</span><button type="button" class="withdrawal-range-more" data-action="fx-toggle-withdrawal-ranges" data-popover-id="${popoverId}" aria-label="查看全部 ${ranges.length} 个撤回码段">+${ranges.length - 1}</button><div id="${popoverId}" class="withdrawal-range-popover" popover role="dialog" aria-label="全部撤回码段"><div class="withdrawal-range-popover-head"><div><strong>撤回码段</strong><span>共 ${ranges.length} 段</span></div><button type="button" class="icon-button" data-action="fx-toggle-withdrawal-ranges" data-popover-id="${popoverId}" aria-label="关闭" title="关闭">${icon("x", "×")}</button></div><div class="withdrawal-range-popover-list">${ranges.map(range => `<span class="mono">${fxEscape(range)}</span>`).join("")}</div></div></div>`;
   }
   function fxWithdrawalAmount(item) {
@@ -566,15 +651,14 @@ function fxLoginPage(portal) {
   }
   opsReviews = function () {
     const rows = fxFilteredReviews();
-    return `<div class="page">${pageHeader("产品审核", "审核客户已提交的产品资料，并维护已激活产品内容")}<div class="toolbar"><div class="filters">${fxFilterInput("fx-review-search", state.filter, "产品、客户或批次")}</div><button class="button" data-action="fx-export-products">${icon("download", "↓")}导出</button></div><div class="table-shell"><div class="table-scroll"><table><thead><tr><th>产品名称</th><th>产品批次</th><th>${fxTableSelectHeader("产品大类", "productCategory", ["全部大类", "农产品", "养殖品", "加工食品", "工业品", "医疗卫生用品"], state.productCategory)}</th><th>客户名称</th><th>${fxCustomerDateHeader("产品提交时间", "review")}</th><th>${fxTableSelectHeader("状态", "reviewStatus", ["全部状态", "待审核", "已激活", "已驳回"], state.reviewStatus)}</th><th>操作</th></tr></thead><tbody>${rows.length ? rows.map(item => { const reviewAction = `<button class="text-action" data-action="open-review" data-id="${item.id}">${item.status === "待审核" ? "审核" : "查看"}</button>`; const editAction = ["待审核", "已激活"].includes(item.status) ? `<button class="text-action" data-action="fx-ops-edit-product" data-id="${item.id}">编辑</button>` : ""; return `<tr><td><div class="cell-main">${fxEscape(item.name)}</div></td><td class="mono">${item.batch}</td><td>${item.category}</td><td>${fxEscape(item.company)}</td><td>${fxEscape(item.submitted || "—")}</td><td>${status(item.status)}</td><td class="action-column"><div class="table-actions">${reviewAction}${editAction}</div></td></tr>`; }).join("") : fxEmpty(7, "未找到产品")}</tbody></table></div>${pagination(rows.length)}</div></div>`;
+    return `<div class="page">${pageHeader("产品审核", "审核客户已提交的产品资料，并维护已激活产品内容")}<div class="toolbar"><div class="filters">${fxFilterInput("fx-review-search", state.filter, "产品、客户或批次")}</div><button class="button" data-action="fx-export-products">${icon("download", "↓")}导出</button></div><div class="table-shell"><div class="table-scroll"><table><thead><tr><th>产品名称</th><th>产品批次</th><th>${fxTableSelectHeader("产品大类", "productCategory", ["全部大类", "农产品", "养殖品", "加工食品", "工业品", "医疗卫生用品"], state.productCategory)}</th><th>客户名称</th><th>${fxCustomerDateHeader("产品提交时间", "review")}</th><th>${fxTableSelectHeader("状态", "reviewStatus", ["全部状态", "待审核", "已激活", "已驳回"], state.reviewStatus)}</th><th>操作</th></tr></thead><tbody>${rows.length ? rows.map(item => { const reviewAction = `<button class="text-action" data-action="open-review" data-id="${item.id}">${item.status === "待审核" ? "审核" : "查看"}</button>`; const editAction = ["待审核", "已激活"].includes(item.status) ? `<button class="text-action" data-action="fx-ops-edit-product" data-id="${item.id}">编辑</button>` : fxDisabledAction("编辑", "当前状态不支持编辑产品资料"); return `<tr><td><div class="cell-main">${fxEscape(item.name)}</div></td><td class="mono">${item.batch}</td><td>${item.category}</td><td>${fxEscape(item.company)}</td><td>${fxEscape(item.submitted || "—")}</td><td>${status(item.status)}</td><td class="action-column"><div class="table-actions">${reviewAction}${editAction}</div></td></tr>`; }).join("") : fxEmpty(7, "未找到产品")}</tbody></table></div>${pagination(rows.length)}</div></div>`;
   };
 
   opsWithdrawals = function () {
-    const noTerm = state.withdrawalNoFilter.trim().toLowerCase();
     const productTerm = state.withdrawalProductFilter.trim().toLowerCase();
     const customerTerm = state.withdrawalCustomerFilter.trim().toLowerCase();
-    const rows = fxNewestRows(withdrawals.map((item, index) => ({ ...item, index })).filter(item => (!noTerm || String(item.no || "").toLowerCase().includes(noTerm)) && (!productTerm || String(item.product || "").toLowerCase().includes(productTerm)) && (!customerTerm || String(item.customer || "").toLowerCase().includes(customerTerm)) && (state.withdrawalStatus === "全部状态" || item.status === state.withdrawalStatus) && fxMatchesCustomerDate(item.time, "opsWithdrawal")), item => item.time);
-    return `<div class="page">${pageHeader("撤回审核", "审批已激活产品的码段撤回或整产品撤回，处理结果自动通知客户")}<div class="toolbar"><div class="filters withdrawal-search-filters">${fxFilterInput("fx-withdrawal-no-search", state.withdrawalNoFilter, "搜索申请编号")}${fxFilterInput("fx-withdrawal-product-search", state.withdrawalProductFilter, "搜索产品名称")}${fxFilterInput("fx-withdrawal-customer-search", state.withdrawalCustomerFilter, "搜索客户名称")}<button type="button" class="button small list-reset-button" data-action="fx-reset-list" data-reset-context="withdrawals">${icon("rotate-ccw", "↻")}重置</button></div></div><div class="table-shell"><div class="table-scroll"><table class="withdrawal-review-table"><thead><tr><th>申请编号</th><th>产品名称</th><th>产品批次</th><th>撤回码段</th><th>撤回数量</th><th>客户名称</th><th>撤回原因</th><th>${fxCustomerDateHeader("申请时间", "opsWithdrawal")}</th><th>${fxTableSelectHeader("状态", "withdrawalStatus", ["全部状态", "待审批", "已通过", "已驳回"], state.withdrawalStatus)}</th><th>操作</th></tr></thead><tbody>${rows.length ? rows.map(item => { const product = fxProductForRecord(item); return `<tr><td class="mono">${item.no}</td><td>${fxEscape(item.product)}</td><td class="mono">${fxEscape(item.batch || product?.batch || "—")}</td><td>${fxWithdrawalRangeSummaryMarkup(item)}</td><td>${formatNumber(fxWithdrawalAmount(item))}</td><td>${fxEscape(item.customer)}</td><td>${fxEscape(item.reason)}</td><td>${fxEscape(item.time || "—")}</td><td>${status(item.status)}</td><td>${item.status === "待审批" ? `<button class="text-action success-text" data-action="fx-approve-withdrawal" data-index="${item.index}">通过</button><button class="text-action danger-text" data-action="fx-reject-withdrawal" data-index="${item.index}">驳回</button>` : `<button class="text-action" data-action="fx-view-withdrawal" data-index="${item.index}">查看</button>`}</td></tr>`; }).join("") : fxEmpty(10, "未找到撤回申请")}</tbody></table></div>${pagination(rows.length)}</div></div>`;
+    const rows = fxNewestRows(withdrawals.map((item, index) => ({ ...item, index })).filter(item => (!productTerm || String(item.product || "").toLowerCase().includes(productTerm)) && (!customerTerm || String(item.customer || "").toLowerCase().includes(customerTerm)) && (state.withdrawalStatus === "全部状态" || item.status === state.withdrawalStatus) && fxMatchesCustomerDate(item.time, "opsWithdrawal")), item => item.time);
+    return `<div class="page">${pageHeader("撤回审核", "审批已激活产品的码段撤回或整产品撤回，处理结果自动通知客户")}<div class="toolbar"><div class="filters withdrawal-search-filters">${fxFilterInput("fx-withdrawal-product-search", state.withdrawalProductFilter, "搜索产品名称")}${fxFilterInput("fx-withdrawal-customer-search", state.withdrawalCustomerFilter, "搜索客户名称")}<button type="button" class="button small list-reset-button" data-action="fx-reset-list" data-reset-context="withdrawals">${icon("rotate-ccw", "↻")}重置</button></div></div><div class="table-shell"><div class="table-scroll"><table class="withdrawal-review-table code-range-table"><thead><tr><th>产品名称</th><th>产品批次</th><th>撤回码段</th><th>撤回数量</th><th>客户名称</th><th>撤回原因</th><th>${fxCustomerDateHeader("申请时间", "opsWithdrawal")}</th><th>${fxTableSelectHeader("状态", "withdrawalStatus", ["全部状态", "待审批", "已通过", "已驳回"], state.withdrawalStatus)}</th><th>操作</th></tr></thead><tbody>${rows.length ? rows.map(item => { const product = fxProductForRecord(item); const decisionActions = item.status === "待审批" ? `<button class="text-action success-text" data-action="fx-approve-withdrawal" data-index="${item.index}">通过</button><button class="text-action danger-text" data-action="fx-reject-withdrawal" data-index="${item.index}">驳回</button>` : `${fxDisabledAction("通过", "当前申请已处理", "success-text")}${fxDisabledAction("驳回", "当前申请已处理", "danger-text")}`; return `<tr><td>${fxEscape(item.product)}</td><td class="mono">${fxEscape(item.batch || product?.batch || "—")}</td><td class="code-range-cell">${fxWithdrawalRangeSummaryMarkup(item)}</td><td>${formatNumber(fxWithdrawalAmount(item))}</td><td>${fxEscape(item.customer)}</td><td>${fxEscape(item.reason)}</td><td>${fxEscape(item.time || "—")}</td><td>${status(item.status)}</td><td class="action-column"><div class="table-actions">${decisionActions}<button class="text-action" data-action="fx-view-withdrawal" data-index="${item.index}">查看</button></div></td></tr>`; }).join("") : fxEmpty(9, "未找到撤回申请")}</tbody></table></div>${pagination(rows.length)}</div></div>`;
   };
 
   function fxMessageHeader(label, filter, customerScope = false) {
@@ -583,6 +667,17 @@ function fxLoginPage(portal) {
     if (filter === "time") return `<div class="table-heading"><span>${label}</span><button type="button" class="header-filter-control message-date-trigger date-filter-trigger ${active ? "active" : ""}" data-action="fx-open-message-calendar" aria-label="筛选${label}" aria-expanded="${state.messageCalendarOpen}" title="筛选${label}">${icon("calendar-range", "▦")}</button></div>`;
     const options = fxMessageFilterOptions(filter, customerScope).map(value => `<option value="${fxEscape(value)}" ${value === current ? "selected" : ""}>${fxEscape(value)}</option>`).join("");
     return `<div class="table-heading"><span>${label}</span><label class="header-filter-control ${active ? "active" : ""}" title="筛选${label}">${icon("list-filter", "≡")}<select data-message-filter="${filter}" aria-label="筛选${label}">${options}</select></label></div>`;
+  }
+  function fxToolbarMessageSelectFilter(label, filter, customerScope = false) {
+    const current = fxMessageFilterValue(filter);
+    const active = !String(current).startsWith("全部");
+    const options = fxMessageFilterOptions(filter, customerScope).map(value => `<option value="${fxEscape(value)}" ${value === current ? "selected" : ""}>${fxEscape(value)}</option>`).join("");
+    return `<label class="toolbar-filter-field"><span class="filter-field-label">${fxEscape(label)}</span><select class="${active ? "" : "is-placeholder"}" data-message-filter="${filter}" aria-label="筛选${fxEscape(label)}">${options}</select></label>`;
+  }
+  function fxToolbarMessageDateFilter(label) {
+    const active = Boolean(state.messageDateFrom || state.messageDateTo);
+    const rangeText = state.messageDateFrom && state.messageDateTo ? (state.messageDateFrom === state.messageDateTo ? state.messageDateFrom : `${state.messageDateFrom} 至 ${state.messageDateTo}`) : state.messageDateFrom ? `${state.messageDateFrom} 起` : state.messageDateTo ? `截至 ${state.messageDateTo}` : "请选择";
+    return `<div class="toolbar-date-range-field"><span class="filter-field-label">${fxEscape(label)}</span><button type="button" class="date-filter-trigger toolbar-date-filter toolbar-date-range-trigger ${active ? "active" : "is-placeholder"}" data-action="fx-open-message-calendar" aria-label="筛选${fxEscape(label)}" aria-expanded="${state.messageCalendarOpen}" title="筛选${fxEscape(label)}"><span class="toolbar-date-range-text">${fxEscape(rangeText)}</span>${icon("calendar-range", "▦")}</button></div>`;
   }
   function fxCustomerDatePrefix(context) {
     return { order: "customerOrder", product: "customerProduct", review: "review", withdrawal: "customerWithdrawal", opsWithdrawal: "withdrawal", bindRequest: "bindRequest", orderBindingRequested: "orderBindingRequested", orderBindingProcessed: "orderBindingProcessed", inventoryAllocation: "inventoryAllocation" }[context] || "customerOrder";
@@ -598,6 +693,13 @@ function fxLoginPage(portal) {
   function fxCustomerDateHeader(label, context) {
     const range = fxCustomerDateRange(context); const active = Boolean(range.from || range.to); const open = state.customerCalendarOpen && state.customerCalendarContext === context;
     return `<div class="table-heading"><span>${label}</span><button type="button" class="header-filter-control date-filter-trigger ${active ? "active" : ""}" data-action="fx-open-customer-calendar" data-date-context="${context}" aria-label="筛选${label}" aria-expanded="${open}" title="筛选${label}">${icon("calendar-range", "▦")}</button></div>`;
+  }
+  function fxToolbarCustomerDateFilter(label, context) {
+    const range = fxCustomerDateRange(context);
+    const active = Boolean(range.from || range.to);
+    const open = state.customerCalendarOpen && state.customerCalendarContext === context;
+    const rangeText = range.from && range.to ? (range.from === range.to ? range.from : `${range.from} 至 ${range.to}`) : range.from ? `${range.from} 起` : range.to ? `截至 ${range.to}` : "请选择";
+    return `<div class="toolbar-date-range-field"><span class="filter-field-label">${fxEscape(label)}</span><button type="button" class="date-filter-trigger toolbar-date-filter toolbar-date-range-trigger ${active ? "active" : "is-placeholder"}" data-action="fx-open-customer-calendar" data-date-context="${context}" aria-label="筛选${fxEscape(label)}" aria-expanded="${open}" title="筛选${fxEscape(label)}"><span class="toolbar-date-range-text">${fxEscape(rangeText)}</span>${icon("calendar-range", "▦")}</button></div>`;
   }
   function fxMatchesCustomerDate(value, context) {
     const date = String(value || "").slice(0, 10); const range = fxCustomerDateRange(context);
@@ -657,7 +759,8 @@ function fxLoginPage(portal) {
     if (!state.messageCalendarOpen) return "";
     const left = new Date(`${state.messageCalendarLeftMonth}T00:00:00`); const right = new Date(`${state.messageCalendarRightMonth}T00:00:00`);
     const rangeText = state.messageDateDraftFrom ? `${state.messageDateDraftFrom}${state.messageDateDraftTo ? ` — ${state.messageDateDraftTo}` : ""}` : "请选择日期范围";
-    return `<div class="message-calendar-layer date-calendar-layer" data-action="fx-close-message-calendar"><section class="message-date-popover date-filter-popover" role="dialog" aria-label="发送时间筛选" data-action="fx-calendar-panel"><div class="calendar-months">${fxCalendarMonthMarkup(left, "message", "left")}${fxCalendarMonthMarkup(right, "message", "right")}</div><footer class="calendar-footer"><span class="calendar-range-text">${rangeText}</span><div><button type="button" class="button" data-action="fx-clear-message-calendar">清除</button><button type="button" class="button primary" data-action="fx-apply-message-calendar" ${state.messageDateDraftFrom ? "" : "disabled"}>确定</button></div></footer></section></div>`;
+    const label = state.portal === "customer" ? "接收时间筛选" : "发送时间筛选";
+    return `<div class="message-calendar-layer date-calendar-layer" data-action="fx-close-message-calendar"><section class="message-date-popover date-filter-popover" role="dialog" aria-label="${label}" data-action="fx-calendar-panel"><div class="calendar-months">${fxCalendarMonthMarkup(left, "message", "left")}${fxCalendarMonthMarkup(right, "message", "right")}</div><footer class="calendar-footer"><span class="calendar-range-text">${rangeText}</span><div><button type="button" class="button" data-action="fx-clear-message-calendar">清除</button><button type="button" class="button primary" data-action="fx-apply-message-calendar" ${state.messageDateDraftFrom ? "" : "disabled"}>确定</button></div></footer></section></div>`;
   }
   function fxOperatorCalendar() {
     if (!state.operatorCalendarOpen) return "";
@@ -676,7 +779,7 @@ function fxLoginPage(portal) {
     const context = state.customerCalendarContext; const range = fxCustomerDateRange(context, true);
     const left = new Date(`${state.customerCalendarLeftMonth}T00:00:00`); const right = new Date(`${state.customerCalendarRightMonth}T00:00:00`);
     const rangeText = range.from ? `${range.from}${range.to ? ` — ${range.to}` : ""}` : "请选择日期范围";
-    const label = { order: "创建时间筛选", product: "提交时间筛选", review: "产品提交时间筛选", withdrawal: "申请时间筛选", opsWithdrawal: "申请时间筛选", bindRequest: "申请时间筛选", orderBindingRequested: "申请时间筛选", orderBindingProcessed: "处理时间筛选", inventoryAllocation: "分配时间筛选" }[context] || "时间筛选";
+    const label = { order: "分配时间筛选", product: "提交时间筛选", review: "产品提交时间筛选", withdrawal: "申请时间筛选", opsWithdrawal: "申请时间筛选", bindRequest: "申请时间筛选", orderBindingRequested: "申请时间筛选", orderBindingProcessed: "处理时间筛选", inventoryAllocation: "分配时间筛选" }[context] || "时间筛选";
     return `<div class="message-calendar-layer date-calendar-layer" data-action="fx-close-customer-calendar"><section class="message-date-popover date-filter-popover" role="dialog" aria-label="${label}" data-action="fx-customer-calendar-panel"><div class="calendar-months">${fxCalendarMonthMarkup(left, "customer", "left")}${fxCalendarMonthMarkup(right, "customer", "right")}</div><footer class="calendar-footer"><span class="calendar-range-text">${rangeText}</span><div><button type="button" class="button" data-action="fx-clear-customer-calendar">清除</button><button type="button" class="button primary" data-action="fx-apply-customer-calendar" ${range.from ? "" : "disabled"}>确定</button></div></footer></section></div>`;
   }
   function fxSyncMessageSelection(root) {
@@ -703,13 +806,25 @@ function fxLoginPage(portal) {
   messagesPage = function (isCustomer = false) {
     const rows = isCustomer ? fxFilteredCustomerMessages() : fxFilteredOpsMessages();
     const selected = new Set(state.selectedMessageIds.map(Number));
-    const customerReadFilter = isCustomer ? `<label class="message-toolbar-filter" aria-label="阅读状态筛选"><select data-message-filter="read" aria-label="阅读状态筛选"><option value="全部阅读状态" ${state.messageReadFilter === "全部阅读状态" ? "selected" : ""}>全部</option><option value="未读" ${state.messageReadFilter === "未读" ? "selected" : ""}>未读</option><option value="已读" ${state.messageReadFilter === "已读" ? "selected" : ""}>已读</option></select></label>` : "";
+    const customerReadFilter = "";
     const customerReadActions = isCustomer ? `<button type="button" class="button" data-action="fx-mark-selected-read" ${state.selectedMessageIds.length ? "" : "disabled"}>${icon("mail-check", "✓")}标记为已读</button><button type="button" class="button" data-action="fx-mark-read" ${messages.some(item => fxRecordBelongsToCustomer(item, fxCurrentCustomer()) && item.unread) ? "" : "disabled"}>${icon("check-check", "✓")}全部标为已读</button>` : "";
-    const recipientHeader = isCustomer ? "" : `<th>${fxMessageHeader("接收方", "recipient")}</th>`;
+    const deleteMessagesAction = !isCustomer ? `<button type="button" class="button danger" data-action="fx-delete-selected-messages" ${state.selectedMessageIds.length ? "" : "disabled"}>${icon("trash-2", "×")}删除${state.selectedMessageIds.length ? ` (${state.selectedMessageIds.length})` : ""}</button>` : "";
+    const advancedOpen = Boolean(state.messageAdvancedOpen);
+    const advancedActive = isCustomer
+      ? (state.messageTypeFilter !== "全部消息类型" || state.messageReadFilter !== "全部阅读状态" || Boolean(state.messageDateFrom || state.messageDateTo))
+      : (state.messageRecipientFilter !== "全部接收方" || state.messageTypeFilter !== "全部消息类型" || state.messageReadFilter !== "全部阅读状态" || Boolean(state.messageDateFrom || state.messageDateTo));
+    const advancedFilters = advancedOpen
+      ? `<div class="advanced-filter-group message-advanced-filter-group">${isCustomer ? `${fxToolbarMessageDateFilter("接收时间")}${fxToolbarMessageSelectFilter("消息类型", "type", true)}${fxToolbarMessageSelectFilter("阅读状态", "read", true)}` : `${fxToolbarMessageSelectFilter("接收方", "recipient")}${fxToolbarMessageDateFilter("发送时间")}${fxToolbarMessageSelectFilter("消息类型", "type")}${fxToolbarMessageSelectFilter("客户阅读状态", "read")}`}</div>`
+      : "";
+    const advancedButton = `<button type="button" class="button small advanced-filter-button ${advancedOpen ? "is-open" : ""} ${advancedActive ? "active" : ""}" data-action="fx-toggle-message-advanced" aria-expanded="${advancedOpen}">${icon(advancedOpen ? "chevron-up" : "sliders-horizontal", advancedOpen ? "⌃" : "≡")}${advancedOpen ? "收起筛选" : "高级筛选"}</button>`;
+    const recipientHeader = isCustomer ? "" : `<th>接收方</th>`;
+    const timeHeader = isCustomer ? "接收时间" : "发送时间";
+    const typeHeader = "消息类型";
+    const readHeader = isCustomer ? "" : `<th>客户阅读状态</th>`;
     const recipientCell = item => isCustomer ? "" : `<td>${fxEscape(item.recipient)}</td>`;
     const tableColumns = isCustomer ? 5 : 7;
-    const colgroup = `<col class="message-checkbox-column"><col><col>${isCustomer ? "" : "<col>"}<col><col>${isCustomer ? "" : "<col>"}`;
-    return `<div class="page">${pageHeader("站内信", isCustomer ? "查看审核、激活与撤回处理结果" : "查看系统向客户发送的通知记录")}<div class="toolbar message-toolbar">${customerReadFilter}<div class="message-toolbar-actions"><div class="filters message-search-fields">${fxFilterInput("fx-message-title-search", state.messageTitleSearch, "搜索消息标题")}${fxFilterInput("fx-message-content-search", state.messageContentSearch, "搜索内容摘要")}<button type="button" class="button small list-reset-button" data-action="fx-reset-list" data-reset-context="messages">${icon("rotate-ccw", "↻")}重置</button></div><button type="button" class="button danger" data-action="fx-delete-selected-messages" ${state.selectedMessageIds.length ? "" : "disabled"}>${icon("trash-2", "×")}删除${state.selectedMessageIds.length ? ` (${state.selectedMessageIds.length})` : ""}</button>${customerReadActions}</div></div><section class="panel"><div class="table-scroll"><table class="message-table" data-sequence="off"><colgroup>${colgroup}</colgroup><thead><tr><th class="message-checkbox-cell"><input id="fx-message-select-all" type="checkbox" aria-label="勾选当前筛选的全部消息"></th><th>消息标题</th><th>内容摘要</th>${recipientHeader}<th>${fxMessageHeader(isCustomer ? "接收时间" : "发送时间", "time", isCustomer)}</th><th>${fxMessageHeader("消息类型", "type", isCustomer)}</th>${isCustomer ? "" : `<th>${fxMessageHeader("客户阅读状态", "read")}</th>`}</tr></thead><tbody>${rows.length ? rows.map(item => `<tr class="${item.unread ? "unread-row" : ""}"><td class="message-checkbox-cell"><input type="checkbox" data-message-select value="${item.id}" aria-label="勾选消息：${fxEscape(item.title)}" ${selected.has(Number(item.id)) ? "checked" : ""}></td><td><button class="message-link message-title-link ${isCustomer ? `message-title-with-state${item.unread ? "" : " is-read"}` : ""}" data-action="fx-read-message" data-id="${item.id}" title="${fxEscape(item.title)}" ${isCustomer ? `aria-label="${item.unread ? "未读" : "已读"}消息：${fxEscape(item.title)}"` : ""}>${isCustomer ? `<span class="message-state-icon ${item.unread ? "unread" : "read"}">${icon(item.unread ? "mail" : "mail-open", item.unread ? "✉" : "▱")}</span>` : ""}<span>${fxEscape(item.title)}</span></button></td><td><button class="message-link message-summary-link" data-action="fx-read-message" data-id="${item.id}" title="${fxEscape(item.detail)}">${fxEscape(item.detail)}</button></td>${recipientCell(item)}<td>${item.time}</td><td>${fxEscape(item.type)}</td>${isCustomer ? "" : `<td>${item.unread ? `<span class="unread-dot"></span>未读` : "已读"}</td>`}</tr>`).join("") : fxEmpty(tableColumns, "未找到匹配消息")}</tbody></table></div></section></div>`;
+    const colgroup = `<col class="message-checkbox-column"><col class="message-title-column"><col class="message-summary-column">${isCustomer ? "" : `<col class="message-recipient-column">`}<col class="message-time-column"><col class="message-type-column">${isCustomer ? "" : `<col class="message-read-column">`}`;
+    return `<div class="page">${pageHeader("站内信", isCustomer ? "查看审核、激活与撤回处理结果" : "查看系统向客户发送的通知记录")}<div class="toolbar message-toolbar">${customerReadFilter}<div class="message-toolbar-actions"><div class="filters message-search-fields">${fxFilterInput("fx-message-title-search", state.messageTitleSearch, "搜索消息标题")}${fxFilterInput("fx-message-content-search", state.messageContentSearch, "搜索内容摘要")}${deleteMessagesAction}<button type="button" class="button small list-reset-button" data-action="fx-reset-list" data-reset-context="messages">${icon("rotate-ccw", "↻")}重置</button>${advancedButton}${customerReadActions}${advancedFilters}</div></div></div><section class="panel"><div class="table-scroll"><table class="message-table ${isCustomer ? "message-table-customer" : "message-table-ops"}" data-sequence="off"><colgroup>${colgroup}</colgroup><thead><tr><th class="message-checkbox-cell"><input id="fx-message-select-all" type="checkbox" aria-label="勾选当前筛选的全部消息"></th><th>消息标题</th><th>内容摘要</th>${recipientHeader}<th>${timeHeader}</th><th>${typeHeader}</th>${readHeader}</tr></thead><tbody>${rows.length ? rows.map(item => `<tr class="${item.unread ? "unread-row" : ""}"><td class="message-checkbox-cell"><input type="checkbox" data-message-select value="${item.id}" aria-label="勾选消息：${fxEscape(item.title)}" ${selected.has(Number(item.id)) ? "checked" : ""}></td><td><button class="message-link message-title-link ${isCustomer ? `message-title-with-state${item.unread ? "" : " is-read"}` : ""}" data-action="fx-read-message" data-id="${item.id}" title="${fxEscape(item.title)}" ${isCustomer ? `aria-label="${item.unread ? "未读" : "已读"}消息：${fxEscape(item.title)}"` : ""}>${isCustomer ? `<span class="message-state-icon ${item.unread ? "unread" : "read"}">${icon(item.unread ? "mail" : "mail-open", item.unread ? "✉" : "▱")}</span>` : ""}<span>${fxEscape(item.title)}</span></button></td><td><button class="message-link message-summary-link" data-action="fx-read-message" data-id="${item.id}" title="${fxEscape(item.detail)}">${fxEscape(item.detail)}</button></td>${recipientCell(item)}<td>${item.time}</td><td>${fxEscape(item.type)}</td>${isCustomer ? "" : `<td>${item.unread ? `<span class="unread-dot"></span>未读` : "已读"}</td>`}</tr>`).join("") : fxEmpty(tableColumns, "未找到匹配消息")}</tbody></table></div></section></div>`;
   };
 
   settingsPage = function (isCustomer = false) {

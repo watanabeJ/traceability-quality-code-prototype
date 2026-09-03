@@ -78,8 +78,8 @@ function opsReviews() {
 function opsWithdrawals() {
   return `<div class="page">
     ${pageHeader("撤回审核", "审批已激活产品的码段或整产品撤回申请")}
-    <div class="toolbar"><div class="filters"><div class="search-field">${icon("search", "⌕")}<input placeholder="申请编号、产品或客户"></div><select><option>全部状态</option><option>待审批</option><option>已通过</option><option>已驳回</option></select></div></div>
-    <div class="table-shell"><div class="table-scroll"><table><colgroup><col style="width:15%"><col style="width:20%"><col style="width:21%"><col style="width:20%"><col style="width:10%"><col style="width:14%"></colgroup><thead><tr><th>申请编号</th><th>产品名称</th><th>客户名称</th><th>撤回原因</th><th>状态</th><th>操作</th></tr></thead><tbody>${withdrawals.map((w, idx) => `<tr><td class="mono">${w.no}</td><td>${w.product}</td><td>${w.customer}</td><td><div class="cell-main" title="${w.reason}">${w.reason}</div></td><td>${status(w.status)}</td><td>${w.status === "待审批" ? `<button class="text-action success-text" data-action="approve-withdrawal" data-index="${idx}">通过</button><button class="text-action danger-text" data-action="reject-withdrawal" data-index="${idx}">驳回</button>` : `<button class="text-action">查看</button>`}</td></tr>`).join("")}</tbody></table></div>${pagination(withdrawals.length)}</div>
+    <div class="toolbar"><div class="filters"><div class="search-field">${icon("search", "⌕")}<input placeholder="产品或客户"></div><select><option>全部状态</option><option>待审批</option><option>已通过</option><option>已驳回</option></select></div></div>
+    <div class="table-shell"><div class="table-scroll"><table><colgroup><col style="width:24%"><col style="width:24%"><col style="width:26%"><col style="width:12%"><col style="width:14%"></colgroup><thead><tr><th>产品名称</th><th>客户名称</th><th>撤回原因</th><th>状态</th><th>操作</th></tr></thead><tbody>${withdrawals.map((w, idx) => `<tr><td>${w.product}</td><td>${w.customer}</td><td><div class="cell-main" title="${w.reason}">${w.reason}</div></td><td>${status(w.status)}</td><td>${w.status === "待审批" ? `<button class="text-action success-text" data-action="approve-withdrawal" data-index="${idx}">通过</button><button class="text-action danger-text" data-action="reject-withdrawal" data-index="${idx}">驳回</button>` : `<button class="text-action">查看</button>`}</td></tr>`).join("")}</tbody></table></div>${pagination(withdrawals.length)}</div>
   </div>`;
 }
 
@@ -124,7 +124,7 @@ function customerEditor() {
 }
 
 function customerWithdrawals() {
-  return `<div class="page">${pageHeader("撤回申请", "选择产品的一个或多个已绑码段发起撤回申请", `<button class="button primary" data-action="fx-open-withdraw">${icon("plus", "+")}发起申请</button>`)}<div class="table-shell"><div class="table-scroll"><table><thead><tr><th>申请编号</th><th>产品名称</th><th>撤回码段</th><th>撤回原因</th><th>申请时间</th><th>状态</th><th>处理说明</th></tr></thead><tbody><tr><td class="mono">WD-202607-006</td><td>云岭春芽红茶</td><td class="mono">YL00880001–YL00892000</td><td>批次质检资料更新</td><td>2026-07-24 15:06</td><td>${status("已通过")}</td><td>选定码段已重置</td></tr><tr><td class="mono">WD-202606-011</td><td>古树晒青毛茶</td><td class="mono">YL00893001–YL00909000</td><td>生产单位信息更正</td><td>2026-06-18 11:30</td><td>${status("已驳回")}</td><td>请联系运营方直接修改</td></tr></tbody></table></div>${pagination(2)}</div></div>`;
+  return `<div class="page">${pageHeader("撤回申请", "选择产品的一个或多个已绑码段发起撤回申请", `<button class="button primary" data-action="fx-open-withdraw">${icon("plus", "+")}发起申请</button>`)}<div class="table-shell"><div class="table-scroll"><table><thead><tr><th>产品名称</th><th>撤回码段</th><th>撤回原因</th><th>申请时间</th><th>状态</th><th>处理说明</th></tr></thead><tbody><tr><td>云岭春芽红茶</td><td class="mono">YL00880001–YL00892000</td><td>批次质检资料更新</td><td>2026-07-24 15:06</td><td>${status("已通过")}</td><td>选定码段已重置</td></tr><tr><td>古树晒青毛茶</td><td class="mono">YL00893001–YL00909000</td><td>生产单位信息更正</td><td>2026-06-18 11:30</td><td>${status("已驳回")}</td><td>请联系运营方直接修改</td></tr></tbody></table></div>${pagination(2)}</div></div>`;
 }
 
 function renderCustomer() {

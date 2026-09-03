@@ -292,6 +292,7 @@ const fxToday = "2026-07-27";
       style: item.style || "二维码核心区块",
       size: item.size || "25 × 25 mm",
       note: item.note || "",
+      status: item.status || "",
     });
   }
   function fxIsLegacyInventoryOrder(item) {
@@ -385,6 +386,7 @@ const fxToday = "2026-07-27";
       allocatedBy: item.allocatedBy || "历史数据",
       customerId: linkedCustomer?.id || item.customerId || null,
     });
+    fxNormalizeAllocationSegments(item);
     fxNormalizeActivationIds(item);
     return item;
   }
@@ -1145,17 +1147,20 @@ const fxToday = "2026-07-27";
   fxEnsureRelationshipConsistency();
   let fxLegacyBatchLinksChanged = false;
   orders.forEach((order, index) => {
-    let batch = codeBatches.find(item => item.no === order.sourceBatchNo && fxCodeRangeContains(item.range, order.range));
-    if (!batch) batch = codeBatches.find(item => item.range === order.range && Number(item.total || 0) === Number(order.total || 0));
+    const allocationSegments = fxOrderAllocationSegments(order);
+    const allSegmentsInBatch = batch => allocationSegments.length && allocationSegments.every(segment => fxCodeRangeContains(batch.range, segment.range));
+    const anySegmentOverlapsBatch = batch => allocationSegments.length && allocationSegments.some(segment => fxCodeRangesOverlap(batch.range, segment.range));
+    let batch = codeBatches.find(item => item.no === order.sourceBatchNo && allSegmentsInBatch(item));
+    if (!batch && allocationSegments.length === 1) batch = codeBatches.find(item => item.range === allocationSegments[0].range && Number(item.total || 0) === Number(order.total || 0));
     if (!batch) {
-      const containingBatches = codeBatches.filter(item => fxCodeRangeContains(item.range, order.range));
+      const containingBatches = codeBatches.filter(allSegmentsInBatch);
       if (containingBatches.length) {
         batch = [...containingBatches].sort((left, right) => Number(left.total || 0) - Number(right.total || 0) || String(left.createdAt || "").localeCompare(String(right.createdAt || "")))[0];
         if (containingBatches.length > 1) order.migrationNote = "历史来源批次存在重叠，已按最小包含范围归属";
       }
     }
     if (!batch) {
-      const overlappingBatches = codeBatches.filter(item => fxCodeRangesOverlap(item.range, order.range));
+      const overlappingBatches = codeBatches.filter(anySegmentOverlapsBatch);
       if (overlappingBatches.length) {
         order.sourceBatchNo = "";
         order.migrationStatus = "待核对";
@@ -1317,7 +1322,7 @@ const fxToday = "2026-07-27";
     orderCustomerFilter: "", orderNumberFilter: "", orderFrom: "", orderTo: "", orderSortKey: "", orderSortDirection: "asc",
     orderDateDraftFrom: "", orderDateDraftTo: "", orderCalendarOpen: false,
     orderCalendarLeftMonth: "2026-06-01", orderCalendarRightMonth: "2026-07-01",
-    bindRequestCustomerFilter: "", bindRequestOrderFilter: "", bindRequestProductFilter: "", bindRequestBatchFilter: "", bindRequestStatus: "全部状态", bindRequestCurrentStatus: "全部状态", bindRequestCategory: "全部大类",
+    bindRequestCustomerFilter: "", bindRequestOrderFilter: "", bindRequestProductFilter: "", bindRequestBatchFilter: "", bindRequestStatus: "全部状态", bindRequestCurrentStatus: "全部状态", bindRequestCategory: "全部大类", bindRequestAdvancedOpen: false,
     bindRequestSortKey: "", bindRequestSortDirection: "asc",
     bindRequestDateFrom: "", bindRequestDateTo: "", bindRequestDateDraftFrom: "", bindRequestDateDraftTo: "",
     orderBindingProductFilter: "", orderBindingBatchFilter: "", orderBindingCategory: "全部大类", orderBindingStatus: "全部状态",
@@ -1326,18 +1331,19 @@ const fxToday = "2026-07-27";
     orderBindingProcessedDateFrom: "", orderBindingProcessedDateTo: "", orderBindingProcessedDateDraftFrom: "", orderBindingProcessedDateDraftTo: "",
     productCategory: "全部大类",
     reviewDateFrom: "", reviewDateTo: "", reviewDateDraftFrom: "", reviewDateDraftTo: "",
-    withdrawalNoFilter: "", withdrawalProductFilter: "", withdrawalCustomerFilter: "", withdrawalStatus: "全部状态",
+    withdrawalProductFilter: "", withdrawalCustomerFilter: "", withdrawalStatus: "全部状态",
     withdrawalDateFrom: "", withdrawalDateTo: "", withdrawalDateDraftFrom: "", withdrawalDateDraftTo: "",
+    customerOrderNoFilter: "", customerOrderRangeFilter: "", customerOrderAdvancedOpen: false,
     customerOrderSortKey: "", customerOrderSortDirection: "asc",
     customerProductFilter: "", customerProductStatus: "全部状态", customerProductCategory: "全部大类",
     customerProductSortKey: "", customerProductSortDirection: "asc",
-    customerWithdrawalStatus: "全部状态",
+    customerWithdrawalProductFilter: "", customerWithdrawalBatchFilter: "", customerWithdrawalStatus: "全部状态", customerWithdrawalAdvancedOpen: false,
     customerOrderDateFrom: "", customerOrderDateTo: "", customerOrderDateDraftFrom: "", customerOrderDateDraftTo: "",
     customerProductDateFrom: "", customerProductDateTo: "", customerProductDateDraftFrom: "", customerProductDateDraftTo: "",
     customerWithdrawalDateFrom: "", customerWithdrawalDateTo: "", customerWithdrawalDateDraftFrom: "", customerWithdrawalDateDraftTo: "",
     customerCalendarOpen: false, customerCalendarContext: "", customerCalendarLeftMonth: "2026-06-01", customerCalendarRightMonth: "2026-07-01",
     messageTitleSearch: "", messageContentSearch: "", messageReadFilter: "全部阅读状态", messageRecipientFilter: "全部接收方",
-    messageTimeFilter: "全部发送时间", messageTypeFilter: "全部消息类型",
+    messageTimeFilter: "全部发送时间", messageTypeFilter: "全部消息类型", messageAdvancedOpen: false,
     messageDateFrom: "", messageDateTo: "", messageDateDraftFrom: "", messageDateDraftTo: "",
     messageCalendarOpen: false, messageCalendarLeftMonth: "2026-06-01", messageCalendarRightMonth: "2026-07-01",
     selectedMessageIds: [],
@@ -1465,20 +1471,75 @@ const fxToday = "2026-07-27";
       && childStart.number >= containerStart.number
       && childEnd.number <= containerEnd.number);
   }
+  function fxAllocationSegmentFromRange(input = {}) {
+    const range = typeof input === "string" ? input : input?.range;
+    const [startCode, endCode] = String(range || "").split("–");
+    const start = fxParseCode(startCode); const end = fxParseCode(endCode);
+    if (!start || !end || start.prefix !== end.prefix || start.number > end.number) return null;
+    const amount = Number(input?.amount || 0) || end.number - start.number + 1;
+    return {
+      range: `${fxCodeAt(start, start.number)}–${fxCodeAt(start, end.number)}`,
+      amount,
+      first: fxCodeAt(start, start.number),
+      last: fxCodeAt(start, end.number),
+      start,
+      firstNumber: start.number,
+      lastNumber: end.number,
+    };
+  }
+  function fxOrderAllocationSegments(order) {
+    if (!order) return [];
+    const rawSegments = Array.isArray(order.allocationSegments) && order.allocationSegments.length
+      ? order.allocationSegments
+      : order.range ? [{ range: order.range, amount: order.total }] : [];
+    return rawSegments
+      .map(segment => fxAllocationSegmentFromRange(segment))
+      .filter(Boolean)
+      .sort((left, right) => left.start.prefix.localeCompare(right.start.prefix) || left.firstNumber - right.firstNumber || left.lastNumber - right.lastNumber);
+  }
+  function fxAllocationSegmentsTotal(segments = []) {
+    return segments.reduce((sum, segment) => sum + Number(segment.amount || 0), 0);
+  }
+  function fxAllocationSegmentsLabel(segments = []) {
+    if (!segments.length) return "";
+    if (segments.length === 1) return segments[0].range;
+    return `${segments[0].range} 等 ${segments.length} 段`;
+  }
+  function fxAllocationSegmentsText(segments = []) {
+    return segments.map(segment => `${segment.range}（${formatNumber(segment.amount)} 枚）`).join("、");
+  }
+  function fxAllocationRangeLabel(order) {
+    return fxAllocationSegmentsLabel(fxOrderAllocationSegments(order)) || order?.range || "";
+  }
+  function fxAllocationSegmentsPreviewMarkup(segments = []) {
+    if (!segments.length) return `<div class="allocation-segment-empty">暂无可分配码段</div>`;
+    const rows = segments.map((segment, index) => `<div class="allocation-segment-row"><span class="allocation-segment-index">第 ${index + 1} 段</span><strong class="mono">${fxEscape(segment.range)}</strong><span>${formatNumber(segment.amount)} 枚</span></div>`).join("");
+    return `<div class="allocation-segment-summary">共 ${segments.length} 段，合计 ${formatNumber(fxAllocationSegmentsTotal(segments))} 枚</div><div class="allocation-segment-list">${rows}</div>`;
+  }
+  function fxNormalizeAllocationSegments(order) {
+    const segments = fxOrderAllocationSegments(order);
+    if (!segments.length) return order;
+    order.allocationSegments = segments.map(segment => ({ range: segment.range, amount: Number(segment.amount || 0) }));
+    order.allocationRangeLabel = fxAllocationSegmentsLabel(segments);
+    if (!fxAllocationSegmentFromRange(order.range)) order.range = segments[0].range;
+    return order;
+  }
   function fxEffectiveActivationIntervals(orderOrOrders, predicate = null) {
     const scopedOrders = Array.isArray(orderOrOrders) ? orderOrOrders : orderOrOrders ? [orderOrOrders] : [];
     const intervals = scopedOrders.flatMap(order => {
-      const [orderStartCode, orderEndCode] = String(order?.range || "").split("–");
-      const orderStart = fxParseCode(orderStartCode); const orderEnd = fxParseCode(orderEndCode);
-      if (!orderStart || !orderEnd || orderStart.prefix !== orderEnd.prefix) return [];
+      const allocationSegments = fxOrderAllocationSegments(order);
+      if (!allocationSegments.length) return [];
       return (order.activations || []).flatMap(activation => {
         if (activation?.status === "已重置" || (predicate && !predicate(activation, order))) return [];
         const [activationStartCode, activationEndCode] = String(activation?.range || "").split("–");
         const activationStart = fxParseCode(activationStartCode); const activationEnd = fxParseCode(activationEndCode);
-        if (!activationStart || !activationEnd || activationStart.prefix !== orderStart.prefix || activationEnd.prefix !== orderStart.prefix) return [];
-        const first = Math.max(orderStart.number, activationStart.number);
-        const last = Math.min(orderEnd.number, activationEnd.number);
-        return first <= last ? [{ prefix: orderStart.prefix, width: orderStart.width, first, last }] : [];
+        if (!activationStart || !activationEnd || activationStart.prefix !== activationEnd.prefix) return [];
+        return allocationSegments.map(segment => {
+          if (activationStart.prefix !== segment.start.prefix) return null;
+          const first = Math.max(segment.firstNumber, activationStart.number);
+          const last = Math.min(segment.lastNumber, activationEnd.number);
+          return first <= last ? { prefix: segment.start.prefix, width: segment.start.width, first, last } : null;
+        }).filter(Boolean);
       });
     }).sort((left, right) => left.prefix.localeCompare(right.prefix) || left.first - right.first || left.last - right.last);
     const merged = [];
@@ -1551,15 +1612,15 @@ const fxToday = "2026-07-27";
     const batch = fxResolveCodeBatch(batchOrNo);
     if (!batch) return [];
     return orders.filter(order => order.sourceBatchNo === batch.no
-      && fxCodeRangeContains(batch.range, order.range));
+      && fxOrderAllocationSegments(order).some(segment => fxCodeRangeContains(batch.range, segment.range)));
   }
   function fxCodeBatchFreeRanges(batchOrNo) {
     const batch = fxResolveCodeBatch(batchOrNo);
     const [startCode, endCode] = String(batch?.range || "").split("–");
     const start = fxParseCode(startCode); const end = fxParseCode(endCode);
     if (!batch || !start || !end || start.prefix !== end.prefix) return [];
-    const occupied = fxCodeBatchAllocations(batch).map(order => {
-      const [allocatedStartCode, allocatedEndCode] = String(order.range || "").split("–");
+    const occupied = fxCodeBatchAllocations(batch).flatMap(order => fxOrderAllocationSegments(order)).map(segment => {
+      const [allocatedStartCode, allocatedEndCode] = String(segment.range || "").split("–");
       const allocatedStart = fxParseCode(allocatedStartCode); const allocatedEnd = fxParseCode(allocatedEndCode);
       return allocatedStart && allocatedEnd && allocatedStart.prefix === start.prefix && allocatedEnd.prefix === start.prefix
         ? { first: Math.max(start.number, allocatedStart.number), last: Math.min(end.number, allocatedEnd.number) }
@@ -1602,11 +1663,26 @@ const fxToday = "2026-07-27";
     return fxCodeBatchAvailableAmount(batch) > 0 ? "部分分配" : "已分配";
   }
   function fxCodeBatchAllocationRange(batchOrNo, amount, sourceRange = "") {
+    return fxAllocationSegmentsLabel(fxCodeBatchAllocationSegments(batchOrNo, amount, sourceRange));
+  }
+  function fxCodeBatchAllocationSegments(batchOrNo, amount, sourceRange = "") {
     const requestedAmount = Number(amount || 0);
-    if (!Number.isSafeInteger(requestedAmount) || requestedAmount < 1) return "";
+    if (!Number.isSafeInteger(requestedAmount) || requestedAmount < 1) return [];
     const free = fxCodeBatchFreeRanges(batchOrNo);
-    const source = sourceRange ? free.find(item => item.range === sourceRange) : free.find(item => item.amount >= requestedAmount);
-    return source && source.amount >= requestedAmount ? fxRequestedRange(source.range, requestedAmount) : "";
+    if (!free.length) return [];
+    const startIndex = sourceRange ? free.findIndex(item => item.range === sourceRange) : 0;
+    if (startIndex < 0) return [];
+    let remaining = requestedAmount;
+    const segments = [];
+    for (const source of free.slice(startIndex)) {
+      if (remaining <= 0) break;
+      const takeAmount = Math.min(Number(source.amount || 0), remaining);
+      const range = fxRequestedRange(source.range, takeAmount);
+      const segment = fxAllocationSegmentFromRange({ range, amount: takeAmount });
+      if (segment) segments.push(segment);
+      remaining -= takeAmount;
+    }
+    return remaining === 0 ? segments : [];
   }
   function fxCodeSerialUpperBound(prefix = "QR") {
     const normalizedPrefix = String(prefix || "QR").trim().toUpperCase();
@@ -1618,64 +1694,49 @@ const fxToday = "2026-07-27";
   }
   function fxNextCodeSerialNumber(prefix = "QR") { return fxCodeSerialUpperBound(prefix) + 1; }
   function fxActivationRange(order, amount, excludeProductId = null, excludeBindRequestId = null) {
-    const [startCode, endCode] = String(order.range || "").split("–");
-    const start = fxParseCode(startCode); const end = fxParseCode(endCode); const needed = Number(amount || 0);
-    if (!start || !end || needed < 1 || start.prefix !== end.prefix) return "";
-    const reservedRows = [
-      ...fxCombinedPendingProducts(order.no, excludeProductId).map(product => ({ range: product.requestedRange, status: "有效" })),
-      ...bindRequests.filter(request => request.orderNo === order.no && request.status === "待审批" && request.range && !fxSameId(request.id, excludeBindRequestId)).map(request => ({ range: request.range, status: "有效" })),
-    ];
-    const occupied = [...(order.activations || []), ...reservedRows].filter(row => row.status !== "已重置" && row.range).map(row => {
-      const [rowStartCode, rowEndCode] = String(row.range).split("–");
-      const rowStart = fxParseCode(rowStartCode); const rowEnd = fxParseCode(rowEndCode);
-      return rowStart && rowEnd && rowStart.prefix === start.prefix && rowEnd.prefix === start.prefix
-        ? { first: Math.max(start.number, rowStart.number), last: Math.min(end.number, rowEnd.number) }
-        : null;
-    }).filter(row => row && row.first <= row.last).sort((a, b) => a.first - b.first);
-    let first = start.number;
-    for (const interval of occupied) {
-      if (interval.first - first >= needed) return `${fxCodeAt(start, first)}–${fxCodeAt(start, first + needed - 1)}`;
-      first = Math.max(first, interval.last + 1);
-    }
-    return end.number - first + 1 >= needed ? `${fxCodeAt(start, first)}–${fxCodeAt(start, first + needed - 1)}` : "";
+    const needed = Number(amount || 0);
+    if (needed < 1) return "";
+    const source = fxOrderFreeRanges(order, excludeProductId, excludeBindRequestId).find(item => item.amount >= needed);
+    return source ? fxRequestedRange(source.range, needed) : "";
   }
   function fxOrderFreeRanges(order, excludeProductId = null, excludeBindRequestId = null) {
-    const [startCode, endCode] = String(order?.range || "").split("–");
-    const start = fxParseCode(startCode); const end = fxParseCode(endCode);
-    if (!start || !end || start.prefix !== end.prefix) return [];
+    const allocationSegments = fxOrderAllocationSegments(order);
+    if (!allocationSegments.length) return [];
     const reservedRows = [
       ...fxCombinedPendingProducts(order.no, excludeProductId).map(product => ({ range: product.requestedRange, status: "有效" })),
       ...bindRequests.filter(request => request.orderNo === order.no && request.status === "待审批" && request.range && !fxSameId(request.id, excludeBindRequestId)).map(request => ({ range: request.range, status: "有效" })),
     ];
-    const occupied = [...(order.activations || []), ...reservedRows].filter(row => row.status !== "已重置" && row.range).map(row => {
-      const [rowStartCode, rowEndCode] = String(row.range).split("–");
-      const rowStart = fxParseCode(rowStartCode); const rowEnd = fxParseCode(rowEndCode);
-      return rowStart && rowEnd && rowStart.prefix === start.prefix && rowEnd.prefix === start.prefix
-        ? { first: Math.max(start.number, rowStart.number), last: Math.min(end.number, rowEnd.number) }
-        : null;
-    }).filter(row => row && row.first <= row.last).sort((left, right) => left.first - right.first);
-    const merged = [];
-    occupied.forEach(interval => {
-      const previous = merged[merged.length - 1];
-      if (previous && interval.first <= previous.last + 1) previous.last = Math.max(previous.last, interval.last);
-      else merged.push({ ...interval });
+    return allocationSegments.flatMap(segment => {
+      const occupied = [...(order.activations || []), ...reservedRows].filter(row => row.status !== "已重置" && row.range).map(row => {
+        const [rowStartCode, rowEndCode] = String(row.range).split("–");
+        const rowStart = fxParseCode(rowStartCode); const rowEnd = fxParseCode(rowEndCode);
+        return rowStart && rowEnd && rowStart.prefix === segment.start.prefix && rowEnd.prefix === segment.start.prefix
+          ? { first: Math.max(segment.firstNumber, rowStart.number), last: Math.min(segment.lastNumber, rowEnd.number) }
+          : null;
+      }).filter(row => row && row.first <= row.last).sort((left, right) => left.first - right.first);
+      const merged = [];
+      occupied.forEach(interval => {
+        const previous = merged[merged.length - 1];
+        if (previous && interval.first <= previous.last + 1) previous.last = Math.max(previous.last, interval.last);
+        else merged.push({ ...interval });
+      });
+      const ranges = [];
+      let first = segment.firstNumber;
+      merged.forEach(interval => {
+        if (interval.first > first) ranges.push({ first, last: interval.first - 1 });
+        first = Math.max(first, interval.last + 1);
+      });
+      if (first <= segment.lastNumber) ranges.push({ first, last: segment.lastNumber });
+      return ranges.map(range => ({
+        range: `${fxCodeAt(segment.start, range.first)}–${fxCodeAt(segment.start, range.last)}`,
+        first: fxCodeAt(segment.start, range.first),
+        last: fxCodeAt(segment.start, range.last),
+        amount: range.last - range.first + 1,
+        start: segment.start,
+        firstNumber: range.first,
+        lastNumber: range.last,
+      }));
     });
-    const ranges = [];
-    let first = start.number;
-    merged.forEach(interval => {
-      if (interval.first > first) ranges.push({ first, last: interval.first - 1 });
-      first = Math.max(first, interval.last + 1);
-    });
-    if (first <= end.number) ranges.push({ first, last: end.number });
-    return ranges.map(range => ({
-      range: `${fxCodeAt(start, range.first)}–${fxCodeAt(start, range.last)}`,
-      first: fxCodeAt(start, range.first),
-      last: fxCodeAt(start, range.last),
-      amount: range.last - range.first + 1,
-      start,
-      firstNumber: range.first,
-      lastNumber: range.last,
-    }));
   }
   function fxRequestedRange(sourceRange, amount) {
     const [startCode, endCode] = String(sourceRange || "").split("–");
@@ -1927,7 +1988,7 @@ const fxToday = "2026-07-27";
     }
     const manifest = ["序列号,批次号,分配状态,订单号,客户名称", ...Array.from({ length: exportAmount }, (_, i) => {
       const serial = fxSerial(prefix, exportStart + i);
-      const allocation = allocations.find(item => fxCodeInRange(serial, item.range));
+      const allocation = allocations.find(item => fxOrderAllocationSegments(item).some(segment => fxCodeInRange(serial, segment.range)));
       return `${serial},${order.no},${allocation ? "已分配" : "未分配"},${allocation?.no || ""},${allocation?.customer || ""}`;
     })].join("\n");
     const rangeLabel = isPartial ? exportRange : order.range;

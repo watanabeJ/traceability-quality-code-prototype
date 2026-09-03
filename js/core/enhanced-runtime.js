@@ -476,7 +476,11 @@ render = function () {
   }
   function fxSyncCodeAllocationPreview(rawAmount = fxRead("fx-allocation-amount")) {
     const preview = document.getElementById("fx-allocation-range-preview");
-    if (preview) preview.value = fxAllocationPreviewRange(rawAmount) || "暂无可分配的连续码段";
+    const batch = codeBatches.find(item => item.no === state.selectedCodeBatchNo);
+    const segments = batch ? fxCodeBatchAllocationSegments(batch, Number(rawAmount || 0), state.allocationSourceRange || "") : [];
+    if (!preview) return;
+    if ("value" in preview) preview.value = fxAllocationPreviewRange(rawAmount) || "暂无可分配码段";
+    else preview.innerHTML = fxAllocationSegmentsPreviewMarkup(segments);
   }
   function fxResetListFilters(context) {
     const resets = {
@@ -487,11 +491,13 @@ render = function () {
       "inventory-allocations": { inventoryAllocationCustomerFilter: "", inventoryAllocationOrderFilter: "", inventoryAllocationSortKey: "", inventoryAllocationSortDirection: "asc", inventoryAllocationDateFrom: "", inventoryAllocationDateTo: "", inventoryAllocationDateDraftFrom: "", inventoryAllocationDateDraftTo: "", customerCalendarOpen: false, customerCalendarContext: "" },
       orders: { orderCustomerFilter: "", orderNumberFilter: "", orderFrom: "", orderTo: "", orderDateDraftFrom: "", orderDateDraftTo: "", orderCalendarOpen: false, orderSortKey: "", orderSortDirection: "asc", highlightOrderNo: null },
       reviews: { filter: "", productCategory: "全部大类", reviewStatus: "全部状态", reviewDateFrom: "", reviewDateTo: "", reviewDateDraftFrom: "", reviewDateDraftTo: "", customerCalendarOpen: false, customerCalendarContext: "" },
-      "bind-requests": { bindRequestCustomerFilter: "", bindRequestOrderFilter: "", bindRequestProductFilter: "", bindRequestBatchFilter: "", bindRequestStatus: "全部状态", bindRequestCurrentStatus: "全部状态", bindRequestCategory: "全部大类", bindRequestSortKey: "", bindRequestSortDirection: "asc", bindRequestDateFrom: "", bindRequestDateTo: "", bindRequestDateDraftFrom: "", bindRequestDateDraftTo: "", customerCalendarOpen: false, customerCalendarContext: "" },
+      "bind-requests": { bindRequestCustomerFilter: "", bindRequestOrderFilter: "", bindRequestProductFilter: "", bindRequestBatchFilter: "", bindRequestStatus: "全部状态", bindRequestCurrentStatus: "全部状态", bindRequestCategory: "全部大类", bindRequestAdvancedOpen: false, bindRequestSortKey: "", bindRequestSortDirection: "asc", bindRequestDateFrom: "", bindRequestDateTo: "", bindRequestDateDraftFrom: "", bindRequestDateDraftTo: "", customerCalendarOpen: false, customerCalendarContext: "" },
       "order-bindings": { orderBindingProductFilter: "", orderBindingBatchFilter: "", orderBindingCategory: "全部大类", orderBindingStatus: "全部状态", orderBindingSortKey: "", orderBindingSortDirection: "asc", orderBindingRequestedDateFrom: "", orderBindingRequestedDateTo: "", orderBindingRequestedDateDraftFrom: "", orderBindingRequestedDateDraftTo: "", orderBindingProcessedDateFrom: "", orderBindingProcessedDateTo: "", orderBindingProcessedDateDraftFrom: "", orderBindingProcessedDateDraftTo: "", customerCalendarOpen: false, customerCalendarContext: "" },
-      withdrawals: { withdrawalNoFilter: "", withdrawalProductFilter: "", withdrawalCustomerFilter: "", withdrawalStatus: "全部状态", withdrawalDateFrom: "", withdrawalDateTo: "", withdrawalDateDraftFrom: "", withdrawalDateDraftTo: "", customerCalendarOpen: false, customerCalendarContext: "" },
-      messages: { messageTitleSearch: "", messageContentSearch: "", messageReadFilter: "全部阅读状态", messageRecipientFilter: "全部接收方", messageTimeFilter: "全部发送时间", messageTypeFilter: "全部消息类型", messageDateFrom: "", messageDateTo: "", messageDateDraftFrom: "", messageDateDraftTo: "", messageCalendarOpen: false, selectedMessageIds: [] },
+      withdrawals: { withdrawalProductFilter: "", withdrawalCustomerFilter: "", withdrawalStatus: "全部状态", withdrawalDateFrom: "", withdrawalDateTo: "", withdrawalDateDraftFrom: "", withdrawalDateDraftTo: "", customerCalendarOpen: false, customerCalendarContext: "" },
+      messages: { messageTitleSearch: "", messageContentSearch: "", messageReadFilter: "全部阅读状态", messageRecipientFilter: "全部接收方", messageTimeFilter: "全部发送时间", messageTypeFilter: "全部消息类型", messageAdvancedOpen: false, messageDateFrom: "", messageDateTo: "", messageDateDraftFrom: "", messageDateDraftTo: "", messageCalendarOpen: false, selectedMessageIds: [] },
+      "customer-orders": { customerOrderNoFilter: "", customerOrderRangeFilter: "", customerOrderAdvancedOpen: false, customerOrderSortKey: "", customerOrderSortDirection: "asc", customerOrderDateFrom: "", customerOrderDateTo: "", customerOrderDateDraftFrom: "", customerOrderDateDraftTo: "", customerCalendarOpen: false, customerCalendarContext: "", highlightOrderNo: null },
       "customer-products": { customerProductFilter: "", customerProductStatus: "全部状态", customerProductCategory: "全部大类", customerProductDateFrom: "", customerProductDateTo: "", customerProductDateDraftFrom: "", customerProductDateDraftTo: "", customerCalendarOpen: false, customerCalendarContext: "" },
+      "customer-withdrawals": { customerWithdrawalProductFilter: "", customerWithdrawalBatchFilter: "", customerWithdrawalStatus: "全部状态", customerWithdrawalAdvancedOpen: false, customerWithdrawalDateFrom: "", customerWithdrawalDateTo: "", customerWithdrawalDateDraftFrom: "", customerWithdrawalDateDraftTo: "", customerCalendarOpen: false, customerCalendarContext: "" },
     };
     if (!resets[context]) return false;
     Object.assign(state, resets[context]);
@@ -667,13 +673,13 @@ render = function () {
     "fx-new-customer", "fx-view-customer-detail", "fx-view-customer-document", "fx-back-customers", "fx-back-reviews", "fx-cancel-ops-edit",
     "fx-edit-customer", "fx-customer-view-orders", "fx-focus-order", "fx-view-customer-products", "fx-find-customer-account",
     "fx-confirm-customer", "fx-reset-customer-password", "fx-toggle-customer", "fx-export-customers",
-    "fx-new-qr", "fx-finish-order", "fx-view-generated-order", "fx-create-order", "fx-download-qr", "fx-export-orders",
+    "fx-new-qr", "fx-finish-order", "fx-view-generated-order", "fx-create-order", "fx-open-code-batch-download", "fx-download-qr-partial", "fx-download-qr-full", "fx-confirm-qr-download", "fx-download-qr", "fx-export-orders",
     "fx-open-code-allocation", "fx-choose-allocation-batch", "fx-cancel-allocation-target", "fx-open-code-batch-detail", "fx-confirm-code-allocation",
     "fx-open-allocation-recall", "fx-confirm-allocation-recall",
     "fx-ops-bind-order", "fx-confirm-ops-bind",
     "fx-open-binding-review-product", "fx-edit-binding-review-product", "fx-approve-bind-request", "fx-reject-bind-request",
     "fx-confirm-bind-request-reject", "fx-export-products", "fx-ops-edit-product", "fx-open-activation", "fx-confirm-activation",
-    "fx-open-reject", "fx-confirm-reject", "fx-approve-withdrawal", "fx-reject-withdrawal", "fx-confirm-withdraw-decision", "fx-toggle-withdrawal-ranges",
+    "fx-open-reject", "fx-confirm-reject", "fx-approve-withdrawal", "fx-reject-withdrawal", "fx-confirm-withdraw-decision",
     "fx-sort-customers", "fx-sort-orders", "fx-sort-bindRequests",
   ]);
   const fxCustomerOnlyActions = new Set([
@@ -704,6 +710,26 @@ render = function () {
       if (popover.matches(":popover-open")) popover.hidePopover();
       else popover.showPopover();
       return;
+    }
+    if (action === "fx-toggle-bind-request-advanced") {
+      state.bindRequestAdvancedOpen = !state.bindRequestAdvancedOpen;
+      if (!state.bindRequestAdvancedOpen && state.customerCalendarContext === "bindRequest") state.customerCalendarOpen = false;
+      return render();
+    }
+    if (action === "fx-toggle-message-advanced") {
+      state.messageAdvancedOpen = !state.messageAdvancedOpen;
+      if (!state.messageAdvancedOpen) state.messageCalendarOpen = false;
+      return render();
+    }
+    if (action === "fx-toggle-customer-order-advanced") {
+      state.customerOrderAdvancedOpen = !state.customerOrderAdvancedOpen;
+      if (!state.customerOrderAdvancedOpen && state.customerCalendarContext === "order") state.customerCalendarOpen = false;
+      return render();
+    }
+    if (action === "fx-toggle-customer-withdrawal-advanced") {
+      state.customerWithdrawalAdvancedOpen = !state.customerWithdrawalAdvancedOpen;
+      if (!state.customerWithdrawalAdvancedOpen && state.customerCalendarContext === "withdrawal") state.customerCalendarOpen = false;
+      return render();
     }
     if (action === "fx-reset-list") { if (fxResetListFilters(target.dataset.resetContext)) render(); return; }
     if (action === "fx-view-customer-document") return showToast(`${target.dataset.fileName || "附件"} 暂无原始附件，仅保留文件名`);
@@ -1048,7 +1074,20 @@ render = function () {
       fxSaveOperators(); fxSaveBusiness(); state.modal = null; render(); return showToast("操作已完成");
     }
     if (action === "fx-export-customers") { fxDownloadExcel(`客户列表_${fxToday}.xls`, ["客户名称", "账号", "联系电话", "状态", "订单码量", "已激活", "绑定申请中", "剩余可用"], customers.map(item => { const summary = fxCustomerCodeSummary(item.name); return [item.name, item.account, item.phone, item.status, summary.total, summary.active, summary.pending, summary.available]; })); return showToast("客户列表已导出"); }
-    if (action === "fx-new-qr") { if (!fxEnabledOperatorSession()) return showToast("仅运营端可以生成码段"); state.qrStep = 1; state.qrDraft.amount = 500; state.qrDraft.note = ""; state.qrDraft.size = "custom"; state.qrDraft.customWidth = 25; state.qrDraft.customHeight = 25; fxSetGeneratedBatchNo(null); return render(); }
+    if (action === "fx-new-qr") {
+      if (!fxEnabledOperatorSession()) return showToast("仅运营端可以生成码段");
+      state.modal = null;
+      state.opsPage = "codes";
+      state.qrStep = 1;
+      state.qrGeneration = null;
+      state.qrDraft.amount = 500;
+      state.qrDraft.note = "";
+      state.qrDraft.size = "custom";
+      state.qrDraft.customWidth = 25;
+      state.qrDraft.customHeight = 25;
+      fxSetGeneratedBatchNo(null);
+      return render();
+    }
     if (action === "fx-finish-order") { state.inventoryRangeFilter = ""; state.highlightOrderNo = null; fxSetGeneratedBatchNo(null); state.opsPage = "inventory"; return render(); }
     if (action === "fx-view-generated-order") { const no = fxGeneratedBatchNo(); if (!no) return showToast("尚未生成码段"); const batch = codeBatches.find(item => item.no === no); state.inventoryRangeFilter = batch?.range || ""; state.opsPage = "inventory"; return render(); }
     if (action === "fx-create-order") {
@@ -1084,17 +1123,24 @@ render = function () {
       return;
     }
     if (action === "fx-download-qr-partial") {
-      const batch = codeBatches.find(item => item.no === fxGeneratedBatchNo());
+      const batch = codeBatches.find(item => item.no === (target.dataset.no || fxGeneratedBatchNo()));
       if (!batch) return showToast("码段不存在");
       state.modalData = { batchNo: batch.no };
       state.modal = "fx-qr-download";
       return render();
     }
     if (action === "fx-download-qr-full") {
-      const batch = codeBatches.find(item => item.no === fxGeneratedBatchNo());
+      const batch = codeBatches.find(item => item.no === (target.dataset.no || state.modalData?.batchNo || fxGeneratedBatchNo()));
       if (!batch) return showToast("码段不存在");
       const result = fxDownloadQrPackage(batch, { mode: "all" });
       return showToast(result === "queued" ? `已创建 ${formatNumber(batch.total)} 枚二维码完整下载任务，不限制码量` : "完整二维码压缩包已开始下载");
+    }
+    if (action === "fx-open-code-batch-download") {
+      const batch = codeBatches.find(item => item.no === target.dataset.no);
+      if (!batch) return showToast("码段不存在");
+      state.modalData = { batchNo: batch.no };
+      state.modal = "fx-qr-download";
+      return render();
     }
     if (action === "fx-confirm-qr-download") {
       const batch = codeBatches.find(item => item.no === state.modalData?.batchNo);
@@ -1123,7 +1169,7 @@ render = function () {
     if (action === "fx-export-order-ledger") {
       const customerTerm = state.orderCustomerFilter.trim().toLowerCase(); const numberTerm = state.orderNumberFilter.trim().toLowerCase();
       const rows = orders.filter(item => item.allocationStatus !== "已撤销" && (!customerTerm || String(item.customer || "").toLowerCase().includes(customerTerm)) && (!numberTerm || String(item.no || "").toLowerCase().includes(numberTerm)));
-      fxDownloadExcel(`订单台账_${fxToday}.xls`, ["订单号", "客户名称", "分配时间", "序列号范围", "订单码量", "已激活", "绑定申请中", "剩余可用"], rows.map(item => [item.no, item.customer || "", item.allocatedAt || item.createdAt || item.created || "", item.range, item.total, item.active, fxOrderPendingAmount(item), fxOrderAvailableAmount(item)]));
+      fxDownloadExcel(`订单台账_${fxToday}.xls`, ["订单号", "客户名称", "分配时间", "序列号范围", "订单码量", "已激活", "绑定申请中", "剩余可用"], rows.map(item => [item.no, item.customer || "", item.allocatedAt || item.createdAt || item.created || "", fxAllocationSegmentsText(fxOrderAllocationSegments(item)) || fxAllocationRangeLabel(item), item.total, item.active, fxOrderPendingAmount(item), fxOrderAvailableAmount(item)]));
       return showToast(`已导出当前订单台账，共 ${rows.length} 条`);
     }
     if (action === "fx-open-code-allocation") {
@@ -1143,7 +1189,7 @@ render = function () {
     }
     if (action === "fx-open-allocation-recall") {
       if (!fxEnabledOperatorSession()) return showToast("当前账号无权撤销码段分配");
-      if (!["inventory-detail", "customer-detail", "order-detail"].includes(state.opsPage)) return showToast("请在订单详情、客户详情或库存码段详情中撤销分配");
+      if (!["orders", "inventory-detail", "customer-detail", "order-detail"].includes(state.opsPage)) return showToast("请在订单台账、订单详情、客户详情或库存码段详情中撤销分配");
       const order = orders.find(item => item.no === target.dataset.no && item.allocationStatus !== "已撤销");
       if (!order) return showToast("分配记录不存在或已经撤销");
       const reason = fxCodeAllocationRecallBlockReason(order);
@@ -1152,7 +1198,7 @@ render = function () {
     }
     if (action === "fx-confirm-allocation-recall") {
       if (!fxEnabledOperatorSession()) return showToast("当前账号无权撤销码段分配");
-      if (!["inventory-detail", "customer-detail", "order-detail"].includes(state.opsPage)) return showToast("请在订单详情、客户详情或库存码段详情中撤销分配");
+      if (!["orders", "inventory-detail", "customer-detail", "order-detail"].includes(state.opsPage)) return showToast("请在订单台账、订单详情、客户详情或库存码段详情中撤销分配");
       const recallFromPage = state.opsPage;
       const recallReturnPage = state.orderDetailReturnPage;
       const latestOrders = fxStore.get(fxBusinessStorage.orders, null);
@@ -1185,7 +1231,9 @@ render = function () {
       const sourceBatchNo = order.sourceBatchNo;
       state.modal = null; state.selectedOrderNo = null; state.orderDetailReturnPage = "";
       state.selectedCodeBatchNo = codeBatches.some(batch => batch.no === sourceBatchNo) ? sourceBatchNo : null;
-      state.opsPage = recallFromPage === "customer-detail" || (recallFromPage === "order-detail" && recallReturnPage === "customer-detail")
+      state.opsPage = recallFromPage === "orders"
+        ? "orders"
+        : recallFromPage === "customer-detail" || (recallFromPage === "order-detail" && recallReturnPage === "customer-detail")
         ? "customer-detail"
         : state.selectedCodeBatchNo ? "inventory-detail" : "inventory";
       fxSaveBusiness(); render();
@@ -1205,13 +1253,17 @@ render = function () {
       const note = fxRead("fx-allocation-note").trim();
       if (!batch) return showToast("库存码段不存在");
       if (!customer) return showToast("请选择启用状态的客户账号");
-      const selectedFreeRange = fxCodeBatchFreeRanges(batch).find(item => item.range === sourceRange);
-      if (!selectedFreeRange) return showToast("所选连续区间已发生变化，请重新选择");
-      if (!Number.isSafeInteger(amount) || amount < 1 || amount > selectedFreeRange.amount) return showToast("分配数量必须在所选连续区间内");
-      const range = fxRequestedRange(selectedFreeRange.range, amount);
-      if (!range || fxCodeBatchAllocationRange(batch, amount, sourceRange) !== range) return showToast("所选码段已被占用，请重新分配");
+      const freeRanges = fxCodeBatchFreeRanges(batch);
+      const effectiveSourceRange = freeRanges.some(item => item.range === sourceRange) ? sourceRange : freeRanges[0]?.range || "";
+      const sourceIndex = freeRanges.findIndex(item => item.range === effectiveSourceRange);
+      const availableAmount = sourceIndex >= 0 ? freeRanges.slice(sourceIndex).reduce((sum, item) => sum + Number(item.amount || 0), 0) : 0;
+      if (!effectiveSourceRange || sourceIndex < 0) return showToast("当前批次暂无可分配码段");
+      if (!Number.isSafeInteger(amount) || amount < 1 || amount > availableAmount) return showToast("分配数量必须小于等于剩余可用数量");
+      const allocationSegments = fxCodeBatchAllocationSegments(batch, amount, effectiveSourceRange);
+      if (!allocationSegments.length || fxAllocationSegmentsTotal(allocationSegments) !== amount) return showToast("所选码段已被占用，请重新分配");
+      const range = allocationSegments[0].range;
       const allocatedAt = fxNow(); const orderNo = fxNextAllocationOrderNo();
-      const order = fxNormalizeAllocationOrder({ id: Date.now(), no: orderNo, sourceBatchNo: batch.no, customer: customer.name, customerId: customer.id, range, total: amount, active: 0, created: fxCurrentDateParts().date, createdAt: allocatedAt, allocatedAt, allocatedBy: fxCurrentOperator().name, allocationStatus: "已分配", activations: [], note }, orders.length);
+      const order = fxNormalizeAllocationOrder({ id: Date.now(), no: orderNo, sourceBatchNo: batch.no, customer: customer.name, customerId: customer.id, range, allocationSegments: allocationSegments.map(segment => ({ range: segment.range, amount: segment.amount })), allocationRangeLabel: fxAllocationSegmentsLabel(allocationSegments), total: amount, active: 0, created: fxCurrentDateParts().date, createdAt: allocatedAt, allocatedAt, allocatedBy: fxCurrentOperator().name, allocationStatus: "已分配", activations: [], note }, orders.length);
       orders.unshift(order);
       state.modal = null; state.selectedCodeBatchNo = batch.no; state.selectedOrderNo = order.no; state.allocationCustomerId = null; state.allocationSourceRange = ""; state.opsPage = "order-detail"; fxSaveBusiness(); render();
       return showToast(`已向 ${customer.name} 分配 ${formatNumber(amount)} 枚码`);
@@ -1569,7 +1621,7 @@ render = function () {
       if (next !== confirm) return showToast("两次输入的密码不一致");
       account.password = next; fxSaveOperators(); fxSaveBusiness(); state.modal = null; render(); return showToast("登录密码已更新");
     }
-    if (action === "fx-export-customer-orders") { const rows = fxCustomerOrders(); fxDownloadExcel(`订单台账_${fxToday}.xls`, ["订单号", "分配时间", "序列号范围", "订单码量", "已激活", "绑定申请中", "剩余可用"], rows.map(item => [item.no, item.allocatedAt || item.createdAt || item.created || "", item.range, item.total, item.active, fxOrderPendingAmount(item), fxOrderAvailableAmount(item)])); return showToast("订单台账已导出"); }
+    if (action === "fx-export-customer-orders") { const rows = fxCustomerOrders(); fxDownloadExcel(`订单台账_${fxToday}.xls`, ["订单号", "分配时间", "序列号范围", "订单码量", "已激活", "绑定申请中", "剩余可用"], rows.map(item => [item.no, item.allocatedAt || item.createdAt || item.created || "", fxAllocationSegmentsText(fxOrderAllocationSegments(item)) || fxAllocationRangeLabel(item), item.total, item.active, fxOrderPendingAmount(item), fxOrderAvailableAmount(item)])); return showToast("订单台账已导出"); }
     if (action === "fx-customer-product-status") { state.customerPage = "orders"; return render(); }
     if (action === "fx-new-product") return showToast("请从订单台账选择订单后发起新建产品绑定申请");
     if (action === "fx-submit-product-row") {
@@ -1598,9 +1650,9 @@ render = function () {
     if (action === "fx-confirm-submit") { if (!state.editorTargetOrderNo) return showToast("订单不存在，请重新发起申请"); const existingBinding = Boolean(state.editorBindRequestId); if (!(existingBinding ? fxPersistExistingBindEdit(true) : fxPersistDraft(true))) return; state.selectedOrderNo = state.editorTargetOrderNo; state.modal = null; state.customerPage = "order-detail"; state.editorReadonly = true; fxSaveBusiness(); render(); return showToast(existingBinding ? "绑定申请已提交审核" : "产品与绑定申请已提交审核"); }
     if (action === "fx-save-ops-product") { if (!fxEnabledOperatorSession() || state.editorOwner !== "ops") return showToast("当前账号无权编辑产品资料"); const productId = state.editorProductId; if (!fxPersistDraft(false)) return; state.reviewEditing = false; state.editorProductId = null; state.editorDraft = null; state.editorReadonly = false; state.drawerProductId = productId; state.opsPage = "review-detail"; render(); return showToast("产品全部资料已由运营方更新"); }
     if (action === "fx-preview-current") { state.modal = "fx-preview"; return render(); }
-    if (action === "fx-open-add-field") { const module = target.dataset.module; const row = { id: `custom-${Date.now()}-${state.editorDraft.custom[module].length + 1}`, name: "", type: "mixed", value: "", files: [] }; state.editorDraft.custom[module].push(row); state.editorDraft.fieldOrder[module].push(`custom:${row.id}`); state.editorAddingField = null; return render(); }
-    if (action === "fx-cancel-add-field") { state.editorAddingField = null; return render(); }
-    if (action === "fx-add-custom") { const module = target.dataset.module; const row = { id: `custom-${Date.now()}-${state.editorDraft.custom[module].length + 1}`, name: "", type: "mixed", value: "", files: [] }; state.editorDraft.custom[module].push(row); state.editorDraft.fieldOrder[module].push(`custom:${row.id}`); state.editorAddingField = null; return render(); }
+    if (action === "fx-open-add-field") { const module = target.dataset.module; if (!state.editorDraft?.custom?.[module]) return showToast("当前模块不可新增字段"); state.editorAddingField = module; state.modal = "fx-add-custom-field"; return render(); }
+    if (action === "fx-cancel-add-field") { state.editorAddingField = null; state.modal = null; return render(); }
+    if (action === "fx-add-custom") { const module = target.dataset.module || state.editorAddingField; if (!state.editorDraft?.custom?.[module]) return showToast("当前模块不可新增字段"); const type = target.dataset.fieldType === "file" ? "file" : target.dataset.fieldType === "mixed" ? "mixed" : "text"; const row = { id: `custom-${Date.now()}-${state.editorDraft.custom[module].length + 1}`, name: "", type, value: "", files: [] }; state.editorDraft.custom[module].push(row); state.editorDraft.fieldOrder[module].push(`custom:${row.id}`); state.editorAddingField = null; state.modal = null; return render(); }
     if (action === "fx-remove-custom") { const module = target.dataset.module; const row = state.editorDraft.custom[module][Number(target.dataset.index)]; state.editorDraft.custom[module].splice(Number(target.dataset.index), 1); state.editorDraft.fieldOrder[module] = state.editorDraft.fieldOrder[module].filter(token => token !== `custom:${row.id}`); return render(); }
     if (action === "fx-add-trace") { state.editorDraft.trace.push({ id: `trace-${Date.now()}-${state.editorDraft.trace.length + 1}`, date: fxToday, content: "" }); return render(); }
     if (action === "fx-remove-trace") { state.editorDraft.trace.splice(Number(target.dataset.index), 1); return render(); }
@@ -1650,6 +1702,8 @@ render = function () {
     "fx-inventory-allocation-order-search": "inventoryAllocationOrderFilter",
     "fx-order-customer-search": "orderCustomerFilter",
     "fx-order-number-search": "orderNumberFilter",
+    "fx-customer-order-no-search": "customerOrderNoFilter",
+    "fx-customer-order-range-search": "customerOrderRangeFilter",
     "fx-bind-request-customer-search": "bindRequestCustomerFilter",
     "fx-bind-request-order-search": "bindRequestOrderFilter",
     "fx-bind-request-product-search": "bindRequestProductFilter",
@@ -1657,9 +1711,10 @@ render = function () {
     "fx-order-binding-product-search": "orderBindingProductFilter",
     "fx-order-binding-batch-search": "orderBindingBatchFilter",
     "fx-review-search": "filter",
-    "fx-withdrawal-no-search": "withdrawalNoFilter",
     "fx-withdrawal-product-search": "withdrawalProductFilter",
     "fx-withdrawal-customer-search": "withdrawalCustomerFilter",
+    "fx-customer-withdrawal-product-search": "customerWithdrawalProductFilter",
+    "fx-customer-withdrawal-batch-search": "customerWithdrawalBatchFilter",
     "fx-customer-product-search": "customerProductFilter",
     "fx-message-title-search": "messageTitleSearch",
     "fx-message-content-search": "messageContentSearch"
@@ -1751,6 +1806,8 @@ render = function () {
       state.qrDraft.amount = Number(target.value);
       const preview = document.getElementById("fx-qr-range-preview");
       if (preview) preview.value = fxQrRangeData(target.value).range;
+      const amountPreview = document.getElementById("fx-qr-amount-uppercase");
+      if (amountPreview) amountPreview.textContent = fxQrAmountPreviewText(target.value);
     }
     if (target.id === "fx-qr-note") state.qrDraft.note = target.value;
     if (target.id === "fx-qr-width") { state.qrDraft.customWidth = Number(target.value) || 25; fxRefreshQrCorePreview(); }
@@ -1816,16 +1873,19 @@ render = function () {
     if (entryPortal === "scan") return;
     if (target.id === "fx-allocation-source-range") {
       const batch = codeBatches.find(item => item.no === state.selectedCodeBatchNo);
-      const source = batch ? fxCodeBatchFreeRanges(batch).find(item => item.range === target.value) : null;
+      const freeRanges = batch ? fxCodeBatchFreeRanges(batch) : [];
+      const sourceIndex = freeRanges.findIndex(item => item.range === target.value);
+      const source = sourceIndex >= 0 ? freeRanges[sourceIndex] : null;
+      const availableAmount = sourceIndex >= 0 ? freeRanges.slice(sourceIndex).reduce((sum, item) => sum + Number(item.amount || 0), 0) : 0;
       state.allocationSourceRange = source?.range || "";
       const amount = document.getElementById("fx-allocation-amount");
       if (amount && source) {
-        amount.max = String(source.amount);
+        amount.max = String(availableAmount);
         amount.dataset.sourceRange = source.range;
-        amount.value = String(Math.min(Math.max(1, Number(amount.value) || 1), source.amount));
+        amount.value = String(Math.min(Math.max(1, Number(amount.value) || 1), availableAmount));
       }
       const available = document.getElementById("fx-allocation-available");
-      if (available) available.textContent = `可用数量：${formatNumber(source?.amount || 0)} 枚`;
+      if (available) available.textContent = `可用数量：${formatNumber(availableAmount)} 枚`;
       fxSyncCodeAllocationPreview(amount?.value);
       return;
     }
@@ -1913,26 +1973,6 @@ render = function () {
       return;
     }
   });
-
-  let fxDraggedEditorField = null;
-  document.addEventListener("dragstart", event => {
-    const handle = event.target.closest(".editor-drag-handle"); const row = handle?.closest("[data-fx-field-row]"); if (!row || state.editorReadonly || (entryPortal === "ops" ? !fxEnabledOperatorSession() : !fxEnabledCustomerSession())) return;
-    fxDraggedEditorField = { module: row.dataset.module, token: row.dataset.fxFieldRow };
-    row.classList.add("is-dragging");
-    if (event.dataTransfer) { event.dataTransfer.effectAllowed = "move"; event.dataTransfer.setData("text/plain", fxDraggedEditorField.token); }
-  });
-  document.addEventListener("dragover", event => {
-    const row = event.target.closest("[data-fx-field-row]"); if (!row || !fxDraggedEditorField || row.dataset.module !== fxDraggedEditorField.module) return;
-    event.preventDefault(); row.classList.add("is-drop-target");
-  });
-  document.addEventListener("dragleave", event => { event.target.closest("[data-fx-field-row]")?.classList.remove("is-drop-target"); });
-  document.addEventListener("drop", event => {
-    const row = event.target.closest("[data-fx-field-row]"); if (!row || !fxDraggedEditorField || row.dataset.module !== fxDraggedEditorField.module) return;
-    event.preventDefault(); const order = state.editorDraft.fieldOrder[fxDraggedEditorField.module]; const from = order.indexOf(fxDraggedEditorField.token); const to = order.indexOf(row.dataset.fxFieldRow);
-    if (from >= 0 && to >= 0 && from !== to) { const [token] = order.splice(from, 1); order.splice(to, 0, token); }
-    fxDraggedEditorField = null; render();
-  });
-  document.addEventListener("dragend", () => { fxDraggedEditorField = null; document.querySelectorAll(".editor-field-row.is-dragging, .editor-field-row.is-drop-target").forEach(row => row.classList.remove("is-dragging", "is-drop-target")); });
 
   let fxDraggedCustomFile = null;
   function fxSameMediaField(item, dragged) {
