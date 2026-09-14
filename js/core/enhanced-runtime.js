@@ -487,7 +487,7 @@ render = function () {
       operators: { operatorNameFilter: "", operatorAccountFilter: "", operatorStatus: "全部状态", operatorDateFrom: "", operatorDateTo: "", operatorDateDraftFrom: "", operatorDateDraftTo: "", operatorCalendarOpen: false },
       customers: { customerNameFilter: "", customerAccountFilter: "", customerPhoneFilter: "", customerStatus: "全部状态", customerSortKey: "", customerSortDirection: "asc" },
       "customer-detail-orders": { customerDetailOrderFilter: "", customerDetailOrderSortKey: "", customerDetailOrderSortDirection: "asc" },
-      inventory: { inventoryRangeFilter: "", inventoryStatus: "全部状态", orderFrom: "", orderTo: "", orderDateDraftFrom: "", orderDateDraftTo: "", orderCalendarOpen: false, orderSortKey: "", orderSortDirection: "asc" },
+      inventory: { inventoryStatus: "全部状态", orderFrom: "", orderTo: "", orderDateDraftFrom: "", orderDateDraftTo: "", orderCalendarOpen: false, orderSortKey: "", orderSortDirection: "asc" },
       "inventory-allocations": { inventoryAllocationCustomerFilter: "", inventoryAllocationOrderFilter: "", inventoryAllocationSortKey: "", inventoryAllocationSortDirection: "asc", inventoryAllocationDateFrom: "", inventoryAllocationDateTo: "", inventoryAllocationDateDraftFrom: "", inventoryAllocationDateDraftTo: "", customerCalendarOpen: false, customerCalendarContext: "" },
       orders: { orderCustomerFilter: "", orderNumberFilter: "", orderFrom: "", orderTo: "", orderDateDraftFrom: "", orderDateDraftTo: "", orderCalendarOpen: false, orderSortKey: "", orderSortDirection: "asc", highlightOrderNo: null },
       reviews: { filter: "", productCategory: "全部大类", reviewStatus: "全部状态", reviewDateFrom: "", reviewDateTo: "", reviewDateDraftFrom: "", reviewDateDraftTo: "", customerCalendarOpen: false, customerCalendarContext: "" },
@@ -495,7 +495,7 @@ render = function () {
       "order-bindings": { orderBindingProductFilter: "", orderBindingBatchFilter: "", orderBindingCategory: "全部大类", orderBindingStatus: "全部状态", orderBindingSortKey: "", orderBindingSortDirection: "asc", orderBindingRequestedDateFrom: "", orderBindingRequestedDateTo: "", orderBindingRequestedDateDraftFrom: "", orderBindingRequestedDateDraftTo: "", orderBindingProcessedDateFrom: "", orderBindingProcessedDateTo: "", orderBindingProcessedDateDraftFrom: "", orderBindingProcessedDateDraftTo: "", customerCalendarOpen: false, customerCalendarContext: "" },
       withdrawals: { withdrawalProductFilter: "", withdrawalCustomerFilter: "", withdrawalStatus: "全部状态", withdrawalDateFrom: "", withdrawalDateTo: "", withdrawalDateDraftFrom: "", withdrawalDateDraftTo: "", customerCalendarOpen: false, customerCalendarContext: "" },
       messages: { messageTitleSearch: "", messageContentSearch: "", messageReadFilter: "全部阅读状态", messageRecipientFilter: "全部接收方", messageTimeFilter: "全部发送时间", messageTypeFilter: "全部消息类型", messageAdvancedOpen: false, messageDateFrom: "", messageDateTo: "", messageDateDraftFrom: "", messageDateDraftTo: "", messageCalendarOpen: false, selectedMessageIds: [] },
-      "customer-orders": { customerOrderNoFilter: "", customerOrderRangeFilter: "", customerOrderAdvancedOpen: false, customerOrderSortKey: "", customerOrderSortDirection: "asc", customerOrderDateFrom: "", customerOrderDateTo: "", customerOrderDateDraftFrom: "", customerOrderDateDraftTo: "", customerCalendarOpen: false, customerCalendarContext: "", highlightOrderNo: null },
+      "customer-orders": { customerOrderNoFilter: "", customerOrderAdvancedOpen: false, customerOrderSortKey: "", customerOrderSortDirection: "asc", customerOrderDateFrom: "", customerOrderDateTo: "", customerOrderDateDraftFrom: "", customerOrderDateDraftTo: "", customerCalendarOpen: false, customerCalendarContext: "", highlightOrderNo: null },
       "customer-products": { customerProductFilter: "", customerProductStatus: "全部状态", customerProductCategory: "全部大类", customerProductDateFrom: "", customerProductDateTo: "", customerProductDateDraftFrom: "", customerProductDateDraftTo: "", customerCalendarOpen: false, customerCalendarContext: "" },
       "customer-withdrawals": { customerWithdrawalProductFilter: "", customerWithdrawalBatchFilter: "", customerWithdrawalStatus: "全部状态", customerWithdrawalAdvancedOpen: false, customerWithdrawalDateFrom: "", customerWithdrawalDateTo: "", customerWithdrawalDateDraftFrom: "", customerWithdrawalDateDraftTo: "", customerCalendarOpen: false, customerCalendarContext: "" },
     };
@@ -1088,8 +1088,8 @@ render = function () {
       fxSetGeneratedBatchNo(null);
       return render();
     }
-    if (action === "fx-finish-order") { state.inventoryRangeFilter = ""; state.highlightOrderNo = null; fxSetGeneratedBatchNo(null); state.opsPage = "inventory"; return render(); }
-    if (action === "fx-view-generated-order") { const no = fxGeneratedBatchNo(); if (!no) return showToast("尚未生成码段"); const batch = codeBatches.find(item => item.no === no); state.inventoryRangeFilter = batch?.range || ""; state.opsPage = "inventory"; return render(); }
+    if (action === "fx-finish-order") { state.highlightOrderNo = null; fxSetGeneratedBatchNo(null); state.opsPage = "inventory"; return render(); }
+    if (action === "fx-view-generated-order") { const no = fxGeneratedBatchNo(); if (!no) return showToast("尚未生成码段"); state.opsPage = "inventory"; return render(); }
     if (action === "fx-create-order") {
       if (!fxEnabledOperatorSession()) return showToast("当前账号无权生成码段");
       const amount = Number(fxRead("fx-qr-amount"));
@@ -1157,11 +1157,10 @@ render = function () {
       return showToast(`已开始下载 ${formatNumber(amount)} 张二维码样例`);
     }
     if (action === "fx-export-orders") {
-      const rangeTerm = state.inventoryRangeFilter.trim().toLowerCase();
       const preparedRows = codeBatches.map(item => ({ ...item, allocated: fxCodeBatchAllocatedAmount(item), remaining: fxCodeBatchAvailableAmount(item) }));
       const rows = fxSortedRows(preparedRows.filter(item => {
         const created = item.created || String(item.createdAt || "").slice(0, 10);
-        return (!rangeTerm || String(item.range || "").toLowerCase().includes(rangeTerm)) && (state.inventoryStatus === "全部状态" || fxCodeBatchStatus(item) === state.inventoryStatus) && (!state.orderFrom || created >= state.orderFrom) && (!state.orderTo || created <= state.orderTo);
+        return (state.inventoryStatus === "全部状态" || fxCodeBatchStatus(item) === state.inventoryStatus) && (!state.orderFrom || created >= state.orderFrom) && (!state.orderTo || created <= state.orderTo);
       }), "order", item => item.createdAt || item.created);
       fxDownloadExcel(`码段库存_${fxToday}.xls`, ["生成时间", "序列号范围", "备注", "生成数量", "已分配", "剩余库存", "分配状态"], rows.map(item => [item.createdAt || item.created || "", item.range, item.note || "", item.total, fxCodeBatchAllocatedAmount(item), fxCodeBatchAvailableAmount(item), fxCodeBatchAllocationStatus(item)]));
       return showToast(`已导出当前筛选结果，共 ${rows.length} 条`);
@@ -1179,7 +1178,7 @@ render = function () {
       const requestedCustomer = customers.find(item => item.id === Number(target.dataset.customerId) && item.status === "启用");
       state.selectedCodeBatchNo = batch.no; state.allocationCustomerId = requestedCustomer?.id || null; state.allocationSourceRange = fxCodeBatchFreeRanges(batch)[0]?.range || ""; state.modal = "fx-code-allocation"; return render();
     }
-    if (action === "fx-choose-allocation-batch") { if (!fxEnabledOperatorSession()) return showToast("请由运营端分配码段"); const customer = customers.find(item => item.id === Number(target.dataset.customerId) && item.status === "启用"); if (!customer) return showToast("客户账号不存在或已禁用"); state.allocationCustomerId = customer.id; state.inventoryRangeFilter = ""; state.opsPage = "inventory"; return render(); }
+    if (action === "fx-choose-allocation-batch") { if (!fxEnabledOperatorSession()) return showToast("请由运营端分配码段"); const customer = customers.find(item => item.id === Number(target.dataset.customerId) && item.status === "启用"); if (!customer) return showToast("客户账号不存在或已禁用"); state.allocationCustomerId = customer.id; state.opsPage = "inventory"; return render(); }
     if (action === "fx-cancel-allocation-target") { state.allocationCustomerId = null; state.allocationSourceRange = ""; return render(); }
     if (action === "fx-open-code-batch-detail") {
       if (!fxEnabledOperatorSession()) return showToast("库存码段详情仅运营端可查看");
@@ -1371,7 +1370,7 @@ render = function () {
       const requestCustomer = bindingRequest ? fxCustomerForRecord(bindingRequest) : fxCustomerForRecord(product);
       if (!product || !requestCustomer || !fxRecordBelongsToCustomer(product, requestCustomer) || (target.dataset.source === "binding" && !bindingRequest)) return showToast("绑定审核关联的产品或客户不存在");
       const reviewStatus = bindingRequest ? fxBindingReviewStatus(bindingRequest.status) : product.status;
-      if (action === "fx-edit-binding-review-product" && !["待审核", "已激活"].includes(reviewStatus)) return showToast("当前状态不支持编辑产品资料");
+      if (action === "fx-edit-binding-review-product" && !["待审核", "已通过", "已激活"].includes(reviewStatus)) return showToast("当前状态不支持编辑产品资料");
       state.selectedBindRequestId = bindingRequest?.id || null;
       state.drawerProductId = product.id;
       state.modal = null;
@@ -1504,7 +1503,7 @@ render = function () {
     if (action === "fx-view-activation-withdrawal") { const item = withdrawals.find(row => row.no === target.dataset.withdrawalNo && (fxEnabledOperatorSession() || (fxEnabledCustomerSession() && fxRecordBelongsToCustomer(row, fxCurrentCustomer())))); if (!item) return showToast("撤回记录不存在或无权查看"); state.modalData = { withdrawalNo: item.no }; state.modal = "fx-reset-history"; return render(); }
     if (action === "fx-back-order-detail") { state.modal = null; if (state.portal === "customer") state.customerPage = "order-detail"; else state.opsPage = "order-detail"; return render(); }
     if (action === "fx-export-products") { fxDownloadExcel(`产品信息_${fxToday}.xls`, ["产品名称", "产品批次", "产品大类", "客户名称", "产品提交时间", "审核状态"], fxFilteredReviews().map(item => [item.name, item.batch, item.category, item.company, item.submitted || "", item.status])); return showToast("产品信息已导出"); }
-    if (action === "fx-ops-edit-product") { if (!fxEnabledOperatorSession()) return showToast("当前账号无权编辑产品资料"); const product = products.find(item => item.id === Number(target.dataset.id)); const bindingRequest = bindRequests.find(item => fxSameId(item.id, state.selectedBindRequestId) && Number(item.productId) === Number(product?.id)); const reviewStatus = bindingRequest ? fxBindingReviewStatus(bindingRequest.status) : product?.status; if (!product || !["待审核", "已激活"].includes(reviewStatus)) return showToast("当前状态不支持编辑产品资料"); const initialStep = state.opsPage === "review-detail" && state.drawerProductId === product.id ? state.productStep : 0; return fxOpenEditor(product, "ops", product.requestedOrderNo || null, initialStep, true); }
+    if (action === "fx-ops-edit-product") { if (!fxEnabledOperatorSession()) return showToast("当前账号无权编辑产品资料"); const product = products.find(item => item.id === Number(target.dataset.id)); const bindingRequest = bindRequests.find(item => fxSameId(item.id, state.selectedBindRequestId) && Number(item.productId) === Number(product?.id)); const reviewStatus = bindingRequest ? fxBindingReviewStatus(bindingRequest.status) : product?.status; if (!product || !["待审核", "已通过", "已激活"].includes(reviewStatus)) return showToast("当前状态不支持编辑产品资料"); const initialStep = state.opsPage === "review-detail" && state.drawerProductId === product.id ? state.productStep : 0; return fxOpenEditor(product, "ops", product.requestedOrderNo || null, initialStep, true); }
     if (action === "fx-open-activation") { if (!fxEnabledOperatorSession()) return showToast("当前账号无权处理绑定审核"); const product = products.find(item => item.id === Number(target.dataset.id) && item.status === "待审核"); if (!product) return showToast("绑定审核状态已发生变化，请刷新后重试"); state.drawerProductId = product.id; state.modal = "fx-activation"; return render(); }
     if (action === "fx-confirm-activation") {
       if (!fxEnabledOperatorSession()) return showToast("当前账号无权处理绑定申请");
@@ -1697,13 +1696,11 @@ render = function () {
     "fx-customer-account-search": "customerAccountFilter",
     "fx-customer-phone-search": "customerPhoneFilter",
     "fx-customer-detail-order-search": "customerDetailOrderFilter",
-    "fx-inventory-range-search": "inventoryRangeFilter",
     "fx-inventory-allocation-customer-search": "inventoryAllocationCustomerFilter",
     "fx-inventory-allocation-order-search": "inventoryAllocationOrderFilter",
     "fx-order-customer-search": "orderCustomerFilter",
     "fx-order-number-search": "orderNumberFilter",
     "fx-customer-order-no-search": "customerOrderNoFilter",
-    "fx-customer-order-range-search": "customerOrderRangeFilter",
     "fx-bind-request-customer-search": "bindRequestCustomerFilter",
     "fx-bind-request-order-search": "bindRequestOrderFilter",
     "fx-bind-request-product-search": "bindRequestProductFilter",

@@ -3,10 +3,8 @@
 function customerOrders() {
     const allRows = fxCustomerOrders();
     const orderTerm = state.customerOrderNoFilter.trim().toLowerCase();
-    const rangeTerm = state.customerOrderRangeFilter.trim().toLowerCase();
     let rows = allRows.filter(item =>
       (!orderTerm || String(item.no || "").toLowerCase().includes(orderTerm)) &&
-      (!rangeTerm || `${item.range || ""} ${item.allocationRangeLabel || ""} ${fxAllocationSegmentsText(fxOrderAllocationSegments(item))}`.toLowerCase().includes(rangeTerm)) &&
       fxMatchesCustomerDate(item.createdAt || item.created, "order")
     );
     rows = fxSortedRows(rows, "customerOrder", item => item.createdAt || item.created);
@@ -22,7 +20,7 @@ function customerOrders() {
         : fxDisabledAction("申请绑定产品", "当前订单没有可用码量");
       return `<tr class="${state.highlightOrderNo === item.no ? "order-focus-row" : ""}" data-order-no="${fxEscape(item.no)}"><td class="mono">${fxEscape(item.no)}</td><td>${fxEscape(item.createdAt || item.created || "—")}</td><td class="mono code-range-cell">${fxEscape(fxAllocationRangeLabel(item))}</td><td>${formatNumber(item.total)}</td><td>${formatNumber(item.active)}</td><td>${pendingCell}</td><td>${formatNumber(availableAmount)}</td><td class="action-column"><div class="table-actions">${requestAction}<button class="text-action" data-action="fx-order-detail" data-no="${fxEscape(item.no)}">详情</button></div></td></tr>`;
     }).join("") : fxEmpty(8, "暂无订单记录");
-    return `<div class="page">${pageHeader("订单台账", "查看运营端分配的订单、码段及产品绑定记录", `<button class="button" data-action="fx-export-customer-orders">${icon("download", "↓")}导出台账</button>`)}<div class="toolbar"><div class="filters customer-order-search-filters">${fxFilterInput("fx-customer-order-no-search", state.customerOrderNoFilter, "搜索订单号")}${fxFilterInput("fx-customer-order-range-search", state.customerOrderRangeFilter, "搜索序列号范围")}${fxToolbarCustomerDateFilter("分配时间", "order")}<button type="button" class="button small list-reset-button" data-action="fx-reset-list" data-reset-context="customer-orders">${icon("rotate-ccw", "↻")}重置</button></div></div><div class="table-shell"><div class="table-scroll"><table class="customer-order-table code-range-table"><thead><tr><th>订单号</th><th>分配时间</th><th>序列号范围</th><th>订单码量</th><th>已激活</th><th>绑定申请中</th><th>剩余可用</th><th class="action-column">操作</th></tr></thead><tbody>${body}</tbody></table></div>${pagination(rows.length)}</div></div>`;
+    return `<div class="page">${pageHeader("订单台账", "查看运营端分配的订单、码段及产品绑定记录", `<button class="button" data-action="fx-export-customer-orders">${icon("download", "↓")}导出台账</button>`)}<div class="toolbar"><div class="filters customer-order-search-filters">${fxFilterInput("fx-customer-order-no-search", state.customerOrderNoFilter, "搜索订单号")}${fxToolbarCustomerDateFilter("分配时间", "order")}<button type="button" class="button small list-reset-button" data-action="fx-reset-list" data-reset-context="customer-orders">${icon("rotate-ccw", "↻")}重置</button></div></div><div class="table-shell"><div class="table-scroll"><table class="customer-order-table code-range-table"><thead><tr><th>订单号</th><th>分配时间</th><th>序列号范围</th><th>订单码量</th><th>已激活</th><th>绑定申请中</th><th>剩余可用</th><th class="action-column">操作</th></tr></thead><tbody>${body}</tbody></table></div>${pagination(rows.length)}</div></div>`;
   }
   customerOverview = function () {
     const ownOrders = fxCustomerOrders();
