@@ -1,4 +1,4 @@
-import { bootstrapPage } from "../../bootstrap.js?v=v6q9x3h72";
+import { bootstrapPage } from "../../bootstrap.js?v=category-pool-20261029-90";
 
 bootstrapPage({
   "portal": "scan",

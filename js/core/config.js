@@ -1,17 +1,17 @@
 "use strict";
 
 const portalEntries = {
-  ops: { label: "运营方后台", shortLabel: "运营端", path: "pages/ops/inventory.html" },
+  ops: { label: "运营方后台", shortLabel: "运营端", path: "pages/ops/orders.html" },
   customer: { label: "客户后台", shortLabel: "客户端", path: "pages/customer/overview.html" },
   scan: { label: "扫码展示端", shortLabel: "扫码端", path: "pages/scan/active.html" },
 };
 
 const pageFiles = {
-  ops: { customers: "pages/ops/customers.html", "customer-detail": "pages/ops/customer-detail.html", codes: "pages/ops/create-order.html", inventory: "pages/ops/inventory.html", "inventory-detail": "pages/ops/inventory-detail.html", orders: "pages/ops/orders.html", "order-detail": "pages/ops/order-detail.html", "review-detail": "pages/ops/bind-request-detail.html", "bind-requests": "pages/ops/bind-requests.html", withdrawals: "pages/ops/withdrawals.html", operators: "pages/ops/operators.html", messages: "pages/ops/messages.html", settings: "pages/ops/settings.html" },
+  ops: { customers: "pages/ops/customers.html", "customer-detail": "pages/ops/customer-detail.html", codes: "pages/ops/create-order.html", inventory: "pages/ops/inventory.html", "inventory-detail": "pages/ops/inventory-detail.html", orders: "pages/ops/orders.html", "code-query": "pages/ops/code-query.html", statistics: "pages/ops/statistics.html", "order-detail": "pages/ops/order-detail.html", "review-detail": "pages/ops/bind-request-detail.html", "bind-requests": "pages/ops/bind-requests.html", withdrawals: "pages/ops/withdrawals.html", operators: "pages/ops/operators.html", messages: "pages/ops/messages.html", settings: "pages/ops/settings.html" },
   customer: { overview: "pages/customer/overview.html", orders: "pages/customer/orders.html", "order-detail": "pages/customer/order-detail.html", editor: "pages/customer/editor.html", withdrawals: "pages/customer/withdrawals.html", messages: "pages/customer/messages.html", settings: "pages/customer/settings.html" },
 };
 
-const pageTitles = Object.fromEntries([["ops:customers","溯源质控码平台 · 客户列表"],["ops:customer-detail","溯源质控码平台 · 客户详情"],["ops:codes","溯源质控码平台 · 生成码段"],["ops:inventory","溯源质控码平台 · 码段库存"],["ops:inventory-detail","溯源质控码平台 · 库存码段详情"],["ops:orders","溯源质控码平台 · 订单台账"],["ops:order-detail","溯源质控码平台 · 订单详情"],["ops:review-detail","溯源质控码平台 · 绑定审核详情"],["ops:bind-requests","溯源质控码平台 · 绑定审核"],["ops:withdrawals","溯源质控码平台 · 撤回审核"],["ops:operators","溯源质控码平台 · 运营账号管理"],["ops:messages","溯源质控码平台 · 站内信"],["ops:settings","溯源质控码平台 · 修改登录密码"],["customer:overview","溯源质控码平台 · 数据概览"],["customer:orders","溯源质控码平台 · 订单台账"],["customer:order-detail","溯源质控码平台 · 订单详情"],["customer:editor","溯源质控码平台 · 产品编辑与查看"],["customer:withdrawals","溯源质控码平台 · 撤回申请"],["customer:messages","溯源质控码平台 · 站内信"],["customer:settings","溯源质控码平台 · 修改登录密码"]]);
+const pageTitles = Object.fromEntries([["ops:customers","溯源质控码平台 · 客户管理"],["ops:customer-detail","溯源质控码平台 · 客户详情"],["ops:codes","溯源质控码平台 · 生成码段"],["ops:inventory","溯源质控码平台 · 码段库存"],["ops:inventory-detail","溯源质控码平台 · 库存码段详情"],["ops:orders","溯源质控码平台 · 订单台账"],["ops:code-query","溯源质控码平台 · 单码查询"],["ops:statistics","溯源质控码平台 · 数据统计"],["ops:order-detail","溯源质控码平台 · 订单详情"],["ops:review-detail","溯源质控码平台 · 绑定审核详情"],["ops:bind-requests","溯源质控码平台 · 绑定审核"],["ops:withdrawals","溯源质控码平台 · 撤回审核"],["ops:operators","溯源质控码平台 · 运营账号管理"],["ops:messages","溯源质控码平台 · 站内信"],["ops:settings","溯源质控码平台 · 修改登录密码"],["customer:overview","溯源质控码平台 · 数据概览"],["customer:orders","溯源质控码平台 · 订单台账"],["customer:order-detail","溯源质控码平台 · 订单详情"],["customer:editor","溯源质控码平台 · 产品编辑与查看"],["customer:withdrawals","溯源质控码平台 · 撤回申请"],["customer:messages","溯源质控码平台 · 站内信"],["customer:settings","溯源质控码平台 · 修改登录密码"]]);
 
 const entryPortal = portalEntries[document.body.dataset.entryPortal] ? document.body.dataset.entryPortal : "ops";
 const initialPage = document.body.dataset.initialPage || (entryPortal === "customer" ? "overview" : "inventory");
@@ -31,6 +31,7 @@ const state = {
   scanTab: "product",
   scanProductExpanded: false,
   pagination: {},
+  expandedFilterGroups: {},
   sidebarCollapsed: localStorage.getItem("trace-sidebar-collapsed-v1") === "1",
 };
 
@@ -74,9 +75,9 @@ const messages = [
 
 const nav = {
   ops: [
-    ["customers", "building-2", "客户列表"],
-    ["inventory", "qr-code", "码段库存"],
+    ["customers", "building-2", "客户管理"],
     ["orders", "receipt-text", "订单台账"],
+    ["statistics", "chart-column", "数据统计"],
     ["bind-requests", "clipboard-check", "绑定审核"],
     ["withdrawals", "rotate-ccw", "撤回审核"],
     ["operators", "users-round", "运营账号管理"],

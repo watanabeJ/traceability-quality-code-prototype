@@ -158,6 +158,17 @@
   }
 
   function detectPageKey() {
+    // In-page navigation changes the URL without replacing the original meta tag.
+    var pathname = location.pathname.replace(/\/+$/, "") || "/";
+    var routed = state.data.pages.find(function (page) {
+      return [page.route, page.path].some(function (value) {
+        if (!value || String(value).charAt(0) === "#") return false;
+        try {
+          return (new URL(value.charAt(0) === "/" ? value : "/" + value, location.origin).pathname.replace(/\/+$/, "") || "/") === pathname;
+        } catch (err) { return false; }
+      });
+    });
+    if (routed) return routed.pageKey;
     var meta = $('meta[name="prototype-page-key"]');
     if (meta && meta.content) return meta.content;
     var keyed = $("[data-page-key]");
@@ -780,8 +791,9 @@
     var text = visibleTextForMatching(root);
     if (!strictTexts.every(function (expected) { return textMatchesExpected(text, expected); })) return false;
     if (!titleTexts.length) return true;
-    if (!surfaceSharesOpenSelector(surface)) return true;
-    return titleTexts.some(function (expected) { return textMatchesExpected(text, expected); });
+    var title = surface.titleSelector && queryWithin(root, surface.titleSelector);
+    var titleText = title ? visibleTextForMatching(title) : text;
+    return titleTexts.some(function (expected) { return textMatchesExpected(titleText, expected); });
   }
 
   function isSurfaceOpen(surface) {

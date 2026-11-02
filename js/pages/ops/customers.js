@@ -1,8 +1,8 @@
-import { bootstrapPage } from "../../bootstrap.js?v=v6q9x3h72";
+import { bootstrapPage } from "../../bootstrap.js?v=category-pool-20261029-70";
 
 bootstrapPage({
   "portal": "ops",
   "page": "customers",
-  "title": "客户列表",
+  "title": "客户管理",
   "pageKey": "P02"
 });

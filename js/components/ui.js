@@ -119,7 +119,8 @@ function applyRenderedPagination(root) {
   const routeKey = paginationRouteKey();
   if (routeKey.endsWith("-overview")) return;
   const collections = [];
-  root.querySelectorAll("main table").forEach((table, index) => {
+  root.querySelectorAll("main table, [data-customer-history] table, [data-category-history] table, [data-download-history] table").forEach((table, index) => {
+    if (table.dataset.pagination === "off") return;
     const rows = [...table.querySelectorAll("tbody > tr")];
     const dataRows = rows.filter(row => !(row.children.length === 1 && row.firstElementChild?.hasAttribute("colspan")));
     collections.push({ key: `${routeKey}-table-${index}`, nodes: dataRows, anchor: table.closest(".table-scroll") || table, selected: table.querySelectorAll('tbody input[type="checkbox"]:checked').length, selectable: table.classList.contains("message-table") });

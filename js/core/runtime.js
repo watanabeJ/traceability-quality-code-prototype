@@ -30,7 +30,48 @@ function normalizeRenderedControls(root) {
         if (cell?.tagName === "TD") cell.classList.add("action-column");
       });
     });
+    fitTableActionColumn(table);
   });
+}
+
+function fitTableActionColumn(table) {
+  const headerRow = table.querySelector("thead tr:first-child");
+  if (!headerRow) return;
+  const header = [...headerRow.children].find(cell => cell.classList.contains("action-column"));
+  if (!header) return;
+
+  const cellPadding = cell => {
+    const style = getComputedStyle(cell);
+    return ["paddingLeft", "paddingRight", "borderLeftWidth", "borderRightWidth"]
+      .reduce((total, property) => total + (parseFloat(style[property]) || 0), 0);
+  };
+  const contentWidth = cell => {
+    const actions = cell.querySelector(":scope > .table-actions") || cell;
+    const items = [...actions.children];
+    if (!items.length) {
+      const range = document.createRange();
+      range.selectNodeContents(actions);
+      return Math.max(0, ...[...range.getClientRects()].map(rect => rect.width));
+    }
+
+    const style = getComputedStyle(actions);
+    const gap = parseFloat(style.columnGap || style.gap) || 0;
+    return items.reduce((total, item) => total + Math.max(item.getBoundingClientRect().width, item.scrollWidth), 0) +
+      gap * Math.max(0, items.length - 1);
+  };
+
+  let width = contentWidth(header) + cellPadding(header);
+  const columnIndex = [...headerRow.children].indexOf(header);
+  const actionCells = [...table.querySelectorAll("tbody > tr")]
+    .map(row => row.children[columnIndex])
+    .filter(cell => cell?.tagName === "TD" && !cell.hasAttribute("colspan"));
+  actionCells.forEach(cell => {
+    width = Math.max(width, contentWidth(cell) + cellPadding(cell));
+  });
+  if (!actionCells.length) {
+    width = Math.max(width, parseFloat(getComputedStyle(header).minWidth) || 0, header.getBoundingClientRect().width);
+  }
+  table.style.setProperty("--action-column-width", `${Math.ceil(width)}px`);
 }
 
 function numberRenderedTables(root) {
@@ -220,6 +261,7 @@ document.addEventListener("click", (event) => {
   const action = target.dataset.action;
   if (action?.startsWith("fx-")) return;
   event.preventDefault();
+  if (action?.startsWith("stat-") && window.fxStatsHandleAction?.(action, target)) return;
   if (target.dataset.nav) return setNav(target.dataset.nav);
   if (!action) return;
   const legacyBusinessActions = new Set([

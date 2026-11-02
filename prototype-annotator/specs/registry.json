@@ -1,0 +1,200 @@
+{
+  "specSchemaVersion": 2,
+  "storageFormat": "markdown",
+  "mode": "page-specs-lite",
+  "pages": [
+    {
+      "pageKey": "P02",
+      "pageName": "客户管理",
+      "sourceFile": "pages/ops/customers.html",
+      "routeHint": "/pages/ops/customers.html",
+      "specPath": "prototype-annotator/specs/current/P02-客户管理.md",
+      "lifecycle": "active"
+    },
+    {
+      "pageKey": "P02A",
+      "pageName": "品类管理",
+      "sourceFile": "pages/ops/categories.html",
+      "routeHint": "/pages/ops/categories.html",
+      "specPath": "prototype-annotator/specs/current/P02A-品类管理.md",
+      "lifecycle": "active"
+    },
+    {
+      "pageKey": "P03",
+      "pageName": "客户详情",
+      "sourceFile": "pages/ops/customer-detail.html",
+      "routeHint": "/pages/ops/customer-detail.html",
+      "specPath": "prototype-annotator/specs/current/P03-客户详情.md",
+      "lifecycle": "active"
+    },
+    {
+      "pageKey": "P04",
+      "pageName": "创建订单",
+      "sourceFile": "pages/ops/create-order.html",
+      "routeHint": "/pages/ops/create-order.html",
+      "specPath": "prototype-annotator/specs/current/P04-创建订单.md",
+      "lifecycle": "active"
+    },
+    {
+      "pageKey": "P05",
+      "pageName": "运营订单台账",
+      "sourceFile": "pages/ops/orders.html",
+      "routeHint": "/pages/ops/orders.html",
+      "specPath": "prototype-annotator/specs/current/P05-运营订单台账.md",
+      "lifecycle": "active"
+    },
+    {
+      "pageKey": "P06",
+      "pageName": "运营订单详情",
+      "sourceFile": "pages/ops/order-detail.html",
+      "routeHint": "/pages/ops/order-detail.html",
+      "specPath": "prototype-annotator/specs/current/P06-运营订单详情.md",
+      "lifecycle": "active"
+    },
+    {
+      "pageKey": "P08",
+      "pageName": "绑定审核详情",
+      "sourceFile": "pages/ops/bind-request-detail.html",
+      "routeHint": "/pages/ops/bind-request-detail.html",
+      "specPath": "prototype-annotator/specs/current/P08-绑定审核详情.md",
+      "lifecycle": "active"
+    },
+    {
+      "pageKey": "P09",
+      "pageName": "绑定审核",
+      "sourceFile": "pages/ops/bind-requests.html",
+      "routeHint": "/pages/ops/bind-requests.html",
+      "specPath": "prototype-annotator/specs/current/P09-绑定审核.md",
+      "lifecycle": "active"
+    },
+    {
+      "pageKey": "P10",
+      "pageName": "撤回审核",
+      "sourceFile": "pages/ops/withdrawals.html",
+      "routeHint": "/pages/ops/withdrawals.html",
+      "specPath": "prototype-annotator/specs/current/P10-撤回审核.md",
+      "lifecycle": "active"
+    },
+    {
+      "pageKey": "P11",
+      "pageName": "运营账号管理",
+      "sourceFile": "pages/ops/operators.html",
+      "routeHint": "/pages/ops/operators.html",
+      "specPath": "prototype-annotator/specs/current/P11-运营账号管理.md",
+      "lifecycle": "active"
+    },
+    {
+      "pageKey": "P12",
+      "pageName": "运营端站内信",
+      "sourceFile": "pages/ops/messages.html",
+      "routeHint": "/pages/ops/messages.html",
+      "specPath": "prototype-annotator/specs/current/P12-运营端站内信.md",
+      "lifecycle": "active"
+    },
+    {
+      "pageKey": "P13",
+      "pageName": "运营端修改登录密码",
+      "sourceFile": "pages/ops/settings.html",
+      "routeHint": "/pages/ops/settings.html",
+      "specPath": "prototype-annotator/specs/current/P13-运营端修改登录密码.md",
+      "lifecycle": "active"
+    },
+    {
+      "pageKey": "P14",
+      "pageName": "数据统计",
+      "sourceFile": "pages/ops/statistics.html",
+      "routeHint": "/pages/ops/statistics.html",
+      "specPath": "prototype-annotator/specs/current/P14-数据统计.md",
+      "lifecycle": "active"
+    },
+    {
+      "pageKey": "P21",
+      "pageName": "客户端数据概览",
+      "sourceFile": "pages/customer/overview.html",
+      "routeHint": "/pages/customer/overview.html",
+      "specPath": "prototype-annotator/specs/current/P21-客户端数据概览.md",
+      "lifecycle": "active"
+    },
+    {
+      "pageKey": "P22",
+      "pageName": "客户端订单台账",
+      "sourceFile": "pages/customer/orders.html",
+      "routeHint": "/pages/customer/orders.html",
+      "specPath": "prototype-annotator/specs/current/P22-客户端订单台账.md",
+      "lifecycle": "active"
+    },
+    {
+      "pageKey": "P23",
+      "pageName": "客户端订单详情",
+      "sourceFile": "pages/customer/order-detail.html",
+      "routeHint": "/pages/customer/order-detail.html",
+      "specPath": "prototype-annotator/specs/current/P23-客户端订单详情.md",
+      "lifecycle": "active"
+    },
+    {
+      "pageKey": "P25",
+      "pageName": "产品编辑与查看",
+      "sourceFile": "pages/customer/editor.html",
+      "routeHint": "/pages/customer/editor.html",
+      "specPath": "prototype-annotator/specs/current/P25-产品编辑与查看.md",
+      "lifecycle": "active"
+    },
+    {
+      "pageKey": "P26",
+      "pageName": "客户端撤回申请",
+      "sourceFile": "pages/customer/withdrawals.html",
+      "routeHint": "/pages/customer/withdrawals.html",
+      "specPath": "prototype-annotator/specs/current/P26-客户端撤回申请.md",
+      "lifecycle": "active"
+    },
+    {
+      "pageKey": "P27",
+      "pageName": "客户端站内信",
+      "sourceFile": "pages/customer/messages.html",
+      "routeHint": "/pages/customer/messages.html",
+      "specPath": "prototype-annotator/specs/current/P27-客户端站内信.md",
+      "lifecycle": "active"
+    },
+    {
+      "pageKey": "P28",
+      "pageName": "客户端修改登录密码",
+      "sourceFile": "pages/customer/settings.html",
+      "routeHint": "/pages/customer/settings.html",
+      "specPath": "prototype-annotator/specs/current/P28-客户端修改登录密码.md",
+      "lifecycle": "active"
+    },
+    {
+      "pageKey": "P31",
+      "pageName": "已激活扫码页",
+      "sourceFile": "pages/scan/active.html",
+      "routeHint": "/pages/scan/active.html",
+      "specPath": "prototype-annotator/specs/current/P31-已激活扫码页.md",
+      "lifecycle": "active"
+    },
+    {
+      "pageKey": "P32",
+      "pageName": "扫码预览",
+      "sourceFile": "pages/scan/preview.html",
+      "routeHint": "/pages/scan/preview.html",
+      "specPath": "prototype-annotator/specs/current/P32-扫码预览.md",
+      "lifecycle": "active"
+    },
+    {
+      "pageKey": "P33",
+      "pageName": "未激活扫码页",
+      "sourceFile": "pages/scan/inactive.html",
+      "routeHint": "/pages/scan/inactive.html",
+      "specPath": "prototype-annotator/specs/current/P33-未激活扫码页.md",
+      "lifecycle": "active"
+    },
+    {
+      "pageKey": "P34",
+      "pageName": "已重置扫码页",
+      "sourceFile": "pages/scan/reset.html",
+      "routeHint": "/pages/scan/reset.html",
+      "specPath": "prototype-annotator/specs/current/P34-已重置扫码页.md",
+      "lifecycle": "active"
+    }
+  ],
+  "lastUpdated": "2026-11-02T08:52:48.276Z"
+}

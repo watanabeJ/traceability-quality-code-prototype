@@ -26,6 +26,7 @@ render = function () {
     if (state.portal === "ops" && ["inventory", "orders"].includes(state.opsPage)) app.insertAdjacentHTML("beforeend", fxOrderCalendar());
     if ((state.portal === "ops" && ["inventory-detail", "bind-requests", "withdrawals", "reviews", "order-detail"].includes(state.opsPage)) || (state.portal === "customer" && ["orders", "products", "withdrawals", "order-detail"].includes(state.customerPage))) app.insertAdjacentHTML("beforeend", fxCustomerCalendar());
     fxExtractTableFilters(app);
+    fxAutoCollapseToolbarFilters(app);
     fxSyncFilterPlaceholders(app);
     normalizeRenderedControls(app);
     numberRenderedTables(app);
@@ -38,6 +39,68 @@ render = function () {
     restorePortalSwitcherPosition();
     if (state.portal === "scan" && typeof fxSetupScanSticky === "function") fxSetupScanSticky();
   };
+
+  function fxAutoCollapseToolbarFilters(root) {
+    const page = state.portal === "ops" ? state.opsPage : state.customerPage;
+    root.querySelectorAll(".toolbar .filters").forEach((filters, index) => {
+      if (filters.dataset.autoCollapse === "off") return;
+      if (filters.querySelector(":scope > .advanced-filter-group")) return;
+      const controls = [...filters.querySelectorAll(
+        ":scope > .search-field, :scope > .toolbar-filter-field, :scope > .toolbar-date-range-field, :scope > input, :scope > select"
+      )];
+      if (controls.length <= 3) return;
+
+      const priority = control => {
+        if (state.portal === "ops" && page === "orders") {
+          const ledgerFilter = control.querySelector("[data-om-filter]")?.dataset.omFilter ||
+            control.dataset.omFilter || "";
+          const ledgerRank = { no: 0, customer: 1, company: 2, version: 3, status: 4, from: 5, to: 5 };
+          if (ledgerFilter in ledgerRank) return ledgerRank[ledgerFilter];
+        }
+        const text = `${control.querySelector(".filter-field-label")?.textContent || ""} ${control.getAttribute("aria-label") || ""} ${control.querySelector("input, select, button")?.getAttribute("aria-label") || ""} ${control.querySelector("input")?.placeholder || ""}`;
+        if (control.matches(".toolbar-date-range-field") || control.querySelector('input[type="date"]') || control.matches('input[type="date"]') || /时间|日期/.test(text)) return 5;
+        if (/客户名称|公司名称|产品名称|订单号|消息标题/.test(text)) return 0;
+        if (/状态|阅读/.test(text)) return 1;
+        if (/类别|大类|公司号|产品号|版本/.test(text)) return 2;
+        if (/账号|批次/.test(text)) return 3;
+        return 4;
+      };
+      const primary = [...controls].sort((left, right) => priority(left) - priority(right) ||
+        controls.indexOf(left) - controls.indexOf(right)).slice(0, 3);
+      const primarySet = new Set(primary);
+      const secondary = controls.filter(control => !primarySet.has(control));
+      secondary.forEach(control => control.remove());
+
+      state.expandedFilterGroups ||= {};
+      const key = `${state.portal}-${page}-filters-${index}`;
+      const open = Boolean(state.expandedFilterGroups[key]);
+      const group = document.createElement("div");
+      group.className = "advanced-filter-group auto-advanced-filter-group";
+      group.dataset.filterGroupKey = key;
+      group.hidden = !open;
+      secondary.forEach(control => group.append(control));
+
+      const active = secondary.some(control => {
+        const input = control.querySelector("input") || (control.matches("input") ? control : null);
+        if (input) return Boolean(input.value.trim());
+        const select = control.querySelector("select") || (control.matches("select") ? control : null);
+        if (select) return !/^(全部|请选择|不限)/.test(select.selectedOptions?.[0]?.textContent?.trim() || "");
+        const button = control.querySelector("button") || (control.matches("button") ? control : null);
+        return Boolean(button?.classList.contains("active") && !button.classList.contains("is-placeholder"));
+      });
+      const toggle = document.createElement("button");
+      toggle.type = "button";
+      toggle.className = `button small advanced-filter-button${open ? " is-open" : ""}${active ? " active" : ""}`;
+      toggle.dataset.action = "fx-toggle-filter-group";
+      toggle.dataset.filterGroupKey = key;
+      toggle.setAttribute("aria-expanded", String(open));
+      toggle.innerHTML = `${icon(open ? "chevron-up" : "sliders-horizontal", open ? "⌃" : "≡")}${open ? "收起筛选" : "展开筛选"}`;
+
+      const reset = filters.querySelector(":scope > .list-reset-button");
+      filters.insertBefore(toggle, reset || null);
+      filters.append(group);
+    });
+  }
 
   function fxExtractTableFilters(root) {
     root.querySelectorAll("table").forEach(table => {
@@ -161,7 +224,16 @@ render = function () {
     const name = root.querySelector("#fx-customer-name");
     const account = root.querySelector("#fx-customer-account:not(:disabled)");
     const phone = root.querySelector("#fx-customer-phone");
-    if (name) name.placeholder = "请输入客户名称";
+    if (name) {
+      name.placeholder = "请输入客户名称";
+      name.minLength = 2;
+      name.maxLength = 20;
+      name.pattern = "[\\u4E00-\\u9FFFA-Za-z0-9]{2,20}";
+      const help = document.createElement("span");
+      help.className = "field-help";
+      help.textContent = "客户名称为2～20位，仅支持中文、字母和数字";
+      name.after(help);
+    }
     if (account) {
       account.placeholder = "请输入登录账号";
       account.minLength = 4; account.maxLength = 20; account.pattern = "[A-Za-z0-9_]{4,20}";
@@ -169,6 +241,20 @@ render = function () {
     if (phone) {
       phone.placeholder = "请输入手机号"; phone.inputMode = "tel"; phone.maxLength = 13;
       const label = phone.closest(".field")?.querySelector("label"); if (label) label.textContent = "手机号";
+    }
+    for (const [input, rule] of [[account, "4～20位字母、数字或下划线，账号不可重复"], [phone, "请输入11位手机号"]]) {
+      if (!input) continue;
+      input.required = true;
+      input.dataset.customerValidation = input === account ? "account" : "phone";
+      input.setAttribute("aria-describedby", `${input.id}-error`);
+      input.closest(".field")?.querySelector("label")?.setAttribute("for", input.id);
+      const help = document.createElement("span");
+      help.id = `${input.id}-error`;
+      help.className = "field-help";
+      help.dataset.customerRule = rule;
+      help.setAttribute("aria-live", "polite");
+      help.textContent = rule;
+      input.after(help);
     }
     if (!password) return;
     password.placeholder = "请输入密码"; password.minLength = 8; password.maxLength = 20;
@@ -184,6 +270,8 @@ render = function () {
   }
 
   window.addEventListener("storage", event => {
+    if (!event.key?.startsWith("copy-20261022:")) return;
+    event = { key: event.key.slice("copy-20261022:".length), newValue: event.newValue };
     const syncedBusinessKeys = new Set([
       fxBusinessStorage.customers,
       fxBusinessStorage.orders,
@@ -333,10 +421,46 @@ render = function () {
     return fxOperators.some(item => item.account === account && !(type === "operator" && Number(item.id) === Number(currentId)))
       || customers.some(item => item.account === account && !(type === "customer" && Number(item.id) === Number(currentId)));
   }
+  function fxOperatorAccountError(account) {
+    const error = fxRegistrationAccountError(account);
+    if (error) return account ? "需4～20位字母、数字或下划线" : error;
+    return fxAccountExists(account) ? "该账号已存在，请更换其他账号" : "";
+  }
+  function fxSyncOperatorValidation(input, force = false) {
+    const value = input.value.trim();
+    if (force) input.dataset.operatorTouched = "true";
+    if (!value && input.dataset.operatorTouched !== "true") return;
+    const error = input.dataset.operatorValidation === "name"
+      ? fxOperatorNameError(value)
+      : fxOperatorAccountError(value);
+    const hint = document.getElementById(`${input.id}-error`);
+    if (!hint) return;
+    hint.textContent = error || hint.dataset.operatorRule;
+    hint.classList.toggle("danger-text", Boolean(error));
+    input.setAttribute("aria-invalid", String(Boolean(error)));
+    input.style.borderColor = error ? "var(--danger)" : "";
+  }
+  function fxSyncCustomerValidation(input, force = false) {
+    if (force) input.dataset.customerTouched = "true";
+    if (!input.value && input.dataset.customerTouched !== "true") return;
+    const value = input.value.trim();
+    const error = input.dataset.customerValidation === "account"
+      ? fxOperatorAccountError(value)
+      : fxMobileError(value);
+    const hint = document.getElementById(`${input.id}-error`);
+    if (!hint) return;
+    hint.textContent = error || hint.dataset.customerRule;
+    hint.classList.toggle("danger-text", Boolean(error));
+    input.setAttribute("aria-invalid", String(Boolean(error)));
+    input.style.borderColor = error ? "var(--danger)" : "";
+    input.setCustomValidity(error);
+  }
   function fxCustomerAccountSubmissionError() {
+    document.querySelectorAll("[data-customer-validation]").forEach(input => fxSyncCustomerValidation(input, true));
     const item = customers.find(row => row.id === state.selectedCustomerId);
     const name = fxRead("fx-customer-name"), account = item?.account || fxRead("fx-customer-account"), phone = fxRead("fx-customer-phone");
-    if (!name) return "请输入客户名称";
+    const nameError = fxOperatorNameError(name);
+    if (nameError) return nameError.replace(/用户名/g, "客户名称");
     if (!item) {
       const accountError = fxRegistrationAccountError(account); if (accountError) return accountError;
       if (fxAccountExists(account)) return "该账号已存在，请更换其他账号";
@@ -543,6 +667,14 @@ render = function () {
     const order = orders.find(item => item.no === options.orderNo && fxRecordBelongsToCustomer(item, fxCurrentCustomer()) && item.allocationStatus !== "已撤销");
     if (!product || !fxRecordBelongsToCustomer(product, fxCurrentCustomer()) || !order) return showToast("绑定记录关联的产品或订单不存在");
     const readonly = Boolean(options.readonly);
+    if (options.requestSource === "binding") {
+      const request = bindRequests.find(item => fxSameId(item.id, options.requestId) && item.orderNo === order.no && fxSameId(fxProductForRecord(item)?.id, product.id) && fxRecordBelongsToCustomer(item, fxCurrentCustomer()));
+      const allowedStatuses = readonly ? ["待审批", "已通过"] : ["草稿", "已驳回"];
+      if (!request || !allowedStatuses.includes(request.status)) return showToast("申请状态已变化，请刷新后重试");
+    } else {
+      const allowedStatuses = readonly ? ["待审核", "已激活"] : ["草稿", "已驳回"];
+      if (!allowedStatuses.includes(product.status)) return showToast("产品状态已变化，请刷新后重试");
+    }
     state.editorProductId = product.id;
     state.editorDraft = fxNormalizeDetails(fxClone(product.details || fxDefaultDetails(product)));
     state.editorReadonly = readonly;
@@ -550,12 +682,18 @@ render = function () {
     state.selectedOrderNo = order.no;
     state.editorTargetOrderNo = order.no;
     state.editorBindRequestId = !readonly && options.requestSource === "binding" ? options.requestId || null : null;
+    if (omIsOrder(order)) {
+      const request = options.requestSource === "binding" ? bindRequests.find(item => fxSameId(item.id, options.requestId)) : null;
+      const line = omLine(order, request?.orderLineId || product.orderLineId) || omRangeLine(order, options.range);
+      if (!line || !omProductMatches(product, line)) return showToast("产品大类与订单明细不一致");
+      state.editorOrderLineId = line.id;
+    }
     if (readonly) {
       state.editorRequestedSourceRange = options.range || "";
       state.editorRequestedRange = options.range || "";
       state.editorRequestedAmount = Number(options.amount || 0);
     } else {
-      const ranges = fxOrderFreeRanges(order, product.id);
+      const ranges = omBindingRanges(order, product.id);
       if (!ranges.length || fxOrderAvailableAmount(order, product.id) < 1) return showToast("当前订单没有可重新申请的连续码段");
       const selected = ranges.find(item => {
         const [requestedStart, requestedEnd] = String(options.range || "").split("–");
@@ -711,6 +849,13 @@ render = function () {
       else popover.showPopover();
       return;
     }
+    if (action === "fx-toggle-filter-group") {
+      const key = target.dataset.filterGroupKey;
+      if (!key) return;
+      state.expandedFilterGroups ||= {};
+      state.expandedFilterGroups[key] = !state.expandedFilterGroups[key];
+      return render();
+    }
     if (action === "fx-toggle-bind-request-advanced") {
       state.bindRequestAdvancedOpen = !state.bindRequestAdvancedOpen;
       if (!state.bindRequestAdvancedOpen && state.customerCalendarContext === "bindRequest") state.customerCalendarOpen = false;
@@ -809,8 +954,16 @@ render = function () {
     if (action === "fx-confirm-operator") {
       if (!fxEnabledOperatorSession()) return showToast("当前账号无权执行此操作");
       const name = fxRead("fx-operator-name"); let item = fxOperators.find(row => row.id === state.selectedOperatorId); const account = item?.account || fxRead("fx-operator-account");
-      const nameError = fxOperatorNameError(name); if (nameError) return showToast(nameError);
-      if (!item) { const accountError = fxRegistrationAccountError(account); if (accountError) return showToast(accountError); }
+      const nameInput = document.getElementById("fx-operator-name");
+      const nameError = fxOperatorNameError(name);
+      if (nameInput) fxSyncOperatorValidation(nameInput, true);
+      if (nameError) { nameInput?.focus(); return showToast(nameError); }
+      if (!item) {
+        const accountInput = document.getElementById("fx-operator-account");
+        const accountError = fxOperatorAccountError(account);
+        if (accountInput) fxSyncOperatorValidation(accountInput, true);
+        if (accountError) { accountInput?.focus(); return showToast(accountError); }
+      }
       if (item) {
         if (fxIsCurrentOperator(item)) {
           item.name = name;
@@ -993,7 +1146,7 @@ render = function () {
     if (action === "fx-mark-selected-read") {
       if (state.portal !== "customer" || !state.selectedMessageIds.length) return showToast("请先勾选需要标记的消息");
       const ids = new Set(state.selectedMessageIds.map(Number));
-      messages.filter(item => fxRecordBelongsToCustomer(item, fxCurrentCustomer()) && ids.has(Number(item.id))).forEach(item => item.unread = false);
+      fxVisibleMessages("customer").filter(item => ids.has(Number(item.id))).forEach(item => item.unread = false);
       state.selectedMessageIds = []; fxSaveBusiness(); render(); return showToast("所选消息已标记为已读");
     }
     if (action === "fx-confirm-generic") {
@@ -1073,7 +1226,7 @@ render = function () {
       }
       fxSaveOperators(); fxSaveBusiness(); state.modal = null; render(); return showToast("操作已完成");
     }
-    if (action === "fx-export-customers") { fxDownloadExcel(`客户列表_${fxToday}.xls`, ["客户名称", "账号", "联系电话", "状态", "订单码量", "已激活", "绑定申请中", "剩余可用"], customers.map(item => { const summary = fxCustomerCodeSummary(item.name); return [item.name, item.account, item.phone, item.status, summary.total, summary.active, summary.pending, summary.available]; })); return showToast("客户列表已导出"); }
+    if (action === "fx-export-customers") { fxDownloadExcel(`客户列表_${fxToday}.xls`, ["客户名称", "账号", "联系电话", "状态", "订单码量", "已绑定", "绑定申请中", "待绑定"], customers.map(item => { const summary = fxCustomerCodeSummary(item.name); return [item.name, item.account, item.phone, item.status, summary.total, summary.active, summary.pending, summary.available]; })); return showToast("客户列表已导出"); }
     if (action === "fx-new-qr") {
       if (!fxEnabledOperatorSession()) return showToast("仅运营端可以生成码段");
       state.modal = null;
@@ -1168,7 +1321,7 @@ render = function () {
     if (action === "fx-export-order-ledger") {
       const customerTerm = state.orderCustomerFilter.trim().toLowerCase(); const numberTerm = state.orderNumberFilter.trim().toLowerCase();
       const rows = orders.filter(item => item.allocationStatus !== "已撤销" && (!customerTerm || String(item.customer || "").toLowerCase().includes(customerTerm)) && (!numberTerm || String(item.no || "").toLowerCase().includes(numberTerm)));
-      fxDownloadExcel(`订单台账_${fxToday}.xls`, ["订单号", "客户名称", "分配时间", "序列号范围", "订单码量", "已激活", "绑定申请中", "剩余可用"], rows.map(item => [item.no, item.customer || "", item.allocatedAt || item.createdAt || item.created || "", fxAllocationSegmentsText(fxOrderAllocationSegments(item)) || fxAllocationRangeLabel(item), item.total, item.active, fxOrderPendingAmount(item), fxOrderAvailableAmount(item)]));
+      fxDownloadExcel(`订单台账_${fxToday}.xls`, ["订单号", "客户名称", "分配时间", "序列号范围", "订单码量", "已绑定", "绑定申请中", "待绑定"], rows.map(item => [item.no, item.customer || "", item.allocatedAt || item.createdAt || item.created || "", fxAllocationSegmentsText(fxOrderAllocationSegments(item)) || fxAllocationRangeLabel(item), item.total, item.active, fxOrderPendingAmount(item), fxOrderAvailableAmount(item)]));
       return showToast(`已导出当前订单台账，共 ${rows.length} 条`);
     }
     if (action === "fx-open-code-allocation") {
@@ -1607,8 +1760,8 @@ render = function () {
       fxAddMessage({ ...fxWithdrawalResultMessage(item, !reject), recipient: messageCustomer?.name || item.customer, customer: messageCustomer?.name || item.customer, customerId: messageCustomer?.id || item.customerId || null }); fxSaveBusiness(); state.modal = null; render(); return showToast(`撤回申请已${reject ? "驳回" : "通过"}`);
     }
     if (action === "fx-view-withdrawal") { const index = Number(target.dataset.index); const item = withdrawals[index]; if (!item || (fxEnabledCustomerSession() && !fxRecordBelongsToCustomer(item, fxCurrentCustomer()))) return showToast("撤回申请不存在或无权查看"); state.selectedWithdrawalIndex = index; state.modal = "fx-withdrawal-detail"; return render(); }
-    if (action === "fx-mark-read") { if (!fxEnabledCustomerSession()) return showToast("当前账号无权执行此操作"); messages.filter(item => fxRecordBelongsToCustomer(item, fxCurrentCustomer())).forEach(item => item.unread = false); fxSaveBusiness(); render(); return showToast("全部消息已标记为已读"); }
-    if (action === "fx-read-message") { const item = messages.find(row => row.id === Number(target.dataset.id) && (fxEnabledOperatorSession() ? fxIsCustomerMessage(row) : fxEnabledCustomerSession() && fxRecordBelongsToCustomer(row, fxCurrentCustomer()) && !fxIsApplicationSubmissionMessage(row))); if (!item) return showToast("站内信不存在或无权查看"); if (fxEnabledCustomerSession()) { item.unread = false; fxSaveBusiness(); } state.selectedMessageId = item.id; state.modal = "fx-message"; return render(); }
+    if (action === "fx-mark-read") { if (!fxEnabledCustomerSession()) return showToast("当前账号无权执行此操作"); fxVisibleMessages("customer").forEach(item => item.unread = false); fxSaveBusiness(); render(); return showToast("全部消息已标记为已读"); }
+    if (action === "fx-read-message") { const item = messages.find(row => row.id === Number(target.dataset.id) && (fxEnabledOperatorSession() ? fxIsCustomerMessage(row) : fxEnabledCustomerSession() && fxIsResultNotification(row) && fxRecordBelongsToCustomer(row, fxCurrentCustomer()))); if (!item) return showToast("站内信不存在或无权查看"); if (fxEnabledCustomerSession()) { item.unread = false; fxSaveBusiness(); } state.selectedMessageId = item.id; state.modal = "fx-message"; return render(); }
     if (action === "fx-save-password") {
       const current = fxRead("fx-current-password"), next = fxRead("fx-new-password"), confirm = fxRead("fx-confirm-password");
       const account = entryPortal === "ops" ? (fxEnabledOperatorSession() ? fxCurrentOperator() : null) : (fxEnabledCustomerSession() ? fxCurrentCustomer() : null);
@@ -1620,7 +1773,7 @@ render = function () {
       if (next !== confirm) return showToast("两次输入的密码不一致");
       account.password = next; fxSaveOperators(); fxSaveBusiness(); state.modal = null; render(); return showToast("登录密码已更新");
     }
-    if (action === "fx-export-customer-orders") { const rows = fxCustomerOrders(); fxDownloadExcel(`订单台账_${fxToday}.xls`, ["订单号", "分配时间", "序列号范围", "订单码量", "已激活", "绑定申请中", "剩余可用"], rows.map(item => [item.no, item.allocatedAt || item.createdAt || item.created || "", fxAllocationSegmentsText(fxOrderAllocationSegments(item)) || fxAllocationRangeLabel(item), item.total, item.active, fxOrderPendingAmount(item), fxOrderAvailableAmount(item)])); return showToast("订单台账已导出"); }
+    if (action === "fx-export-customer-orders") { const rows = fxCustomerOrders(); fxDownloadExcel(`订单台账_${fxToday}.xls`, ["订单号", "分配时间", "序列号范围", "订单码量", "已绑定", "绑定申请中", "待绑定"], rows.map(item => [item.no, item.allocatedAt || item.createdAt || item.created || "", fxAllocationSegmentsText(fxOrderAllocationSegments(item)) || fxAllocationRangeLabel(item), item.total, item.active, fxOrderPendingAmount(item), fxOrderAvailableAmount(item)])); return showToast("订单台账已导出"); }
     if (action === "fx-customer-product-status") { state.customerPage = "orders"; return render(); }
     if (action === "fx-new-product") return showToast("请从订单台账选择订单后发起新建产品绑定申请");
     if (action === "fx-submit-product-row") {
@@ -1740,9 +1893,13 @@ render = function () {
     const picker = target.closest(".bind-product-picker");
     const order = orders.find(item => item.no === state.selectedOrderNo);
     const orderCustomer = fxCustomerForRecord(order);
-    const activated = prefix === "fx-withdraw-product"
+    let activated = prefix === "fx-withdraw-product"
       ? products.filter(item => fxRecordBelongsToCustomer(item, fxCurrentCustomer()) && item.status === "已激活" && fxProductActiveSegments(item).length)
       : orderCustomer ? products.filter(item => fxRecordBelongsToCustomer(item, orderCustomer) && item.status === "已激活") : [];
+    if (prefix === "om-bind-product") {
+      const line = omLine(order, state.omLineId);
+      activated = activated.filter(item => omProductMatches(item, line));
+    }
     const value = document.getElementById(prefix);
     const batch = document.getElementById(`${prefix}-batch`);
     const options = document.getElementById(`${prefix}-options`);
@@ -1763,6 +1920,14 @@ render = function () {
     if (fxSearchFilters[event.target.id] || event.target.classList.contains("customer-picker-search") || event.target.classList.contains("bind-product-search")) fxComposingSearchInputs.add(event.target);
   });
   document.addEventListener("compositionend", event => {
+    if (event.target.matches("[data-customer-validation]")) {
+      fxSyncCustomerValidation(event.target, true);
+      return;
+    }
+    if (event.target.matches("[data-operator-validation]")) {
+      fxSyncOperatorValidation(event.target);
+      return;
+    }
     if (event.target.classList.contains("customer-picker-search")) {
       fxComposingSearchInputs.delete(event.target);
       fxUpdateCustomerPickerSearch(event.target);
@@ -1779,6 +1944,17 @@ render = function () {
   });
   document.addEventListener("input", event => {
     const target = event.target;
+    if (target.matches("[data-customer-validation]")) {
+      if (!event.isComposing) fxSyncCustomerValidation(target, true);
+      return;
+    }
+    if (target.matches("[data-operator-validation]")) {
+      if (!event.isComposing) {
+        target.dataset.operatorTouched = "true";
+        fxSyncOperatorValidation(target);
+      }
+      return;
+    }
     if (target.classList.contains("customer-picker-search")) {
       if (event.isComposing || fxComposingSearchInputs.has(target)) return;
       fxUpdateCustomerPickerSearch(target);
@@ -1834,6 +2010,14 @@ render = function () {
     if (event.target.classList.contains("customer-picker-search") || event.target.classList.contains("bind-product-search")) event.target.setAttribute("aria-expanded", "true");
   });
   document.addEventListener("focusout", event => {
+    if (event.target.matches("[data-customer-validation]")) {
+      fxSyncCustomerValidation(event.target, true);
+      return;
+    }
+    if (event.target.matches("[data-operator-validation]")) {
+      fxSyncOperatorValidation(event.target, true);
+      return;
+    }
     if (!event.target.classList.contains("customer-picker-search") && !event.target.classList.contains("bind-product-search")) return;
     setTimeout(() => {
       const picker = event.target.closest(".customer-picker, .bind-product-picker");
@@ -1942,9 +2126,9 @@ render = function () {
     }
     if (target.dataset.fxField && state.editorDraft) state.editorDraft[target.dataset.fxField] = target.value;
     if (target.dataset.fxStandardUpload && target.files?.length) {
-      const mediaKey = target.dataset.fxStandardUpload; const selected = [...target.files]; const acceptsPdf = target.dataset.fxStandardTypes?.includes("pdf");
-      const limit = fxStandardMediaLimit(mediaKey); const limitMessage = limit === 1 ? "该字段最多上传 1 个文件" : `该字段图片与 PDF 合计最多上传 ${limit} 个`;
-      const invalid = selected.find(file => !(file.type.startsWith("image/") || /\.(png|jpe?g|webp|gif)$/i.test(file.name) || (acceptsPdf && (file.type === "application/pdf" || /\.pdf$/i.test(file.name))))); if (invalid) { target.value = ""; return showToast(`${acceptsPdf ? "该字段仅支持图片或 PDF" : "该字段仅支持图片"}：${invalid.name}`); }
+      const mediaKey = target.dataset.fxStandardUpload; const selected = [...target.files];
+      const limit = fxStandardMediaLimit(mediaKey); const limitMessage = `该字段最多上传 ${limit} 张图片`;
+      const invalid = selected.find(file => !(file.type.startsWith("image/") || (!file.type && /\.(png|jpe?g|webp|gif|bmp|avif|svg)$/i.test(file.name)))); if (invalid) { target.value = ""; return showToast(`该字段仅支持图片：${invalid.name}`); }
       const oversized = selected.find(file => file.size > 2 * 1024 * 1024); if (oversized) { target.value = ""; return showToast(`文件超过 2 MB：${oversized.name}`); }
       try {
         const saved = []; for (const file of selected) saved.push({ name: file.name, type: file.type || fxFileType(file.name), size: file.size, src: await fxReadFileData(file) });
@@ -1958,12 +2142,12 @@ render = function () {
     if (target.dataset.fxCustomUpload && target.files?.length) {
       const [module, indexText] = target.dataset.fxCustomUpload.split(":"); const row = state.editorDraft.custom[module]?.[Number(indexText)]; const selected = [...target.files];
       if (!String(row?.name || "").trim()) { target.value = ""; return showToast("请先填写字段名称"); }
-      const invalid = selected.find(file => !(file.type.startsWith("image/") || file.type === "application/pdf" || /\.pdf$/i.test(file.name))); if (invalid) { target.value = ""; return showToast(`不支持文件：${invalid.name}`); }
+      const invalid = selected.find(file => !(file.type.startsWith("image/") || (!file.type && /\.(png|jpe?g|webp|gif|bmp|avif|svg)$/i.test(file.name)))); if (invalid) { target.value = ""; return showToast(`该字段仅支持图片：${invalid.name}`); }
       const oversized = selected.find(file => file.size > 2 * 1024 * 1024); if (oversized) { target.value = ""; return showToast(`文件超过 2 MB：${oversized.name}`); }
       try {
         const saved = []; for (const file of selected) saved.push({ name: file.name, type: file.type || fxFileType(file.name), size: file.size, src: await fxReadFileData(file) });
         const merged = fxUniqueFiles([...(row.files || []), ...saved]);
-        if (merged.length > fxCustomMediaLimit) { target.value = ""; return showToast(`该字段图片与 PDF 合计最多上传 ${fxCustomMediaLimit} 个`); }
+        if (merged.length > fxCustomMediaLimit) { target.value = ""; return showToast(`该字段最多上传 ${fxCustomMediaLimit} 张图片`); }
         const addedCount = merged.length - (row.files || []).length;
         row.files = merged; render(); showToast(addedCount ? `字段附件已保存 ${addedCount} 项` : "所选文件已存在");
       } catch (_) { target.value = ""; showToast("附件读取失败，请重新选择"); }
@@ -1998,5 +2182,8 @@ render = function () {
   });
   document.addEventListener("dragend", () => { fxDraggedCustomFile = null; document.querySelectorAll(".editor-inline-media-item.is-dragging, .editor-inline-media-item.is-drop-target").forEach(item => item.classList.remove("is-dragging", "is-drop-target")); });
 
+  fxInstallCustomerManagement();
+  fxInstallCategoryManagement();
+  fxInstallOrderManagement();
   restoreFromLocation();
   render();

@@ -1,20 +1,17 @@
 # 项目文档
 
-## 开发文档
+核对日期：2026-11-02。适用项目：`prototype-copy-20261022`。
 
-当前系统的开发依据统一收录在 [development](./development/README.md)：
+## 当前文档
 
-- [业务流程图](./development/01-business-processes.md)
-- [功能规则说明](./development/02-functional-rules.md)
-- [数据字典](./development/03-data-dictionary.md)
-- [权限矩阵](./development/04-permission-matrix.md)
-- [状态流转图](./development/05-state-transitions.md)
-- [后端落地说明](./development/06-backend-implementation-notes.md)
+- [系统基线](./current-system-baseline.md)：当前规则、兼容入口与实现边界。
+- [页面需求说明](../prototype-annotator/specs/README.md)：24 份页面 Markdown；页面内 P 标注直接读取。
+- [完整产品说明书 V1.3](../输出/说明文件包/溯源质控码平台产品说明书_v1.1.md)：三端模块、流程、字段、状态、权限。
+- [开发文档](./development/README.md)：业务、功能、字典、权限、状态和后端落地。
+- [内置业务数据](./business-data.md)：账号、订单与产品资料，以及三端共享范围。
 
-## 其他资料
+## 维护约定
 
-- [早期全链路业务流程图](./end-to-end-business-flow.md)
-- [界面设计规范](../../DESIGN/UI_DESIGN_GUIDELINES.md)
+当前业务为直接创建 16 位随机码订单。页面说明以 `prototype-annotator/specs/current/` 为唯一当前源。查码记录展示时间和 IP 地址，当前前端未接入真实 IP 采集。
 
-开发、接口和测试验收应优先以 `development` 目录中的拆分文档为准；早期全链路流程图仅保留为历史参考。
-
+交付目录只保留当前规则和业务文档。

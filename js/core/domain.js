@@ -1,15 +1,15 @@
 "use strict";
 
-const fxToday = "2026-07-27";
+const fxToday = new Date().toLocaleDateString("sv-SE", { timeZone: "Asia/Shanghai" });
   const fxNow = () => `${fxToday} ${new Date().toLocaleTimeString("zh-CN", { hour12: false, hour: "2-digit", minute: "2-digit" })}`;
   const fxEscape = (value = "") => String(value).replace(/[&<>"']/g, ch => ({ "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;", "'": "&#39;" }[ch]));
   const fxClone = value => JSON.parse(JSON.stringify(value));
   const fxSameId = (left, right) => left !== undefined && left !== null && right !== undefined && right !== null && String(left) === String(right);
   const fxStore = {
-    get(key, fallback = null) { try { const value = localStorage.getItem(key); return value == null ? fallback : JSON.parse(value); } catch (_) { return fallback; } },
-    set(key, value) { try { localStorage.setItem(key, JSON.stringify(value)); } catch (_) {} },
-    sessionGet(key, fallback = null) { try { const value = sessionStorage.getItem(key); return value == null ? fallback : value; } catch (_) { return fallback; } },
-    sessionSet(key, value) { try { sessionStorage.setItem(key, value); } catch (_) {} },
+    get(key, fallback = null) { try { const value = localStorage.getItem(`copy-20261022:${key}`); return value == null ? fallback : JSON.parse(value); } catch (_) { return fallback; } },
+    set(key, value) { try { localStorage.setItem(`copy-20261022:${key}`, JSON.stringify(value)); } catch (_) {} },
+    sessionGet(key, fallback = null) { try { const value = sessionStorage.getItem(`copy-20261022:${key}`); return value == null ? fallback : value; } catch (_) { return fallback; } },
+    sessionSet(key, value) { try { sessionStorage.setItem(`copy-20261022:${key}`, value); } catch (_) {} },
   };
 
   const fxOperators = fxStore.get("trace-operators-v2", [
@@ -45,24 +45,24 @@ const fxToday = "2026-07-27";
       { key: "companyAddress", label: "公司地址" },
       { key: "companyIntro", label: "公司介绍", type: "textarea" },
       { key: "companyPhone", label: "公司电话" },
-      { key: "businessLicense", label: "营业执照", mediaKey: "businessLicense", mediaLabel: "营业执照", mediaOnly: true, mediaTypes: ["image", "pdf"] },
-      { key: "qualificationProof", label: "资质证明（生产许可、体系认证、荣誉证书等证书）", mediaKey: "qualificationProof", mediaLabel: "资质证明图片与 PDF", mediaTypes: ["image", "pdf"] },
+      { key: "businessLicense", label: "营业执照", mediaKey: "businessLicense", mediaLabel: "营业执照图片", mediaOnly: true, mediaTypes: ["image"] },
+      { key: "qualificationProof", label: "资质证明（生产许可、体系认证、荣誉证书等证书）", mediaKey: "qualificationProof", mediaLabel: "资质证明图片", mediaTypes: ["image"] },
       { key: "productionEnvironment", label: "生产环境", mediaKey: "productionEnvironment", mediaLabel: "生产环境图片", mediaTypes: ["image"] },
     ],
     production: [
       { key: "productionUnit", label: "生产单位", required: true },
       { key: "productionAddress", label: "生产地址" },
       { key: "productionSiteEnvironment", label: "生产环境", mediaKey: "productionSiteEnvironment", mediaLabel: "生产环境图片", mediaTypes: ["image"] },
-      { key: "qualificationDocuments", label: "资质证件", mediaKey: "qualificationDocuments", mediaLabel: "资质证件图片与 PDF", mediaTypes: ["image", "pdf"] },
+      { key: "qualificationDocuments", label: "资质证件", mediaKey: "qualificationDocuments", mediaLabel: "资质证件图片", mediaTypes: ["image"] },
       { key: "process", label: "独特工艺流程", type: "textarea", mediaKey: "process", mediaLabel: "独特工艺流程图片", mediaTypes: ["image"] },
       { key: "equipment", label: "关键生产设备", mediaKey: "equipment", mediaLabel: "关键生产设备图片", mediaTypes: ["image"] },
-      { key: "productionLicense", label: "生产许可证书及认证证书", mediaKey: "productionLicense", mediaLabel: "生产许可证书及认证证书图片与 PDF", mediaTypes: ["image", "pdf"] },
+      { key: "productionLicense", label: "生产许可证书及认证证书", mediaKey: "productionLicense", mediaLabel: "生产许可证书及认证证书图片", mediaTypes: ["image"] },
     ],
     quality: [
-      { key: "productHonorCertificate", label: "产品荣誉证", mediaKey: "productHonorCertificate", mediaLabel: "产品荣誉证图片与 PDF", mediaTypes: ["image", "pdf"] },
-      { key: "productCertificationCertificate", label: "产品认证证书", mediaKey: "productCertificationCertificate", mediaLabel: "产品认证证书图片与 PDF", mediaTypes: ["image", "pdf"] },
-      { key: "onSiteVerificationCertificate", label: "实地验证证书", mediaKey: "onSiteVerificationCertificate", mediaLabel: "实地验证证书图片与 PDF", mediaTypes: ["image", "pdf"] },
-      { key: "productInspectionReport", label: "产品检测报告（同批次六个月以内报告）", type: "textarea", mediaKey: "productInspectionReport", mediaLabel: "产品检测报告图片与 PDF", mediaTypes: ["image", "pdf"] },
+      { key: "productHonorCertificate", label: "产品荣誉证", mediaKey: "productHonorCertificate", mediaLabel: "产品荣誉证图片", mediaTypes: ["image"] },
+      { key: "productCertificationCertificate", label: "产品认证证书", mediaKey: "productCertificationCertificate", mediaLabel: "产品认证证书图片", mediaTypes: ["image"] },
+      { key: "onSiteVerificationCertificate", label: "实地验证证书", mediaKey: "onSiteVerificationCertificate", mediaLabel: "实地验证证书图片", mediaTypes: ["image"] },
+      { key: "productInspectionReport", label: "产品检测报告（同批次六个月以内报告）", type: "textarea", mediaKey: "productInspectionReport", mediaLabel: "产品检测报告图片", mediaTypes: ["image"] },
     ],
     trace: [],
   };
@@ -256,19 +256,19 @@ const fxToday = "2026-07-27";
   let fxProductsMigratedFromLegacy = false;
   function fxRestoreList(name, list) {
     let saved = fxStore.get(fxBusinessStorage[name], null);
-    if (!Array.isArray(saved)) {
-      const legacyKey = fxLegacyBusinessStorage[name];
-      saved = legacyKey ? fxStore.get(legacyKey, null) : null;
-      if (name === "products") fxProductsMigratedFromLegacy = true;
-    }
+    if (!Array.isArray(saved) && name !== "customers") saved = [];
+    if (!Array.isArray(saved) && name === "customers") saved = list.map((item, index) => ({
+      ...item, total: 0, active: 0, companyNumber: index < 2 ? String(index + 1).padStart(5, "0") : "99999",
+      companyNumberType: index < 2 ? "专属" : "共享", changeHistory: []
+    }));
     if (Array.isArray(saved)) list.splice(0, list.length, ...saved);
   }
   Object.keys(fxBusinessStorage).forEach(name => {
     const list = { customers, orders, codeBatches, bindRequests, products, withdrawals, messages }[name];
     fxRestoreList(name, list);
   });
-  if (messages.some(item => item.type === "码段分配通知")) {
-    messages.splice(0, messages.length, ...messages.filter(item => item.type !== "码段分配通知"));
+  if (messages.some(item => ["码段分配通知", "订单创建通知"].includes(item.type))) {
+    messages.splice(0, messages.length, ...messages.filter(item => !["码段分配通知", "订单创建通知"].includes(item.type)));
     fxStore.set(fxBusinessStorage.messages, messages);
   }
 
@@ -795,7 +795,7 @@ const fxToday = "2026-07-27";
       fxStore.set("trace-complete-demo-case-version", fxDemoCaseVersion);
     }
   }
-  fxEnsureCompleteDemoCase();
+  // This copy starts with fresh business data, without legacy code orders.
   orders.forEach(fxNormalizeAllocationOrder);
   fxMigrateWithdrawalActivationIds();
   const completeDemoOrder = orders.find(item => item.demoCase === "complete-tea");
@@ -867,7 +867,6 @@ const fxToday = "2026-07-27";
     fxStore.set(markerKey, fxPendingBindingDemoVersion);
     fxStore.set(fxBusinessStorage.products, products);
   }
-  fxEnsurePendingBindingDemoCase();
   const fxRichDemoCaseVersion = 1;
   function fxEnsureRichDemoCases() {
     const markerKey = "trace-rich-demo-cases-version";
@@ -964,7 +963,6 @@ const fxToday = "2026-07-27";
     fxStore.set(fxBusinessStorage.messages, messages);
     fxStore.set(markerKey, fxRichDemoCaseVersion);
   }
-  fxEnsureRichDemoCases();
   const fxRelationshipConsistencyVersion = 7;
   function fxEnsureRelationshipConsistency() {
     const markerKey = "trace-relationship-consistency-version";
@@ -973,7 +971,7 @@ const fxToday = "2026-07-27";
       const customer = fxCustomerForRecord(record);
       if (!customer) return null;
       if (Number(record.customerId) !== Number(customer.id)) { record.customerId = customer.id; changed = true; }
-      if ("customer" in record && record.customer !== customer.name) { record.customer = customer.name; changed = true; }
+      if ("customer" in record && !record.customerSnapshot && record.customer !== customer.name) { record.customer = customer.name; changed = true; }
       if ("company" in record && record.company !== customer.name) { record.company = customer.name; changed = true; }
       return customer;
     };
@@ -1147,6 +1145,7 @@ const fxToday = "2026-07-27";
   fxEnsureRelationshipConsistency();
   let fxLegacyBatchLinksChanged = false;
   orders.forEach((order, index) => {
+    if (order.codeFormat === "random16") return;
     const allocationSegments = fxOrderAllocationSegments(order);
     const allSegmentsInBatch = batch => allocationSegments.length && allocationSegments.every(segment => fxCodeRangeContains(batch.range, segment.range));
     const anySegmentOverlapsBatch = batch => allocationSegments.length && allocationSegments.some(segment => fxCodeRangesOverlap(batch.range, segment.range));
@@ -1220,22 +1219,6 @@ const fxToday = "2026-07-27";
     fxStore.set(fxBusinessStorage.products, products);
     fxStore.set(fxBusinessStorage.customers, customers);
   }
-  const reserveBatchNo = "BATCH-202608-001";
-  const reserveBatch = codeBatches.find(item => item.no === reserveBatchNo);
-  if (!reserveBatch) {
-    codeBatches.unshift(fxNormalizeCodeBatch({
-      id: "demo-unallocated-batch",
-      no: reserveBatchNo,
-      range: "QR00000001–QR00010000",
-      total: 10000,
-      created: fxToday,
-      createdAt: `${fxToday} 13:40`,
-      style: "二维码核心区块",
-      size: "25 × 25 mm",
-      note: "待运营分配的演示库存",
-    }, 0));
-    fxStore.set(fxBusinessStorage.codeBatches, codeBatches);
-  }
   const fxDemoWithdrawal = withdrawals.find(item => item.demoCase === "complete-tea" || item.no === "WD-202607-018");
   if (fxDemoWithdrawal && (!Array.isArray(fxDemoWithdrawal.segments) || !fxDemoWithdrawal.segments.length)) {
     Object.assign(fxDemoWithdrawal, {
@@ -1246,6 +1229,13 @@ const fxToday = "2026-07-27";
     });
   }
   function fxSaveBusiness() {
+    orders.forEach(order => {
+      const customer = fxCustomerForRecord(order);
+      if (!customer) return;
+      customer.hasCreatedOrder = true;
+      order.companyNumber ||= customer.companyNumber;
+      order.customerSnapshot ||= { name: order.customer, companyNumber: customer.companyNumber, companyNumberType: customer.companyNumberType };
+    });
     orders.forEach(fxNormalizeAllocationOrder);
     fxMigrateWithdrawalActivationIds();
     fxStore.set(fxBusinessStorage.customers, customers);
@@ -1272,6 +1262,11 @@ const fxToday = "2026-07-27";
     });
   }
   window.addEventListener("storage", event => {
+    if (!event.key?.startsWith("copy-20261022:")) return;
+    // Bootstrap restores the latest lists before its first render. Do not let
+    // another tab's initialization replace lists while fixtures are being built.
+    if (!window.TRACE_APP_READY) return;
+    event = { key: event.key.slice("copy-20261022:".length), newValue: event.newValue };
     if (![fxBusinessStorage.orders, fxBusinessStorage.codeBatches].includes(event.key) || !event.newValue) return;
     try {
       const syncedItems = JSON.parse(event.newValue);
@@ -1297,7 +1292,7 @@ const fxToday = "2026-07-27";
   }
 
   nav.ops.splice(0, nav.ops.length,
-    ["customers", "building-2", "客户列表"],
+    ["customers", "building-2", "客户管理"],
     ["inventory", "qr-code", "码段库存"],
     ["orders", "receipt-text", "订单台账"],
     ["bind-requests", "clipboard-check", "绑定审核"],
@@ -1387,12 +1382,13 @@ const fxToday = "2026-07-27";
     const accountTerm = state.operatorAccountFilter.trim().toLowerCase();
     return fxNewestRows(fxOperators.filter(item => (!nameTerm || String(item.name || "").toLowerCase().includes(nameTerm)) && (!accountTerm || String(item.account || "").toLowerCase().includes(accountTerm)) && (state.operatorStatus === "全部状态" || item.status === state.operatorStatus) && fxOperatorMatchesLoginTime(item)), item => item.lastLogin);
   }
-  function fxAddMessage(message) { messages.unshift({ id: Date.now(), time: fxNow(), unread: true, ...message }); }
+  function fxIsResultNotification(message) { return ["绑定审核结果", "撤回审核结果"].includes(message.type); }
+  function fxAddMessage(message) { if (fxIsResultNotification(message)) messages.unshift({ id: Date.now(), time: fxNow(), unread: true, ...message }); }
   function fxIsApplicationSubmissionMessage(message) { return ["产品审核申请", "产品撤回申请", "绑定申请"].includes(message.type); }
-  function fxIsCustomerMessage(message) { return customers.some(customer => fxRecordBelongsToCustomer(message, customer)); }
+  function fxIsCustomerMessage(message) { return fxIsResultNotification(message) && customers.some(customer => fxRecordBelongsToCustomer(message, customer)); }
   function fxCustomerMessages() { return messages.filter(item => fxIsCustomerMessage(item) && !fxIsApplicationSubmissionMessage(item)); }
   function fxVisibleMessages(portal = state.portal) {
-    if (portal === "customer") return messages.filter(item => fxRecordBelongsToCustomer(item, fxCurrentCustomer()) && !fxIsApplicationSubmissionMessage(item));
+    if (portal === "customer") return messages.filter(item => fxIsResultNotification(item) && fxRecordBelongsToCustomer(item, fxCurrentCustomer()));
     if (portal === "ops") return fxCustomerMessages();
     return [];
   }
@@ -1417,7 +1413,7 @@ const fxToday = "2026-07-27";
   function fxFilteredCustomerMessages() {
     const titleTerm = state.messageTitleSearch.trim().toLowerCase();
     const contentTerm = state.messageContentSearch.trim().toLowerCase();
-    return fxNewestRows(messages.filter(item => fxRecordBelongsToCustomer(item, fxCurrentCustomer()) && !fxIsApplicationSubmissionMessage(item) &&
+    return fxNewestRows(fxVisibleMessages("customer").filter(item =>
       (!titleTerm || String(item.title || "").toLowerCase().includes(titleTerm)) &&
       (!contentTerm || String(item.detail || "").toLowerCase().includes(contentTerm)) &&
       (state.messageReadFilter === "全部阅读状态" || (state.messageReadFilter === "未读" ? item.unread : !item.unread)) &&
@@ -1444,13 +1440,18 @@ const fxToday = "2026-07-27";
     const numberedHeaders = ["序号", ...headers];
     const numberedRows = rows.map((row, index) => [index + 1, ...row]);
     const head = numberedHeaders.map(value => `<th>${fxEscape(value)}</th>`).join("");
-    const body = numberedRows.map(row => `<tr>${row.map(value => `<td>${fxEscape(value)}</td>`).join("")}</tr>`).join("");
+    const body = numberedRows.map(row => `<tr>${row.map(value => {
+      const text = String(value ?? "");
+      const textFormat = /^0\d+$/.test(text) ? ` style="mso-number-format:'@'"` : "";
+      return `<td${textFormat}>${fxEscape(text)}</td>`;
+    }).join("")}</tr>`).join("");
     const html = `<!doctype html><meta charset="utf-8"><table border="1"><thead><tr>${head}</tr></thead><tbody>${body}</tbody></table>`;
     fxDownloadBlob(filename, new Blob(["\ufeff", html], { type: "application/vnd.ms-excel;charset=utf-8" }));
   }
   function fxSerial(prefix, value) { return `${prefix}${String(value).padStart(8, "0")}`; }
   function fxOrderPrefix(customer) { return customer.account.replace(/[^a-z0-9]/gi, "").slice(0, 2).toUpperCase() || "QR"; }
   function fxParseCode(code = "") {
+    if (/^\d+$/.test(String(code).trim())) return { prefix: "", number: Number(code), width: 1 };
     const match = String(code).trim().match(/^([A-Za-z]+)(\d+)$/);
     return match ? { prefix: match[1].toUpperCase(), number: Number(match[2]), width: match[2].length } : null;
   }
@@ -1559,6 +1560,7 @@ const fxToday = "2026-07-27";
     }));
   }
   function fxEffectiveActivationAmount(orderOrOrders, predicate = null) {
+    if (Array.isArray(orderOrOrders)) return orderOrOrders.reduce((sum, order) => sum + fxEffectiveActivationAmount(order, predicate), 0);
     return fxEffectiveActivationIntervals(orderOrOrders, predicate).reduce((sum, interval) => sum + interval.amount, 0);
   }
   function fxActivationBelongsToProduct(activation, product) {

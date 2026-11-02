@@ -3,16 +3,31 @@
 const fxScanParams = new URLSearchParams(location.search);
   const fxBodyScanStatus = document.body.dataset.scanStatus;
   const fxScanIsPreview = fxScanParams.get("preview") === "1" || fxBodyScanStatus === "preview";
+  const fxScanDemoCodes = { active: "3000010187264513", inactive: "3000010163948271", reset: "3000010148517392" };
+  const fxScanLegacyCodes = { QR30000001: "active", QR10000001: "inactive", QR20012001: "reset" };
+  const fxScanInputSerial = String(fxScanParams.get("serial") || "").trim().toUpperCase();
+  const fxScanDemoStatus = fxScanIsPreview ? null
+    : fxScanLegacyCodes[fxScanInputSerial]
+      || (!fxScanInputSerial ? fxBodyScanStatus : null)
+      || (fxScanParams.get("demo") === "1" ? Object.keys(fxScanDemoCodes).find(key => fxScanDemoCodes[key] === fxScanInputSerial) : null);
+  if (fxScanDemoCodes[fxScanDemoStatus]) {
+    fxScanParams.set("serial", fxScanDemoCodes[fxScanDemoStatus]);
+    fxScanParams.set("demo", "1");
+    fxScanParams.delete("status");
+    history.replaceState(history.state, "", `${location.pathname}?${fxScanParams}`);
+  }
   const fxPreviewPayload = fxStore.get("trace-preview-draft-v2", null);
   const fxRequestedSerial = String(fxScanParams.get("serial") || "").trim().toUpperCase();
+  const fxIsRandomCode = /^\d{16}$/.test(fxRequestedSerial);
   const fxRequestedStatus = fxScanParams.get("status");
-  const fxDedicatedState = ["inactive", "reset"].includes(fxBodyScanStatus) ? fxBodyScanStatus : null;
-  const fxForcedStatus = ["active", "inactive", "reset"].includes(fxRequestedStatus)
+  const fxDedicatedState = !fxIsRandomCode && ["inactive", "reset"].includes(fxBodyScanStatus) ? fxBodyScanStatus : null;
+  const fxForcedStatus = !fxIsRandomCode && ["active", "inactive", "reset"].includes(fxRequestedStatus)
     ? fxRequestedStatus
     : fxDedicatedState || (!fxRequestedSerial && fxBodyScanStatus === "active" ? "active" : null);
-  const fxMatchedOrder = fxRequestedSerial ? orders.find(order => fxCodeInRange(fxRequestedSerial, order.range)) : null;
-  const fxMatchedActivation = fxMatchedOrder?.activations?.find(row => row.status !== "已重置" && row.range && fxCodeInRange(fxRequestedSerial, row.range));
-  const fxResetWithdrawal = fxRequestedSerial ? withdrawals.filter(item => item.status === "已通过" && (item.resetRanges || []).some(range => fxCodeInRange(fxRequestedSerial, range))).sort((a, b) => String(b.decidedAt || b.time || "").localeCompare(String(a.decidedAt || a.time || "")))[0] : null;
+  const fxInternalSerial = window.TRACE_RANDOM_SCAN?.sequence || fxRequestedSerial;
+  const fxMatchedOrder = window.TRACE_RANDOM_SCAN ? orders.find(order => order.no === window.TRACE_RANDOM_SCAN.orderNo) : fxRequestedSerial ? orders.find(order => !order.lines && fxCodeInRange(fxRequestedSerial, order.range)) : null;
+  const fxMatchedActivation = fxMatchedOrder?.activations?.find(row => row.status !== "已重置" && row.range && fxCodeInRange(fxInternalSerial, row.range));
+  const fxResetWithdrawal = fxInternalSerial ? withdrawals.filter(item => item.status === "已通过" && (!window.TRACE_RANDOM_SCAN || (item.resetSegments || item.segments || []).some(segment => segment.orderNo === fxMatchedOrder?.no && fxCodeInRange(fxInternalSerial, segment.range))) && (item.resetRanges || []).some(range => fxCodeInRange(fxInternalSerial, range))).sort((a, b) => String(b.decidedAt || b.time || "").localeCompare(String(a.decidedAt || a.time || "")))[0] : null;
   function fxScanActivationProduct(activation, order) {
     if (!activation) return null;
     const orderCustomer = order ? fxCustomerForRecord(order) : null;
@@ -28,7 +43,11 @@ const fxScanParams = new URLSearchParams(location.search);
   const fxActivationIsNewer = Boolean(fxActivatedProduct && (!fxResetWithdrawal || String(fxMatchedActivation.time || "") > String(fxResetWithdrawal.decidedAt || fxResetWithdrawal.time || "")));
   const fxResolvedScanStatus = fxScanIsPreview
     ? "active"
-    : fxForcedStatus === "reset" || fxForcedStatus === "inactive"
+    : fxScanDemoCodes[fxScanDemoStatus]
+      ? fxScanDemoStatus
+    : fxIsRandomCode && !window.TRACE_RANDOM_SCAN
+      ? "invalid"
+      : fxForcedStatus === "reset" || fxForcedStatus === "inactive"
       ? fxForcedStatus
       : fxResetWithdrawal && !fxActivationIsNewer
         ? "reset"
@@ -52,13 +71,20 @@ const fxScanParams = new URLSearchParams(location.search);
     ? { id: "preview", name: fxPreviewPayload.details.productName || "未命名产品", company: fxPreviewPayload.company || fxPreviewPayload.details.companyName || "", batch: fxPreviewPayload.details.batch || "PREVIEW", status: "预览", amount: 0, details: fxNormalizeDetails(fxPreviewPayload.details) }
     : fxActivatedProduct
       || fxResetProduct
-      || (!fxRequestedSerial ? products.find(item => item.demoCase === "complete-tea" && item.status === "已激活") : null)
-      || (!fxRequestedSerial ? products.find(item => item.status === "已激活") : null)
-      || products[0];
-  const fxScanDetails = fxNormalizeDetails(fxScanProduct?.details || fxNewDraft());
+      || (fxScanDemoCodes[fxScanDemoStatus] ? {
+        id: "scan-demo", name: "云岭高山有机绿茶", company: "云岭生态农业有限公司",
+        batch: "YL20260726", details: fxCompleteDemoDetails()
+      } : null)
+      || (!fxIsRandomCode && !fxRequestedSerial ? products.find(item => item.demoCase === "complete-tea" && item.status === "已激活") : null)
+      || (!fxIsRandomCode && !fxRequestedSerial ? products.find(item => item.status === "已激活") : null)
+      || (!fxIsRandomCode ? products[0] : null);
+  const fxScanDetails = fxNormalizeDetails(fxScanProduct?.details || fxDefaultDetails({ name: "", company: "", category: "", batch: "" }));
+  if (!fxScanDetails.productName && fxScanProduct?.name) fxScanDetails.productName = fxScanProduct.name;
   if (entryPortal === "scan") {
     const fxScanRefreshKeys = new Set([fxBusinessStorage.orders, fxBusinessStorage.products, fxBusinessStorage.withdrawals]);
     window.addEventListener("storage", event => {
+      if (!event.key?.startsWith("copy-20261022:")) return;
+      event = { key: event.key.slice("copy-20261022:".length), newValue: event.newValue };
       if (event.newValue && fxScanRefreshKeys.has(event.key)) window.location.reload();
     });
   }
@@ -68,9 +94,17 @@ const fxScanParams = new URLSearchParams(location.search);
     ? fxScanRecords[fxRequestedSerial]
     : { count: 0, times: [] };
   if (entryPortal === "scan") {
-    if (!fxScanIsPreview && fxResolvedScanStatus === "active" && fxRequestedSerial) {
+    if (!fxScanIsPreview && !fxScanDemoStatus && fxResolvedScanStatus === "active" && fxRequestedSerial) {
       const time = fxNow();
-      fxCurrentScanRecord = { count: Number(fxCurrentScanRecord.count || 0) + 1, times: [...(Array.isArray(fxCurrentScanRecord.times) ? fxCurrentScanRecord.times : []), time] };
+      const previousTimes = Array.isArray(fxCurrentScanRecord.times) ? fxCurrentScanRecord.times : [];
+      const previousRecords = Array.isArray(fxCurrentScanRecord.records) ? fxCurrentScanRecord.records : previousTimes.map(time => ({ time }));
+      // Network metadata must come from the server; browser-only scans leave it unknown.
+      fxCurrentScanRecord = {
+        ...fxCurrentScanRecord,
+        count: Number(fxCurrentScanRecord.count || 0) + 1,
+        times: [...previousTimes, time],
+        records: [...previousRecords, { time, ip: "", region: "" }],
+      };
       fxScanRecords[fxRequestedSerial] = fxCurrentScanRecord;
       fxStore.set(fxScanRecordKey, fxScanRecords);
       state.scanCount = fxCurrentScanRecord.count;
@@ -153,26 +187,27 @@ const fxScanParams = new URLSearchParams(location.search);
     const statusMeta = fxScanIsPreview ? `<div class="verified-row"><span class="status warning">预览资料</span></div>` : "";
     const scanMeta = fxScanIsPreview
       ? `<div class="scan-preview-note">预览码不计入扫码次数，也不占用订单码量。</div>`
+      : fxScanDemoStatus
+        ? `<div class="scan-preview-note">当前为扫码页面演示，扫码次数为示例数据。</div><div class="scan-meta"><div><span>扫码次数</span><strong>1</strong></div><div><span>溯源质控码</span><strong class="mono">${fxEscape(fxRequestedSerial)}</strong></div></div>`
       : fxRequestedSerial
-        ? `<div class="scan-meta"><div><span>总查询次数</span><strong>${formatNumber(state.scanCount || 1)}</strong></div><div><span>溯源质控码</span><strong class="mono">${fxEscape(fxRequestedSerial)}</strong></div></div>`
+        ? `<div class="scan-meta"><div><span>扫码次数</span><strong>${formatNumber(state.scanCount || 1)}</strong></div><div><span>溯源质控码</span><strong class="mono">${fxEscape(fxRequestedSerial)}</strong></div></div>`
         : `<div class="scan-preview-note">当前为扫码端演示入口；扫描溯源质控码后将按单码记录查询次数。</div>`;
     return `<div class="scan-shell"><div class="mobile-topbar"><span></span><h1>溯源质控码</h1><span></span></div>${fxScanBrandBanner()}<div class="scan-sticky-info"><div class="product-summary">${statusMeta}<h2>${fxEscape(fxScanDetails.productName || "未命名产品")}</h2>${scanMeta}</div><nav class="tabs" aria-label="溯源内容模块">${tabs.map(([key, label]) => `<button type="button" class="tab ${state.scanTab === key ? "active" : ""}" data-action="scan-tab" data-tab="${key}">${label}</button>`).join("")}</nav></div><div class="scan-content">${active ? active[2]() : `<section class="content-section"><div class="empty"><h3>暂无公开资料</h3><p>当前产品尚未配置可展示内容。</p></div></section>`}</div></div>`;
   };
   scanStateMarkup = function (type) {
     const inactive = type === "inactive";
-    const serial = fxRequestedSerial || "DEMO00000001";
-    const label = inactive ? "未激活码" : "已重置码";
-    const title = inactive ? "该质控码尚未激活" : "该质控码信息已重置";
-    const description = inactive ? "该码已生成，但尚未关联已激活的产品资料。请核对包装上的质控码，或稍后再次查询。" : "原关联产品信息已撤回，该质控码当前为空白状态。请联系产品提供方获取最新处理信息。";
-    return `<div class="scan-shell"><div class="mobile-topbar"><span></span><h1>溯源质控码</h1><span></span></div><div class="scan-state ${inactive ? "is-inactive" : "is-reset"}"><div class="scan-state-card"><div class="scan-state-icon">${icon(inactive ? "qr-code" : "refresh-cw", inactive ? "▦" : "↻", "icon-lg")}</div><span class="scan-state-label">${label}</span><h2>${title}</h2><p>${description}</p><div class="scan-state-meta"><span>当前状态</span><strong>${inactive ? "未激活" : "已重置"}</strong><span>溯源质控码</span><strong class="mono">${fxEscape(serial)}</strong></div></div></div></div>`;
+    const invalid = type === "invalid";
+    const serial = fxRequestedSerial;
+    const label = invalid ? "无效码" : inactive ? "未激活码" : "已重置码";
+    const title = invalid ? "未找到有效的二维码记录" : inactive ? "该质控码尚未激活" : "该质控码信息已重置";
+    const description = invalid ? "该码不属于有效订单，或对应订单已撤销。请核对包装上的二维码后重试。" : inactive ? "该码已生成，但尚未关联已激活的产品资料。请核对包装上的质控码，或稍后再次查询。" : "原关联产品信息已撤回，该质控码当前为空白状态。请联系产品提供方获取最新处理信息。";
+    return `<div class="scan-shell"><div class="mobile-topbar"><span></span><h1>溯源质控码</h1><span></span></div><div class="scan-state ${invalid ? "is-invalid" : inactive ? "is-inactive" : "is-reset"}"><div class="scan-state-card"><div class="scan-state-icon">${icon(invalid ? "circle-x" : inactive ? "qr-code" : "refresh-cw", invalid ? "×" : inactive ? "▦" : "↻", "icon-lg")}</div><span class="scan-state-label">${label}</span><h2>${title}</h2><p>${description}</p>${fxScanDemoStatus ? `<div class="scan-preview-note">当前为扫码页面演示。</div>` : ""}<div class="scan-state-meta"><span>当前状态</span><strong>${invalid ? "无效" : inactive ? "未激活" : "已重置"}</strong><span>溯源质控码</span><strong class="mono">${fxEscape(serial)}</strong></div></div></div></div>`;
   };
   function fxScanPrototypeNav() {
     const current = fxScanIsPreview ? "preview" : fxResolvedScanStatus;
     const entries = [
       ["preview", "预览码", "pages/scan/preview.html?preview=1"],
-      ["active", "已激活", "pages/scan/active.html?serial=QR30000001&status=active"],
-      ["inactive", "未激活", "pages/scan/inactive.html?serial=QR10000001&status=inactive"],
-      ["reset", "已重置", "pages/scan/reset.html?serial=QR20012001&status=reset"],
+      ...Object.entries(fxScanDemoCodes).map(([key, serial]) => [key, { active: "已激活", inactive: "未激活", reset: "已重置" }[key], `pages/scan/${key}.html?serial=${serial}&demo=1`]),
     ];
     return `<nav class="scan-prototype-nav" aria-label="扫码页面原型切换"><span>页面原型</span><div class="scan-prototype-links">${entries.map(([key, label, href]) => `<a href="${href}" ${current === key ? `class="active" aria-current="page"` : ""}>${label}</a>`).join("")}</div></nav>`;
   }

@@ -1,168 +1,27 @@
-# 完整目录与源代码清单
+# 项目目录说明
 
-本文件列出多页面项目的全部文件。所有拆分后的 HTML、JavaScript、CSS 与说明代码均位于 `prototype-multipage` 内。
+当前项目只保留运行资源、当前文档和启动导出脚本。
 
-## 完整文件目录
+| 路径 | 用途 |
+| --- | --- |
+| `启动原型.cmd` | Windows 启动入口，打开本地服务和浏览器 |
+| `index.html` | 三端导航入口 |
+| `pages/` | 运营端、客户端及扫码端页面，含少量旧地址跳转兼容 |
+| `js/` | 公共业务逻辑、页面入口和内置资料初始化 |
+| `css/` | 公共与业务样式 |
+| `assets/` | 本地产品、企业和追溯图片及相关附件 |
+| `vendor/` | 页面所需第三方脚本及随附许可说明 |
+| `prototype-annotator/runtime/` | 批注与需求说明展示组件 |
+| `prototype-annotator/annotations.json` | 当前批注数据 |
+| `prototype-annotator/page-map.json` | 当前页面映射 |
+| `prototype-annotator/specs/current/` | 24 份“页面编号-中文页面名称.md”需求说明 |
+| `prototype-annotator/specs/registry.json` | 页面与说明文件的对应关系 |
+| `docs/` | 当前业务规则、账号资料及开发说明 |
+| `输出/说明文件包/` | 完整产品说明书 |
+| `scripts/serve-system-docs.py` | 本地运行及批注保存服务 |
+| `scripts/server_support/` | 随包提供的评审服务组件，来自项目现用标注工具 |
+| `scripts/export-prototype.py` | 可重复执行的原型打包脚本 |
 
-```text
-assets/demo-case/business-license.pdf
-assets/demo-case/organic-certificate.pdf
-assets/demo-case/product-brew-detail.jpg
-assets/demo-case/product-brew.jpg
-assets/demo-case/product-dry-leaves.jpg
-assets/demo-case/product-leaves-v2.jpg
-assets/demo-case/product-leaves.jpg
-assets/demo-case/product-package-final.jpg
-assets/demo-case/product-package-v2.jpg
-assets/demo-case/product-package.jpg
-assets/demo-case/product-spec.pdf
-assets/demo-case/production-base.jpg
-assets/demo-case/production-craft-v2.jpg
-assets/demo-case/production-craft.jpg
-assets/demo-case/production-license.pdf
-assets/demo-case/quality-lab.jpg
-assets/demo-case/quality-report.pdf
-assets/demo-case/trace-record.pdf
-assets/tea-field.jpg
-assets/tea-product.jpg
-css/common.css
-css/features.css
-index.html
-js/bootstrap.js
-js/components/application.js
-js/components/ui.js
-js/core/config.js
-js/core/domain.js
-js/core/enhanced-runtime.js
-js/core/runtime.js
-js/pages/customer/editor.js
-js/pages/customer/messages.js
-js/pages/customer/order-detail.js
-js/pages/customer/orders.js
-js/pages/customer/overview.js
-js/pages/customer/settings.js
-js/pages/customer/withdrawals.js
-js/pages/ops/bind-request-detail.js
-js/pages/ops/bind-requests.js
-js/pages/ops/create-order.js
-js/pages/ops/customer-detail.js
-js/pages/ops/customers.js
-js/pages/ops/messages.js
-js/pages/ops/operators.js
-js/pages/ops/order-detail.js
-js/pages/ops/orders.js
-js/pages/ops/settings.js
-js/pages/ops/withdrawals.js
-js/pages/scan/active.js
-js/pages/scan/inactive.js
-js/pages/scan/preview.js
-js/pages/scan/reset.js
-js/views/base.js
-js/views/business.js
-js/views/scan.js
-pages/customer/editor.html
-pages/customer/messages.html
-pages/customer/order-detail.html
-pages/customer/orders.html
-pages/customer/overview.html
-pages/customer/settings.html
-pages/customer/withdrawals.html
-pages/ops/bind-request-detail.html
-pages/ops/bind-requests.html
-pages/ops/create-order.html
-pages/ops/customer-detail.html
-pages/ops/customers.html
-pages/ops/messages.html
-pages/ops/operators.html
-pages/ops/order-detail.html
-pages/ops/orders.html
-pages/ops/settings.html
-pages/ops/withdrawals.html
-pages/scan/active.html
-pages/scan/inactive.html
-pages/scan/preview.html
-pages/scan/reset.html
-PROJECT_STRUCTURE.md
-prototype-annotator/annotation-candidates.json
-prototype-annotator/annotations.json
-prototype-annotator/page-map.json
-prototype-annotator/product-context.json
-prototype-annotator/README.md
-prototype-annotator/rendered-page-map.json
-prototype-annotator/runtime/markdown-renderer.js
-prototype-annotator/runtime/mermaid-loader.js
-prototype-annotator/runtime/prototype-annotator.css
-prototype-annotator/runtime/prototype-annotator.js
-README.md
-vendor/lucide.min.js
-vendor/qrcode-generator.min.js
-```
+数据初始化仍需 `js/core/demo-fixtures.js` 与 `js/core/business-sample-data.js`。前者准备关联与码载荷，后者写入当前业务资料；两者均为启动依赖。
 
-## 可读源代码文件
-
-- `css/common.css`
-- `css/features.css`
-- `index.html`
-- `js/bootstrap.js`
-- `js/components/application.js`
-- `js/components/ui.js`
-- `js/core/config.js`
-- `js/core/domain.js`
-- `js/core/enhanced-runtime.js`
-- `js/core/runtime.js`
-- `js/pages/customer/editor.js`
-- `js/pages/customer/messages.js`
-- `js/pages/customer/order-detail.js`
-- `js/pages/customer/orders.js`
-- `js/pages/customer/overview.js`
-- `js/pages/customer/settings.js`
-- `js/pages/customer/withdrawals.js`
-- `js/pages/ops/bind-request-detail.js`
-- `js/pages/ops/bind-requests.js`
-- `js/pages/ops/create-order.js`
-- `js/pages/ops/customer-detail.js`
-- `js/pages/ops/customers.js`
-- `js/pages/ops/messages.js`
-- `js/pages/ops/operators.js`
-- `js/pages/ops/order-detail.js`
-- `js/pages/ops/orders.js`
-- `js/pages/ops/settings.js`
-- `js/pages/ops/withdrawals.js`
-- `js/pages/scan/active.js`
-- `js/pages/scan/inactive.js`
-- `js/pages/scan/preview.js`
-- `js/pages/scan/reset.js`
-- `js/views/base.js`
-- `js/views/business.js`
-- `js/views/scan.js`
-- `pages/customer/editor.html`
-- `pages/customer/messages.html`
-- `pages/customer/order-detail.html`
-- `pages/customer/orders.html`
-- `pages/customer/overview.html`
-- `pages/customer/settings.html`
-- `pages/customer/withdrawals.html`
-- `pages/ops/bind-request-detail.html`
-- `pages/ops/bind-requests.html`
-- `pages/ops/create-order.html`
-- `pages/ops/customer-detail.html`
-- `pages/ops/customers.html`
-- `pages/ops/messages.html`
-- `pages/ops/operators.html`
-- `pages/ops/order-detail.html`
-- `pages/ops/orders.html`
-- `pages/ops/settings.html`
-- `pages/ops/withdrawals.html`
-- `pages/scan/active.html`
-- `pages/scan/inactive.html`
-- `pages/scan/preview.html`
-- `pages/scan/reset.html`
-- `PROJECT_STRUCTURE.md`
-- `prototype-annotator/README.md`
-- `prototype-annotator/runtime/markdown-renderer.js`
-- `prototype-annotator/runtime/mermaid-loader.js`
-- `prototype-annotator/runtime/prototype-annotator.css`
-- `prototype-annotator/runtime/prototype-annotator.js`
-- `README.md`
-- `vendor/lucide.min.js`
-- `vendor/qrcode-generator.min.js`
+旧版说明、迁移文档、探查脚本和截图不在交付目录中。Git 元数据不进入原型压缩包。

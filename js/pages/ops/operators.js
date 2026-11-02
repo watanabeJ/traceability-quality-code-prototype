@@ -1,4 +1,4 @@
-import { bootstrapPage } from "../../bootstrap.js?v=v6q9x3h72";
+import { bootstrapPage } from "../../bootstrap.js?v=operator-validation-20261028-04";
 
 bootstrapPage({
   "portal": "ops",

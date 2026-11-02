@@ -1,141 +1,42 @@
-# 溯源质控码平台多页面版
+# 溯源质控码平台原型
 
-本目录是从单文件 `app.js + features.js` 原型重构出的真正多页面项目。每个业务模块有独立 HTML 和独立页面入口 JS，公共状态、组件、视图和样式按职责复用。目录内不引用原 `prototype/app.js` 或 `prototype/features.js`。
+更新日期：2026-11-02。包含运营端、客户端、扫码端，以及当前页面批注、需求说明和完整产品说明书。
 
-当前主流程为：运营端先生成连续的库存码段批次，再从库存中按需分配给启用客户；客户只能查看运营端已分配给自己的码段，并基于这些码段发起产品绑定申请。客户不具备生成码段或向其他客户分配码段的能力。
+## 启动
 
-完整状态流转：`平台库存批次（未分配/部分分配/已分配） → 客户订单（已分配） → 产品绑定申请（待提交/待审核/已驳回） → 运营审核并激活 → 客户发起码段撤回 → 运营审批后重置`。产品资料与绑定设置在同一审核中处理，分配和激活是两个独立步骤。
+安装 Python 3.10 或更新版本，在 Windows 中双击 `启动原型.cmd`。终端保持打开，浏览器会进入原型导航页。
 
-原型约束：单个库存批次最多生成 100,000 枚；浏览器端同步打包下载最多 5,000 枚，较大批次应按订单分批导出或由正式后端异步生成。
+也可以在本目录运行：
 
-## 运行
-
-在工作区根目录启动静态服务器，然后访问：
-
-`http://127.0.0.1:4318/prototype-multipage/pages/ops/orders.html`
-
-## 业务流程图
-
-当前系统的全链路业务流程见 [`docs/end-to-end-business-flow.md`](docs/end-to-end-business-flow.md)，Mermaid 可编辑源文件见 [`docs/end-to-end-business-flow.mmd`](docs/end-to-end-business-flow.mmd)。
-
-面向正式开发的业务流程、功能规则、数据字典、权限矩阵、状态流转和后端落地说明见 [`docs/development/README.md`](docs/development/README.md)。
-
-## 目录结构
-
-```text
-prototype-multipage/
-|-- index.html
-|-- README.md
-|-- PROJECT_STRUCTURE.md
-|-- css/
-|   |-- common.css
-|   `-- features.css
-|-- js/
-|   |-- bootstrap.js
-|   |-- core/
-|   |   |-- config.js
-|   |   |-- domain.js
-|   |   |-- runtime.js
-|   |   `-- enhanced-runtime.js
-|   |-- components/
-|   |   |-- ui.js
-|   |   `-- application.js
-|   |-- views/
-|   |   |-- base.js
-|   |   |-- business.js
-|   |   `-- scan.js
-|   `-- pages/
-|       |-- ops/
-|       |   |-- customers.js
-|       |   |-- customer-detail.js
-|       |   |-- create-order.js
-|       |   |-- orders.js
-|       |   |-- order-detail.js
-|       |   |-- bind-request-detail.js
-|       |   |-- bind-requests.js
-|       |   |-- withdrawals.js
-|       |   |-- operators.js
-|       |   |-- messages.js
-|       |   `-- settings.js
-|       |-- customer/
-|       |   |-- overview.js
-|       |   |-- orders.js
-|       |   |-- order-detail.js
-|       |   |-- editor.js
-|       |   |-- withdrawals.js
-|       |   |-- messages.js
-|       |   `-- settings.js
-|       |-- scan/
-|       |   |-- preview.js
-|       |   |-- active.js
-|       |   |-- inactive.js
-|       |   `-- reset.js
-|-- pages/
-|   |-- ops/
-|   |   |-- customers.html
-|   |   |-- customer-detail.html
-|   |   |-- create-order.html
-|   |   |-- orders.html
-|   |   |-- order-detail.html
-|   |   |-- bind-request-detail.html
-|   |   |-- bind-requests.html
-|   |   |-- withdrawals.html
-|   |   |-- operators.html
-|   |   |-- messages.html
-|   |   `-- settings.html
-|   |-- customer/
-|   |   |-- overview.html
-|   |   |-- orders.html
-|   |   |-- order-detail.html
-|   |   |-- editor.html
-|   |   |-- withdrawals.html
-|   |   |-- messages.html
-|   |   `-- settings.html
-|   |-- scan/
-|   |   |-- preview.html
-|   |   |-- active.html
-|   |   |-- inactive.html
-|   |   `-- reset.html
-|-- assets/
-|-- vendor/
-`-- prototype-annotator/
+```powershell
+python scripts/serve-system-docs.py
 ```
 
-## 页面清单
+访问 `http://127.0.0.1:4322/`。若端口已占用，可运行 `python scripts/serve-system-docs.py --port 4323`，访问对应端口。启动服务只依赖 Python 标准库，无需 Node.js、安装依赖或项目外的工具包。
 
-| 端 | 页面 | HTML | 页面 JS |
-|---|---|---|---|
-| ops | 客户列表 | `pages/ops/customers.html` | `js/pages/ops/customers.js` |
-| ops | 客户详情 | `pages/ops/customer-detail.html` | `js/pages/ops/customer-detail.js` |
-| ops | 生成码段批次 | `pages/ops/create-order.html` | `js/pages/ops/create-order.js` |
-| ops | 码段库存 | `pages/ops/orders.html` | `js/pages/ops/orders.js` |
-| ops | 订单详情 | `pages/ops/order-detail.html` | `js/pages/ops/order-detail.js` |
-| ops | 绑定审核详情 | `pages/ops/bind-request-detail.html` | `js/pages/ops/bind-request-detail.js` |
-| ops | 绑定审核 | `pages/ops/bind-requests.html` | `js/pages/ops/bind-requests.js` |
-| ops | 撤回审核 | `pages/ops/withdrawals.html` | `js/pages/ops/withdrawals.js` |
-| ops | 运营账号管理 | `pages/ops/operators.html` | `js/pages/ops/operators.js` |
-| ops | 站内信 | `pages/ops/messages.html` | `js/pages/ops/messages.js` |
-| ops | 个人设置 | `pages/ops/settings.html` | `js/pages/ops/settings.js` |
-| customer | 数据概览 | `pages/customer/overview.html` | `js/pages/customer/overview.js` |
-| customer | 我的码段 | `pages/customer/orders.html` | `js/pages/customer/orders.js` |
-| customer | 订单详情 | `pages/customer/order-detail.html` | `js/pages/customer/order-detail.js` |
-| customer | 产品编辑与查看 | `pages/customer/editor.html` | `js/pages/customer/editor.js` |
-| customer | 撤回申请 | `pages/customer/withdrawals.html` | `js/pages/customer/withdrawals.js` |
-| customer | 站内信 | `pages/customer/messages.html` | `js/pages/customer/messages.js` |
-| customer | 个人设置 | `pages/customer/settings.html` | `js/pages/customer/settings.js` |
-| scan | 扫码预览 | `pages/scan/preview.html` | `js/pages/scan/preview.js` |
-| scan | 已激活码 | `pages/scan/active.html` | `js/pages/scan/active.js` |
-| scan | 未激活码 | `pages/scan/inactive.html` | `js/pages/scan/inactive.js` |
-| scan | 已重置码 | `pages/scan/reset.html` | `js/pages/scan/reset.js` |
+## 账号和资料
 
-## 代码职责
+运营账号为 `operator_01`，客户账号为 `yunling`，全新存储的初始密码均为 `Trace@2026`。已有浏览器继续使用已保存的密码。
 
-- `js/core/config.js`：入口配置、共享状态和基础数据。
-- `js/core/domain.js`：业务数据持久化、迁移、文件、二维码和领域工具。
-- `js/core/runtime.js`：基础渲染、真实多页面路由和公共事件。
-- `js/core/enhanced-runtime.js`：增强渲染、业务交互、上传和拖拽。
-- `js/components/ui.js`：导航、页头、指标、分页等基础组件。
-- `js/components/application.js`：登录、筛选、日期、产品选择等业务组件。
-- `js/views/*.js`：基础业务页面、增强业务页面和扫码页面视图。
-- `js/pages/**/*.js`：每个 HTML 对应的独立页面入口。
-- `css/common.css` 与 `css/features.css`：公共基础样式与增强功能样式。
+首次运行自动准备虚构的业务资料，包含 7 家客户、40 笔订单、53 个图文产品及绑定、撤回、下载、通知和扫码记录。其他账号见[内置业务数据](docs/business-data.md)。
+
+三端必须使用同一浏览器配置和同一来源，才能共享记录。不同端口、无痕窗口和其他设备使用独立存储。当前业务数据保存在 localStorage 和 IndexedDB，没有跨设备同步后端。压缩包包含初始化资料，不包含原浏览器中的个人后续操作记录。
+
+## 需求与说明
+
+- [页面需求说明目录](prototype-annotator/specs/README.md)：24 份中文命名的当前页面说明。
+- [完整产品说明书](输出/说明文件包/溯源质控码平台产品说明书_v1.1.md)：正文为 V1.3，沿用原文件名。
+- [项目文档](docs/README.md)：业务规则、数据口径和开发说明。
+- [目录说明](PROJECT_STRUCTURE.md)：运行资源和维护文件。
+
+页面内保留批注和需求说明入口。通过本启动服务保存的修改会写入本地项目文件，后续编辑产生的快照按需保存。
+
+## 导出
+
+在项目目录运行：
+
+```powershell
+python scripts/export-prototype.py ../交付物/溯源质控码平台-原型文件包.zip
+```
+
+导出脚本包含运行文件及当前文档，排除 Git、缓存、日志、历史快照和过程文件。解压后从包内启动。
