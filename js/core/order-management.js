@@ -534,7 +534,7 @@ function omCreatePage() {
   const back = `<button class="button" data-nav="orders">${icon("arrow-left", "←")}返回订单台账</button>`;
   if (state.omResult) {
     const order = orders.find(row => row.no === state.omResult);
-    if (order) return `<div class="page">${pageHeader("创建订单", "", back)}<section class="detail-section om-result"><div class="success-icon">${icon("circle-check", "✓")}</div><h2>订单创建成功</h2><p class="mono">${fxEscape(order.no)}</p><p>${fxEscape(order.customer)} · ${order.lines.length} 条明细 · 共 ${formatNumber(order.total)} 个码</p><div class="table-actions"><button class="button primary" data-action="om-open-download" data-no="${order.no}">${icon("download", "↓")}下载码包</button><button class="button" data-action="om-detail" data-no="${order.no}">查看订单</button><button class="button" data-action="om-create">继续创建订单</button></div></section></div>`;
+    if (order) return `<div class="page">${pageHeader("创建订单", "", back)}<section class="detail-section om-result"><div class="success-icon">${icon("circle-check", "✓")}</div><h2>订单创建成功</h2><p class="mono">${fxEscape(order.no)}</p><p>${fxEscape(fxCurrentCustomerName(order))} · ${order.lines.length} 条明细 · 共 ${formatNumber(order.total)} 个码</p><div class="table-actions"><button class="button primary" data-action="om-open-download" data-no="${order.no}">${icon("download", "↓")}下载码包</button><button class="button" data-action="om-detail" data-no="${order.no}">查看订单</button><button class="button" data-action="om-create">继续创建订单</button></div></section></div>`;
   }
   const draft = omDraft();
   const customer = customers.find(row => fxSameId(row.id, draft.customerId));
@@ -549,7 +549,7 @@ function omLedgerRows(customer = false) {
   return orders.filter(order => (!customer || (!omCancelled(order) && fxRecordBelongsToCustomer(order, fxCurrentCustomer()))) &&
     (!filter.occupiedOnly || omOccupiesNumbers(order)) &&
     (!filter.no || order.no.toLowerCase().includes(filter.no.toLowerCase())) &&
-    (filter.customerId || !filter.customer || order.customer.includes(filter.customer)) &&
+    (filter.customerId || !filter.customer || fxCurrentCustomerName(order).includes(filter.customer)) &&
     (!filter.customerId || String(order.customerId ?? order.customer ?? order.companyNumber) === String(filter.customerId)) &&
     (customer || !filter.company || String(order.companyNumber || "").includes(filter.company)) &&
     (!filter.productNumber || (order.lines || []).some(line => String(line.productNumber) === String(filter.productNumber))) &&
@@ -574,7 +574,7 @@ function omLedgerPage(customer = false) {
       : `<button class="text-action" data-action="om-open-download" data-no="${order.no}">下载码包</button>`;
     const cancel = customer || !omIsOrder(order) ? "" : reason ? fxDisabledAction("撤销订单", reason, "danger-text") : `<button class="text-action danger-text" data-action="om-open-cancel" data-no="${order.no}">撤销订单</button>`;
     const stateCell = `<span class="status ${cancelled ? "om-status-cancelled" : "success"}">${omOrderStatus(order)}</span>`;
-    return `<tr><td class="mono">${fxEscape(order.no)}</td>${customer ? "" : `<td>${fxEscape(order.customer)}</td><td class="mono">${fxEscape(order.companyNumber || "—")}</td><td>${fxEscape(order.version || "—")}</td>`}<td class="stats-number">${formatNumber(omCategoryCount(order))}</td><td>${formatNumber(order.total)}</td><td>${formatNumber(order.active)}</td><td>${formatNumber(fxOrderPendingAmount(order))}</td><td>${formatNumber(fxOrderAvailableAmount(order))}</td>${customer ? "" : `<td>${stateCell}</td>`}<td>${fxEscape(order.createdAt || order.created)}</td><td class="action-column"><div class="table-actions"><button class="text-action" data-action="om-detail" data-no="${order.no}">${customer ? "订单详情" : "详情"}</button>${download}${cancel}</div></td></tr>`;
+    return `<tr><td class="mono">${fxEscape(order.no)}</td>${customer ? "" : `<td>${fxEscape(fxCurrentCustomerName(order))}</td><td class="mono">${fxEscape(order.companyNumber || "—")}</td><td>${fxEscape(order.version || "—")}</td>`}<td class="stats-number">${formatNumber(omCategoryCount(order))}</td><td>${formatNumber(order.total)}</td><td>${formatNumber(order.active)}</td><td>${formatNumber(fxOrderPendingAmount(order))}</td><td>${formatNumber(fxOrderAvailableAmount(order))}</td>${customer ? "" : `<td>${stateCell}</td>`}<td>${fxEscape(order.createdAt || order.created)}</td><td class="action-column"><div class="table-actions"><button class="text-action" data-action="om-detail" data-no="${order.no}">${customer ? "订单详情" : "详情"}</button>${download}${cancel}</div></td></tr>`;
   }).join("");
   const statusFilter = customer ? "" : `<select data-om-filter="status" aria-label="订单状态"><option value="">全部状态</option>${["已生成", "已撤销"].map(value => `<option ${filters.status === value ? "selected" : ""}>${value}</option>`).join("")}</select>`;
   const dates = `${field("from", "订单创建开始日期", "date")}${field("to", "订单创建结束日期", "date")}`;
@@ -614,7 +614,7 @@ function omDetailPage(original) {
     ? `<button type="button" class="status-link" data-action="om-open-cancel-info" data-no="${order.no}" title="查看撤销信息">${omOrderStatus(order)}</button>`
     : fxEscape(omOrderStatus(order));
   const fields = [["订单号", order.no, state.portal === "customer" ? "order-detail-half" : ""],
-    ...(state.portal === "ops" ? [["客户名称", order.customer], ["公司号", order.companyNumber], ["版本号", order.version]] : []),
+    ...(state.portal === "ops" ? [["客户名称", order.customerSnapshot?.name || order.customer], ["公司号", order.companyNumber], ["版本号", order.version]] : []),
     ["订单创建时间", order.createdAt, state.portal === "customer" ? "order-detail-half" : ""],
     ...(state.portal === "ops" ? [["操作人", order.allocatedBy], ["订单状态", statusValue, "", true]] : []),
     ["订单码量", formatNumber(order.total), "order-detail-metrics-start"], ["已绑定", formatNumber(order.active)], ["绑定申请中", formatNumber(fxOrderPendingAmount(order))], ["待绑定", formatNumber(fxOrderAvailableAmount(order))],
@@ -685,7 +685,7 @@ function omOpenNewProduct(order, line, amount, sourceRange, product = null) {
   state.editorDraft = product ? fxNormalizeDetails(fxClone(product.details)) : fxNewDraft();
   state.editorDraft.category = line.category;
   state.editorDraft.subcategory = line.remark;
-  state.editorDraft.companyName = order.customer;
+  if (!product) state.editorDraft.companyName = order.customerSnapshot?.name || order.customer;
   state.editorReadonly = false;
   state.editorOwner = state.portal;
   state.editorBindRequestId = null;
@@ -795,7 +795,7 @@ function fxInstallOrderManagement() {
       const unnamed = fxEditorModules.some(module => (draft.custom?.[module] || []).some(row => !row.name?.trim() && (row.value?.trim() || row.files?.length)));
       if (unnamed) return showToast("新增字段必须填写字段名称"), false;
       const item = product || { id: Math.max(0, ...products.map(row => row.id)) + 1, amount: 0 };
-      Object.assign(item, { customerId: order.customerId, company: order.customer, name: draft.productName.trim(), batch: draft.batch.trim(),
+      Object.assign(item, { customerId: order.customerId, company: fxCurrentCustomerName(order), name: draft.productName.trim(), batch: draft.batch.trim(),
         category: line.category, categoryId: line.categoryId, orderLineId: line.id, productNumber: line.productNumber, details: fxClone(draft), omCreatedByOps: true,
         status: submit ? "待审核" : "草稿", applicationType: "新建产品并绑定", requestedOrderNo: order.no,
         requestedSourceRange: state.editorRequestedSourceRange, requestedRange: state.editorRequestedRange, requestedAmount: Number(state.editorRequestedAmount),
@@ -1119,7 +1119,7 @@ document.addEventListener("click", async event => {
       if (fxPendingBindRequest(order.no, product.id, product.batch)) throw new Error("该产品在本订单已有待审核的绑定申请");
       const range = proposed.range;
       bindRequests.unshift({ id: Date.now(), no: fxNextBindRequestNo(), orderNo: order.no, orderLineId: line.id, categoryId: line.categoryId,
-        productId: product.id, customerId: order.customerId, customer: order.customer, product: product.name, batch: product.batch,
+        productId: product.id, customerId: order.customerId, customer: fxCurrentCustomerName(order), product: product.name, batch: product.batch,
         range, amount, status: "待审批", time: omNow(), submittedBy: omActor(), decidedAt: "", operator: "", rejectReason: "" });
       fxSaveBusiness(); state.modal = null; render(); return showToast("绑定申请已提交，等待审核");
     }
@@ -1153,8 +1153,8 @@ document.addEventListener("click", async event => {
     if (action === "om-export") {
       const customer = state.portal === "customer";
       const headers = ["订单号", "客户名称", ...(customer ? [] : ["公司号", "版本"]), "品类数量", "订单码量", "已绑定", "绑定申请中", "待绑定", ...(customer ? [] : ["订单状态"]), "订单创建时间"];
-      const values = omLedgerRows(customer).map(row => [row.no, row.customer, ...(customer ? [] : [row.companyNumber || "", row.version || ""]), omCategoryCount(row), row.total, row.active, fxOrderPendingAmount(row), fxOrderAvailableAmount(row), ...(customer ? [] : [omOrderStatus(row)]), row.createdAt || row.created]);
-      fxDownloadExcel(`订单台账_${omNow().slice(0, 10)}.xls`, headers, values);
+      const values = omLedgerRows(customer).map(row => [row.no, fxCurrentCustomerName(row), ...(customer ? [] : [row.companyNumber || "", row.version || ""]), omCategoryCount(row), row.total, row.active, fxOrderPendingAmount(row), fxOrderAvailableAmount(row), ...(customer ? [] : [omOrderStatus(row)]), row.createdAt || row.created]);
+      fxDownloadExcel(`订单台账_${omNow().slice(0, 10)}.xlsx`, headers, values);
       return showToast("当前筛选结果已导出");
     }
   } catch (error) {

@@ -883,7 +883,7 @@
         "当前实现核对：js/views/business.js",
         "当前实现核对：js/core/enhanced-runtime.js"
       ],
-      "updatedAt": "2026-11-02T08:52:48.276Z",
+      "updatedAt": "2026-11-24T10:21:59.989Z",
       "displayNo": 1,
       "order": 1
     },
@@ -923,7 +923,7 @@
         "required": true,
         "status": "completed"
       },
-      "updatedAt": "2026-11-02T08:52:48.276Z",
+      "updatedAt": "2026-11-24T10:21:59.989Z",
       "displayNo": 2,
       "order": 2
     },
@@ -963,7 +963,7 @@
         "required": true,
         "status": "completed"
       },
-      "updatedAt": "2026-11-02T08:52:48.276Z",
+      "updatedAt": "2026-11-24T10:21:59.989Z",
       "displayNo": 3,
       "order": 3
     },
@@ -977,7 +977,7 @@
         "strategy": "data",
         "fallbackText": "客户列表导出"
       },
-      "contentMarkdown": "### 业务含义\n\n导出客户名称、账号、联系电话、状态及四项码量。\n\n### 交互规则\n\n- 当前导出处理读取客户全集；不能把当前筛选条件自动限制导出范围当作已实现能力。\n\n### 状态与异常\n\n无匹配数据保留当前上下文；资格或数据变化时按当前状态提示，不使用其他对象数据填补。\n",
+      "contentMarkdown": "### 业务含义\n\n导出客户名称、公司号、号码类型、账号、联系电话、状态及四项码量。\n\n### 交互规则\n\n- 导出当前筛选条件下的全部匹配客户，包含其他分页，不仅导出当前页；没有筛选条件时导出全部客户。\n\n### 状态与异常\n\n无匹配数据保留当前上下文；资格或数据变化时按当前状态提示，不使用其他对象数据填补。\n\n### 2026-11-24 确认\n\n导出当前筛选条件下的全部匹配客户，包含其他分页，不仅导出当前页；没有筛选条件时导出全部客户。 文件使用标准 .xlsx，标识按文本写入，数量按数值写入。\n",
       "maintenancePolicy": "annotation-owned",
       "kind": "data",
       "dimension": "Data explanation",
@@ -1003,7 +1003,7 @@
         "required": true,
         "status": "completed"
       },
-      "updatedAt": "2026-11-02T08:52:48.276Z",
+      "updatedAt": "2026-11-24T10:21:59.989Z",
       "displayNo": 4,
       "order": 4
     },
@@ -1017,7 +1017,7 @@
         "strategy": "path",
         "fallbackText": "新建客户账号"
       },
-      "contentMarkdown": "### 业务含义\n\n新建客户账号：填写账号资料、公司号类型与证照，校验通过后创建启用客户。\n\n### 交互规则\n\n- 新建专属号不得使用已设共享号、其他专属客户使用的号或不可重新发放的历史号。\n\n### 状态与异常\n\n只有对应业务弹窗打开时展示内部标注；取消或关闭不提交本次操作。\n\n## 公司号默认值与校验\n\n- 选择专属公司号时，从 00001 起查找最小可用号，排除共享号、其他客户专属号和仍被订单占用的历史号。默认值可手工修改，保存时重新检查格式、重复占用及历史锁定。\n- 客户名称、账号、手机号和密码按各字段规则校验。已有订单时，公司号和类型只读。\n",
+      "contentMarkdown": "### 业务含义\n\n新建客户账号：填写账号资料、公司号类型与证照，校验通过后创建启用客户。\n\n### 交互规则\n\n- 新建专属号不得使用已设共享号、其他专属客户使用的号或不可重新发放的历史号。\n\n### 状态与异常\n\n只有对应业务弹窗打开时展示内部标注；取消或关闭不提交本次操作。\n\n## 公司号默认值与校验\n\n- 选择专属公司号时，从 00001 起查找最小可用号，排除共享号、其他客户专属号和仍被订单占用的历史号。默认值可手工修改，保存时重新检查格式、重复占用及历史锁定。\n- 客户名称、账号、手机号和密码按各字段规则校验。已有订单时，公司号和类型只读。\n\n### 2026-11-24 确认\n\n产品图片与客户建档证照统一使用 10 × 1024 × 1024 = 10,485,760 字节上限。等于上限允许上传，超出 1 字节即拒绝。产品图片超限提示“图片大小不能超过 10 MB：{文件名}”；客户证照超限提示“文件大小不能超过 10 MB：{文件名}”。数量及类型限制保持不变。\n",
       "maintenancePolicy": "annotation-owned",
       "kind": "interaction",
       "dimension": "Surface overview",
@@ -1043,7 +1043,7 @@
         "required": true,
         "status": "completed"
       },
-      "updatedAt": "2026-11-02T08:52:48.276Z",
+      "updatedAt": "2026-11-24T10:21:59.989Z",
       "surfaceId": "surface-P02-new-customer",
       "displayWhenClosed": "on-trigger",
       "fallbackAnchorSelector": "[data-action=\"fx-new-customer\"]",
@@ -1088,7 +1088,7 @@
         "required": true,
         "status": "completed"
       },
-      "updatedAt": "2026-11-02T08:52:48.276Z",
+      "updatedAt": "2026-11-24T10:21:59.989Z",
       "surfaceId": "surface-P02-new-customer",
       "displayWhenClosed": "sidebar-only",
       "fallbackAnchorSelector": "[data-action=\"fx-new-customer\"]",
@@ -1105,7 +1105,7 @@
         "strategy": "path",
         "fallbackText": "编辑客户账号"
       },
-      "contentMarkdown": "### 业务含义\n\n编辑客户账号：登录账号只读，客户资料和证照可更新；重置密码进入确认，不直接显示原密码。\n\n### 交互规则\n\n- 客户改名按固定客户 ID 维持归属；日常列表、搜索和统计使用当前名称，订单创建快照及已发布产品资料保留原值。每次改名记录前后名称、时间和操作人。\n\n### 状态与异常\n\n只有对应业务弹窗打开时展示内部标注；取消或关闭不提交本次操作。\n\n### 客户改名规则（2026-11-02 确认）\n\n- 客户名称可修改，客户 ID 固定；改名不改变登录账号、公司号、归属和业务状态。\n- 日常列表、客户选择、搜索、统计和查码归属采用当前名称；订单详情保留创建时名称快照，已发布产品及扫码企业资料不自动改写。\n- 修改记录与快照分别保留。业务主体更换应另建账号，不能通过改名转移订单。\n\n本节为 2026-11-02 确认的目标规则，本次仅更新说明。当前台账搜索和统计名称仍有旧名称读取路径，待后续统一。\n",
+      "contentMarkdown": "### 业务含义\n\n编辑客户账号：登录账号只读，客户资料和证照可更新；重置密码进入确认，不直接显示原密码。\n\n### 交互规则\n\n- 客户改名按固定客户 ID 维持归属；日常列表、搜索和统计使用当前名称，订单创建快照及已发布产品资料保留原值。每次改名记录前后名称、时间和操作人。\n\n### 状态与异常\n\n只有对应业务弹窗打开时展示内部标注；取消或关闭不提交本次操作。\n\n### 客户改名规则（2026-11-02 确认）\n\n- 客户名称可修改，客户 ID 固定；改名不改变登录账号、公司号、归属和业务状态。\n- 日常列表、客户选择、搜索、统计和查码归属采用当前名称；订单详情保留创建时名称快照，已发布产品及扫码企业资料不自动改写。\n- 修改记录与快照分别保留。业务主体更换应另建账号，不能通过改名转移订单。\n\n2026-11-24 已同步原型：台账、名称搜索、统计和新导出使用当前客户名称；订单详情及公司名称预填保留订单快照。\n\n### 2026-11-24 确认\n\n产品图片与客户建档证照统一使用 10 × 1024 × 1024 = 10,485,760 字节上限。等于上限允许上传，超出 1 字节即拒绝。产品图片超限提示“图片大小不能超过 10 MB：{文件名}”；客户证照超限提示“文件大小不能超过 10 MB：{文件名}”。数量及类型限制保持不变。\n",
       "maintenancePolicy": "annotation-owned",
       "kind": "interaction",
       "dimension": "Surface overview",
@@ -1132,7 +1132,7 @@
         "required": true,
         "status": "completed"
       },
-      "updatedAt": "2026-11-02T08:52:48.276Z",
+      "updatedAt": "2026-11-24T10:21:59.989Z",
       "surfaceId": "surface-P02-edit-customer",
       "displayWhenClosed": "on-trigger",
       "fallbackAnchorSelector": "[data-action=\"fx-edit-customer\"]",
@@ -1175,7 +1175,7 @@
         "required": true,
         "status": "completed"
       },
-      "updatedAt": "2026-11-02T08:52:48.276Z",
+      "updatedAt": "2026-11-24T10:21:59.989Z",
       "surfaceId": "surface-P02-shared",
       "displayWhenClosed": "on-trigger",
       "fallbackAnchorSelector": "[data-action=\"cm-open-shared\"]",
@@ -1222,7 +1222,7 @@
         "当前实现核对：js/core/order-statistics.js",
         "当前实现核对：js/core/order-management.js"
       ],
-      "updatedAt": "2026-11-02T08:52:48.276Z",
+      "updatedAt": "2026-11-24T10:21:59.989Z",
       "displayNo": 1,
       "order": 1
     },
@@ -1262,7 +1262,7 @@
         "required": true,
         "status": "completed"
       },
-      "updatedAt": "2026-11-02T08:52:48.276Z",
+      "updatedAt": "2026-11-24T10:21:59.989Z",
       "displayNo": 2,
       "order": 2
     },
@@ -1302,7 +1302,7 @@
         "required": true,
         "status": "completed"
       },
-      "updatedAt": "2026-11-02T08:52:48.276Z",
+      "updatedAt": "2026-11-24T10:21:59.989Z",
       "displayNo": 3,
       "order": 3
     },
@@ -1342,7 +1342,7 @@
         "required": true,
         "status": "completed"
       },
-      "updatedAt": "2026-11-02T08:52:48.276Z",
+      "updatedAt": "2026-11-24T10:21:59.989Z",
       "displayNo": 4,
       "order": 4
     },
@@ -1383,7 +1383,7 @@
         "required": true,
         "status": "completed"
       },
-      "updatedAt": "2026-11-02T08:52:48.276Z",
+      "updatedAt": "2026-11-24T10:21:59.989Z",
       "surfaceId": "surface-P02A-form",
       "displayWhenClosed": "on-trigger",
       "fallbackAnchorSelector": "[data-action=\"cat-new\"]",
@@ -1428,7 +1428,7 @@
         "required": true,
         "status": "completed"
       },
-      "updatedAt": "2026-11-02T08:52:48.276Z",
+      "updatedAt": "2026-11-24T10:21:59.989Z",
       "surfaceId": "surface-P02A-form",
       "displayWhenClosed": "sidebar-only",
       "fallbackAnchorSelector": "[data-action=\"cat-new\"]",
@@ -1471,7 +1471,7 @@
         "required": true,
         "status": "completed"
       },
-      "updatedAt": "2026-11-02T08:52:48.276Z",
+      "updatedAt": "2026-11-24T10:21:59.989Z",
       "surfaceId": "surface-P02A-history",
       "displayWhenClosed": "on-trigger",
       "fallbackAnchorSelector": "[data-action=\"cat-history\"]",
@@ -1514,7 +1514,7 @@
         "required": true,
         "status": "completed"
       },
-      "updatedAt": "2026-11-02T08:52:48.276Z",
+      "updatedAt": "2026-11-24T10:21:59.989Z",
       "surfaceId": "surface-P02A-lifecycle",
       "displayWhenClosed": "on-trigger",
       "fallbackAnchorSelector": "[data-action=\"cat-toggle\"]",
@@ -1561,7 +1561,7 @@
         "当前实现核对：js/views/business.js",
         "当前实现核对：js/core/order-statistics.js"
       ],
-      "updatedAt": "2026-11-02T08:52:48.276Z",
+      "updatedAt": "2026-11-24T10:21:59.989Z",
       "displayNo": 1,
       "order": 1
     },
@@ -1575,7 +1575,7 @@
         "strategy": "path",
         "fallbackText": "客户资料与修改记录"
       },
-      "contentMarkdown": "### 业务含义\n\n通过 customer 参数定位客户；不存在的客户显示缺省提示，不能用其他客户数据替代。\n\n### 交互规则\n\n- 展示公司号及类型、账号、电话、证照和码量汇总；证照可预览。\n- 修改记录展示修改时间、操作人、变更字段及修改前后值。\n\n### 状态与异常\n\n无匹配数据保留当前上下文；资格或数据变化时按当前状态提示，不使用其他对象数据填补。\n\n### 客户改名规则（2026-11-02 确认）\n\n- 客户资料显示当前名称；修改记录保留改名前后名称、时间和操作人，不替代订单快照。\n- 客户订单记录按客户 ID 汇总，改名前后订单仍属于同一客户；新订单读取当前名称并保存快照。\n- 未绑定、部分绑定、全部绑定及已撤销订单的状态、码量和绑定关系不因改名变化。\n\n本节为 2026-11-02 确认的目标规则，本次仅更新说明。当前台账搜索和统计名称仍有旧名称读取路径，待后续统一。\n\n## 客户信息排布\n\n- 桌面端按三列排布：第一行客户名称、联系电话、登录账号；第二行账号状态、公司号、公司号类型；证照随后展示，已激活产品置于最后一行左侧。\n- 订单号和证照链接使用系统绿色。窄屏时按字段顺序换行。\n",
+      "contentMarkdown": "### 业务含义\n\n通过 customer 参数定位客户；不存在的客户显示缺省提示，不能用其他客户数据替代。\n\n### 交互规则\n\n- 展示公司号及类型、账号、电话、证照和码量汇总；证照可预览。\n- 修改记录展示修改时间、操作人、变更字段及修改前后值。\n\n### 状态与异常\n\n无匹配数据保留当前上下文；资格或数据变化时按当前状态提示，不使用其他对象数据填补。\n\n### 客户改名规则（2026-11-02 确认）\n\n- 客户资料显示当前名称；修改记录保留改名前后名称、时间和操作人，不替代订单快照。\n- 客户订单记录按客户 ID 汇总，改名前后订单仍属于同一客户；新订单读取当前名称并保存快照。\n- 未绑定、部分绑定、全部绑定及已撤销订单的状态、码量和绑定关系不因改名变化。\n\n2026-11-24 已同步原型：台账、名称搜索、统计和新导出使用当前客户名称；订单详情及公司名称预填保留订单快照。\n\n## 客户信息排布\n\n- 桌面端按三列排布：第一行客户名称、联系电话、登录账号；第二行账号状态、公司号、公司号类型；证照随后展示，已激活产品置于最后一行左侧。\n- 订单号和证照链接使用系统绿色。窄屏时按字段顺序换行。\n",
       "maintenancePolicy": "annotation-owned",
       "kind": "data",
       "dimension": "Data explanation",
@@ -1602,7 +1602,7 @@
         "required": true,
         "status": "completed"
       },
-      "updatedAt": "2026-11-02T08:52:48.276Z",
+      "updatedAt": "2026-11-24T10:21:59.989Z",
       "displayNo": 2,
       "order": 2
     },
@@ -1642,7 +1642,7 @@
         "required": true,
         "status": "completed"
       },
-      "updatedAt": "2026-11-02T08:52:48.276Z",
+      "updatedAt": "2026-11-24T10:21:59.989Z",
       "displayNo": 3,
       "order": 3
     },
@@ -1682,7 +1682,7 @@
         "required": true,
         "status": "completed"
       },
-      "updatedAt": "2026-11-02T08:52:48.276Z",
+      "updatedAt": "2026-11-24T10:21:59.989Z",
       "displayNo": 4,
       "order": 4
     },
@@ -1725,7 +1725,7 @@
         "当前实现核对：js/core/order-management.js",
         "当前实现核对：js/core/category-management.js"
       ],
-      "updatedAt": "2026-11-02T08:52:48.276Z",
+      "updatedAt": "2026-11-24T10:21:59.989Z",
       "displayNo": 1,
       "order": 1
     },
@@ -1765,7 +1765,7 @@
         "required": true,
         "status": "completed"
       },
-      "updatedAt": "2026-11-02T08:52:48.276Z",
+      "updatedAt": "2026-11-24T10:21:59.989Z",
       "displayNo": 2,
       "order": 2
     },
@@ -1806,7 +1806,7 @@
         "required": true,
         "status": "completed"
       },
-      "updatedAt": "2026-11-02T08:52:48.276Z",
+      "updatedAt": "2026-11-24T10:21:59.989Z",
       "displayNo": 3,
       "order": 3
     },
@@ -1846,7 +1846,7 @@
         "required": true,
         "status": "completed"
       },
-      "updatedAt": "2026-11-02T08:52:48.276Z",
+      "updatedAt": "2026-11-24T10:21:59.989Z",
       "displayNo": 4,
       "order": 4
     },
@@ -1889,7 +1889,7 @@
         "当前实现核对：js/core/order-management.js",
         "当前实现核对：js/core/code-query.js"
       ],
-      "updatedAt": "2026-11-02T08:52:48.276Z",
+      "updatedAt": "2026-11-24T10:21:59.989Z",
       "displayNo": 1,
       "order": 1
     },
@@ -1903,7 +1903,7 @@
         "strategy": "path",
         "fallbackText": "订单筛选与分页"
       },
-      "contentMarkdown": "### 业务含义\n\n可按订单号、客户名称、公司号、版本、订单状态和订单创建起止日期组合查询。\n\n### 交互规则\n\n- 输入条件后点击查询应用；重置清空条件；最新订单创建时间在前。\n- 从统计页进入时保留统计限定提示，可返回数据统计或清除统计限定。\n\n### 状态与异常\n\n无匹配数据保留当前上下文；资格或数据变化时按当前状态提示，不使用其他对象数据填补。\n\n### 客户改名规则（2026-11-02 确认）\n\n- 台账、客户名称搜索及台账导出采用当前名称；新名称可查询改名前后的订单，仍受原有权限和筛选限制。\n- 查码归属显示当前名称；进入订单详情后采用创建时名称快照。码号、扫码记录及绑定状态不变。\n\n本节为 2026-11-02 确认的目标规则，本次仅更新说明。当前台账搜索和统计名称仍有旧名称读取路径，待后续统一。\n",
+      "contentMarkdown": "### 业务含义\n\n可按订单号、客户名称、公司号、版本、订单状态和订单创建起止日期组合查询。\n\n### 交互规则\n\n- 输入条件后点击查询应用；重置清空条件；最新订单创建时间在前。\n- 从统计页进入时保留统计限定提示，可返回数据统计或清除统计限定。\n\n### 状态与异常\n\n无匹配数据保留当前上下文；资格或数据变化时按当前状态提示，不使用其他对象数据填补。\n\n### 客户改名规则（2026-11-02 确认）\n\n- 台账、客户名称搜索及台账导出采用当前名称；新名称可查询改名前后的订单，仍受原有权限和筛选限制。\n- 查码归属显示当前名称；进入订单详情后采用创建时名称快照。码号、扫码记录及绑定状态不变。\n\n2026-11-24 已同步原型：台账、名称搜索、统计和新导出使用当前客户名称；订单详情及公司名称预填保留订单快照。\n",
       "maintenancePolicy": "annotation-owned",
       "kind": "interaction",
       "dimension": "Table and list",
@@ -1929,7 +1929,7 @@
         "required": true,
         "status": "completed"
       },
-      "updatedAt": "2026-11-02T08:52:48.276Z",
+      "updatedAt": "2026-11-24T10:21:59.989Z",
       "displayNo": 2,
       "order": 2
     },
@@ -1968,7 +1968,7 @@
         "required": true,
         "status": "completed"
       },
-      "updatedAt": "2026-11-02T08:52:48.276Z",
+      "updatedAt": "2026-11-24T10:21:59.989Z",
       "displayNo": 3,
       "order": 3
     },
@@ -2007,7 +2007,7 @@
         "required": true,
         "status": "completed"
       },
-      "updatedAt": "2026-11-03T10:46:49.380Z",
+      "updatedAt": "2026-11-24T10:21:59.989Z",
       "displayNo": 4,
       "order": 4
     },
@@ -2046,7 +2046,7 @@
         "required": true,
         "status": "completed"
       },
-      "updatedAt": "2026-11-02T08:52:48.276Z",
+      "updatedAt": "2026-11-24T10:21:59.989Z",
       "displayNo": 5,
       "order": 5
     },
@@ -2086,7 +2086,7 @@
         "required": true,
         "status": "completed"
       },
-      "updatedAt": "2026-11-03T10:46:49.380Z",
+      "updatedAt": "2026-11-24T10:21:59.989Z",
       "surfaceId": "surface-P05-download",
       "displayWhenClosed": "on-trigger",
       "fallbackAnchorSelector": "[data-action=\"om-open-download\"]",
@@ -2130,7 +2130,7 @@
         "required": true,
         "status": "completed"
       },
-      "updatedAt": "2026-11-02T08:52:48.276Z",
+      "updatedAt": "2026-11-24T10:21:59.989Z",
       "surfaceId": "surface-P05-download",
       "displayWhenClosed": "sidebar-only",
       "fallbackAnchorSelector": "[data-action=\"om-open-download\"]",
@@ -2172,7 +2172,7 @@
         "required": true,
         "status": "completed"
       },
-      "updatedAt": "2026-11-03T10:46:49.380Z",
+      "updatedAt": "2026-11-24T10:21:59.989Z",
       "surfaceId": "surface-P05-cancel",
       "displayWhenClosed": "on-trigger",
       "fallbackAnchorSelector": "[data-action=\"om-open-cancel\"]",
@@ -2216,7 +2216,7 @@
         "required": true,
         "status": "completed"
       },
-      "updatedAt": "2026-11-02T08:52:48.276Z",
+      "updatedAt": "2026-11-24T10:21:59.989Z",
       "surfaceId": "surface-P05-cancel",
       "displayWhenClosed": "sidebar-only",
       "fallbackAnchorSelector": "[data-action=\"om-open-cancel\"]",
@@ -2258,7 +2258,7 @@
         "required": true,
         "status": "completed"
       },
-      "updatedAt": "2026-11-02T08:52:48.276Z",
+      "updatedAt": "2026-11-24T10:21:59.989Z",
       "surfaceId": "surface-P05-query",
       "displayWhenClosed": "on-trigger",
       "fallbackAnchorSelector": "[data-action=\"cq-open\"]",
@@ -2275,7 +2275,7 @@
         "strategy": "id",
         "fallbackText": "查码输入与结果"
       },
-      "contentMarkdown": "### 业务含义\n\n查码：前 8 位是版本、公司号、产品号，后 8 位是随机码；两段都必须完整。\n\n### 字段规则\n\n- 回车或查询发起查找；先匹配版本、公司号、产品号，再读取随机尾码映射得到序号。不使用相似码或演示码替代查询结果。\n- 未找到、码包缺失分别提示；加载时禁用重复查询并保留旧结果，重置与关闭阻止旧异步结果回写。\n\n### 扫码记录字段\n\n| 字段 | 格式与约束 |\n| --- | --- |\n| 序号 | 扫码记录的显示行号，跨页连续；与订单内的码序号分别计算。 |\n| 扫码时间 | 记录该次真实已激活码访问时间，最新在前。 |\n| IP地址 | 支持 IPv4/IPv6 文本，缺失显示 —；当前原型未接入真实 IP 采集。 |\n| 累计扫码次数 | 位于二维码信息区；扫码记录支持分页。 |\n\n### 实现边界\n\n真实已激活码访问和刷新记录次数与时间；预览、演示不累计。真实 IP 采集尚未接入；新增访问记录的 IP 为空，不显示 IP归属地。\n\n### 客户改名规则（2026-11-02 确认）\n\n- 台账、客户名称搜索及台账导出采用当前名称；新名称可查询改名前后的订单，仍受原有权限和筛选限制。\n- 查码归属显示当前名称；进入订单详情后采用创建时名称快照。码号、扫码记录及绑定状态不变。\n\n本节为 2026-11-02 确认的目标规则，本次仅更新说明。当前台账搜索和统计名称仍有旧名称读取路径，待后续统一。\n",
+      "contentMarkdown": "### 业务含义\n\n查码：前 8 位是版本、公司号、产品号，后 8 位是随机码；两段都必须完整。\n\n### 字段规则\n\n- 回车或查询发起查找；先匹配版本、公司号、产品号，再读取随机尾码映射得到序号。不使用相似码或演示码替代查询结果。\n- 未找到、码包缺失分别提示；加载时禁用重复查询并保留旧结果，重置与关闭阻止旧异步结果回写。\n\n### 扫码记录字段\n\n| 字段 | 格式与约束 |\n| --- | --- |\n| 序号 | 扫码记录的显示行号，跨页连续；与订单内的码序号分别计算。 |\n| 扫码时间 | 记录该次真实已激活码访问时间，最新在前。 |\n| IP地址 | 支持 IPv4/IPv6 文本，缺失显示 —；当前原型未接入真实 IP 采集。 |\n| 累计扫码次数 | 位于二维码信息区；扫码记录支持分页。 |\n\n### 实现边界\n\n真实已激活码访问和刷新记录次数与时间；预览、演示不累计。真实 IP 采集尚未接入；新增访问记录的 IP 为空，不显示 IP归属地。\n\n### 客户改名规则（2026-11-02 确认）\n\n- 台账、客户名称搜索及台账导出采用当前名称；新名称可查询改名前后的订单，仍受原有权限和筛选限制。\n- 查码归属显示当前名称；进入订单详情后采用创建时名称快照。码号、扫码记录及绑定状态不变。\n\n2026-11-24 已同步原型：台账、名称搜索、统计和新导出使用当前客户名称；订单详情及公司名称预填保留订单快照。\n",
       "maintenancePolicy": "annotation-owned",
       "kind": "form",
       "dimension": "Surface field",
@@ -2303,7 +2303,7 @@
         "required": true,
         "status": "completed"
       },
-      "updatedAt": "2026-11-02T08:52:48.276Z",
+      "updatedAt": "2026-11-24T10:21:59.989Z",
       "surfaceId": "surface-P05-query",
       "displayWhenClosed": "sidebar-only",
       "fallbackAnchorSelector": "[data-action=\"cq-open\"]",
@@ -2350,7 +2350,7 @@
         "当前实现核对：js/views/business.js",
         "当前实现核对：js/components/application.js"
       ],
-      "updatedAt": "2026-11-02T08:52:48.276Z",
+      "updatedAt": "2026-11-24T10:21:59.989Z",
       "displayNo": 1,
       "order": 1
     },
@@ -2364,7 +2364,7 @@
         "strategy": "path",
         "fallbackText": "订单信息与指标"
       },
-      "contentMarkdown": "### 业务含义\n\n通过 order 参数定位真实订单；无权访问或订单不存在时展示缺省提示。\n\n### 交互规则\n\n- 订单码量是本订单全部品类明细的数量之和；已绑定是当前有效产品关联覆盖的数量。\n- 绑定申请中只统计待审批申请占用；草稿、已驳回和已撤回申请不占用待审批码量。\n- 有效订单的待绑定 = 订单码量 − 已绑定 − 绑定申请中，最低为 0；撤销订单的待绑定为 0。\n- 品类明细的序号按行数量累计编排，与 8 位随机尾码不是同一字段。\n- 订单备注单独占一行；详情页不提供下载码包按钮。\n- 订单状态为已生成时显示普通文字；只有已撤销状态可点击，查看撤销时间、操作人、号码处理与原因。\n\n### 状态与异常\n\n无匹配数据保留当前上下文；资格或数据变化时按当前状态提示，不使用其他对象数据填补。\n\n### 客户改名规则（2026-11-02 确认）\n\n- 本页客户名称采用订单创建时快照，改名不覆盖。新订单保存新名称；两端订单详情规则一致。\n- 绑定、审核及权限按客户 ID 校验，不因新旧名称差异阻断同一客户的操作。\n- 新建产品可使用当前客户名称预填企业资料；已发布产品及扫码资料不自动变化。\n\n本节为 2026-11-02 确认的目标规则，本次仅更新说明。当前台账搜索和统计名称仍有旧名称读取路径，待后续统一。\n",
+      "contentMarkdown": "### 业务含义\n\n通过 order 参数定位真实订单；无权访问或订单不存在时展示缺省提示。\n\n### 交互规则\n\n- 订单码量是本订单全部品类明细的数量之和；已绑定是当前有效产品关联覆盖的数量。\n- 绑定申请中只统计待审批申请占用；草稿、已驳回和已撤回申请不占用待审批码量。\n- 有效订单的待绑定 = 订单码量 − 已绑定 − 绑定申请中，最低为 0；撤销订单的待绑定为 0。\n- 品类明细的序号按行数量累计编排，与 8 位随机尾码不是同一字段。\n- 订单备注单独占一行；详情页不提供下载码包按钮。\n- 订单状态为已生成时显示普通文字；只有已撤销状态可点击，查看撤销时间、操作人、号码处理与原因。\n\n### 状态与异常\n\n无匹配数据保留当前上下文；资格或数据变化时按当前状态提示，不使用其他对象数据填补。\n\n### 客户改名规则（2026-11-02 确认）\n\n- 本页客户名称采用订单创建时快照，改名不覆盖。新订单保存新名称；两端订单详情规则一致。\n- 绑定、审核及权限按客户 ID 校验，不因新旧名称差异阻断同一客户的操作。\n- 新建产品可使用当前客户名称预填企业资料；已发布产品及扫码资料不自动变化。\n\n2026-11-24 已同步原型：台账、名称搜索、统计和新导出使用当前客户名称；订单详情及公司名称预填保留订单快照。\n",
       "maintenancePolicy": "annotation-owned",
       "kind": "data",
       "dimension": "Data explanation",
@@ -2391,7 +2391,7 @@
         "required": true,
         "status": "completed"
       },
-      "updatedAt": "2026-11-02T08:52:48.276Z",
+      "updatedAt": "2026-11-24T10:21:59.989Z",
       "displayNo": 2,
       "order": 2
     },
@@ -2431,7 +2431,7 @@
         "required": true,
         "status": "completed"
       },
-      "updatedAt": "2026-11-02T08:52:48.276Z",
+      "updatedAt": "2026-11-24T10:21:59.989Z",
       "displayNo": 3,
       "order": 3
     },
@@ -2471,7 +2471,7 @@
         "required": true,
         "status": "completed"
       },
-      "updatedAt": "2026-11-02T08:52:48.276Z",
+      "updatedAt": "2026-11-24T10:21:59.989Z",
       "surfaceId": "surface-P06-bind",
       "displayWhenClosed": "on-trigger",
       "fallbackAnchorSelector": "[data-action=\"om-bind\"]",
@@ -2516,7 +2516,7 @@
         "required": true,
         "status": "completed"
       },
-      "updatedAt": "2026-11-02T08:52:48.276Z",
+      "updatedAt": "2026-11-24T10:21:59.989Z",
       "surfaceId": "surface-P06-bind",
       "displayWhenClosed": "sidebar-only",
       "fallbackAnchorSelector": "[data-action=\"om-bind\"]",
@@ -2559,7 +2559,7 @@
         "required": true,
         "status": "completed"
       },
-      "updatedAt": "2026-11-02T08:52:48.276Z",
+      "updatedAt": "2026-11-24T10:21:59.989Z",
       "surfaceId": "surface-P06-records",
       "displayWhenClosed": "on-trigger",
       "fallbackAnchorSelector": "[data-action=\"om-open-line-bindings\"]",
@@ -2602,7 +2602,7 @@
         "required": true,
         "status": "completed"
       },
-      "updatedAt": "2026-11-02T08:52:48.276Z",
+      "updatedAt": "2026-11-24T10:21:59.989Z",
       "surfaceId": "surface-P06-cancel-info",
       "displayWhenClosed": "on-trigger",
       "fallbackAnchorSelector": "[data-action=\"om-open-cancel-info\"]",
@@ -2646,7 +2646,7 @@
         "required": true,
         "status": "completed"
       },
-      "updatedAt": "2026-11-02T08:52:48.276Z",
+      "updatedAt": "2026-11-24T10:21:59.989Z",
       "surfaceId": "surface-P06-downloads",
       "displayWhenClosed": "on-trigger",
       "fallbackAnchorSelector": "[data-action=\"om-history\"]",
@@ -2693,7 +2693,7 @@
         "当前实现核对：js/core/enhanced-runtime.js",
         "当前实现核对：js/core/order-management.js"
       ],
-      "updatedAt": "2026-11-02T08:52:48.276Z",
+      "updatedAt": "2026-11-24T10:21:59.989Z",
       "displayNo": 1,
       "order": 1
     },
@@ -2733,7 +2733,7 @@
         "required": true,
         "status": "completed"
       },
-      "updatedAt": "2026-11-02T08:52:48.276Z",
+      "updatedAt": "2026-11-24T10:21:59.989Z",
       "displayNo": 2,
       "order": 2
     },
@@ -2773,7 +2773,7 @@
         "required": true,
         "status": "completed"
       },
-      "updatedAt": "2026-11-02T08:52:48.276Z",
+      "updatedAt": "2026-11-24T10:21:59.989Z",
       "displayNo": 3,
       "order": 3
     },
@@ -2813,7 +2813,7 @@
         "required": true,
         "status": "completed"
       },
-      "updatedAt": "2026-11-02T08:52:48.276Z",
+      "updatedAt": "2026-11-24T10:21:59.989Z",
       "displayNo": 4,
       "order": 4
     },
@@ -2853,7 +2853,7 @@
         "required": true,
         "status": "completed"
       },
-      "updatedAt": "2026-11-02T08:52:48.276Z",
+      "updatedAt": "2026-11-24T10:21:59.989Z",
       "displayNo": 5,
       "order": 5
     },
@@ -2893,7 +2893,7 @@
         "required": true,
         "status": "completed"
       },
-      "updatedAt": "2026-11-02T08:52:48.276Z",
+      "updatedAt": "2026-11-24T10:21:59.989Z",
       "surfaceId": "surface-P08-approve-activation",
       "displayWhenClosed": "on-trigger",
       "fallbackAnchorSelector": "[data-action=\"fx-open-activation\"]",
@@ -2938,7 +2938,7 @@
         "required": true,
         "status": "completed"
       },
-      "updatedAt": "2026-11-02T08:52:48.276Z",
+      "updatedAt": "2026-11-24T10:21:59.989Z",
       "surfaceId": "surface-P08-approve-activation",
       "displayWhenClosed": "sidebar-only",
       "fallbackAnchorSelector": "[data-action=\"fx-open-activation\"]",
@@ -2981,7 +2981,7 @@
         "required": true,
         "status": "completed"
       },
-      "updatedAt": "2026-11-02T08:52:48.276Z",
+      "updatedAt": "2026-11-24T10:21:59.989Z",
       "surfaceId": "surface-P08-reject-product",
       "displayWhenClosed": "on-trigger",
       "fallbackAnchorSelector": "[data-action=\"fx-open-reject\"]",
@@ -3024,7 +3024,7 @@
         "required": true,
         "status": "completed"
       },
-      "updatedAt": "2026-11-02T08:52:48.276Z",
+      "updatedAt": "2026-11-24T10:21:59.989Z",
       "surfaceId": "surface-P08-reject-binding",
       "displayWhenClosed": "on-trigger",
       "fallbackAnchorSelector": "[data-action=\"fx-reject-bind-request\"]",
@@ -3070,7 +3070,7 @@
         "当前实现核对：js/components/application.js",
         "当前实现核对：js/core/enhanced-runtime.js"
       ],
-      "updatedAt": "2026-11-02T08:52:48.276Z",
+      "updatedAt": "2026-11-24T10:21:59.989Z",
       "displayNo": 1,
       "order": 1
     },
@@ -3084,7 +3084,7 @@
         "strategy": "path",
         "fallbackText": "组合查询与扩展筛选"
       },
-      "contentMarkdown": "### 业务含义\n\n客户名称、订单号、产品名称是独立文本条件；展开筛选可按批次、大类、申请日期、审核状态和当前绑定状态组合查询。\n\n### 交互规则\n\n- 清空或重置恢复默认条件；列表按申请时间排序，支持数量及已配置列排序和分页。\n\n### 状态与异常\n\n无匹配数据保留当前上下文；资格或数据变化时按当前状态提示，不使用其他对象数据填补。\n",
+      "contentMarkdown": "### 业务含义\n\n客户名称、订单号、产品名称是独立文本条件；展开筛选可按批次、大类、申请日期、审核状态和当前绑定状态组合查询。\n\n### 交互规则\n\n- 清空或重置恢复默认条件；列表按申请时间倒序并支持分页，不要求点击表头切换排序。仅统计页保留码量排序，其他列表使用各自默认排序。\n\n### 状态与异常\n\n无匹配数据保留当前上下文；资格或数据变化时按当前状态提示，不使用其他对象数据填补。\n\n### 2026-11-24 确认\n\n按申请时间倒序并分页，不提供表头排序；仅统计页保留码量排序。\n",
       "maintenancePolicy": "annotation-owned",
       "kind": "interaction",
       "dimension": "Table and list",
@@ -3109,7 +3109,7 @@
         "required": true,
         "status": "completed"
       },
-      "updatedAt": "2026-11-02T08:52:48.276Z",
+      "updatedAt": "2026-11-24T10:21:59.989Z",
       "displayNo": 2,
       "order": 2
     },
@@ -3148,7 +3148,7 @@
         "required": true,
         "status": "completed"
       },
-      "updatedAt": "2026-11-02T08:52:48.276Z",
+      "updatedAt": "2026-11-24T10:21:59.989Z",
       "displayNo": 3,
       "order": 3
     },
@@ -3187,7 +3187,7 @@
         "required": true,
         "status": "completed"
       },
-      "updatedAt": "2026-11-02T08:52:48.276Z",
+      "updatedAt": "2026-11-24T10:21:59.989Z",
       "displayNo": 4,
       "order": 4
     },
@@ -3231,7 +3231,7 @@
         "当前实现核对：js/views/business.js",
         "当前实现核对：js/core/enhanced-runtime.js"
       ],
-      "updatedAt": "2026-11-02T08:52:48.276Z",
+      "updatedAt": "2026-11-24T10:21:59.989Z",
       "displayNo": 1,
       "order": 1
     },
@@ -3271,7 +3271,7 @@
         "required": true,
         "status": "completed"
       },
-      "updatedAt": "2026-11-02T08:52:48.276Z",
+      "updatedAt": "2026-11-24T10:21:59.989Z",
       "displayNo": 2,
       "order": 2
     },
@@ -3311,7 +3311,7 @@
         "required": true,
         "status": "completed"
       },
-      "updatedAt": "2026-11-02T08:52:48.276Z",
+      "updatedAt": "2026-11-24T10:21:59.989Z",
       "displayNo": 3,
       "order": 3
     },
@@ -3351,7 +3351,7 @@
         "required": true,
         "status": "completed"
       },
-      "updatedAt": "2026-11-02T08:52:48.276Z",
+      "updatedAt": "2026-11-24T10:21:59.989Z",
       "surfaceId": "surface-P10-approve",
       "displayWhenClosed": "on-trigger",
       "fallbackAnchorSelector": "[data-action=\"fx-approve-withdrawal\"]",
@@ -3394,7 +3394,7 @@
         "required": true,
         "status": "completed"
       },
-      "updatedAt": "2026-11-02T08:52:48.276Z",
+      "updatedAt": "2026-11-24T10:21:59.989Z",
       "surfaceId": "surface-P10-reject",
       "displayWhenClosed": "on-trigger",
       "fallbackAnchorSelector": "[data-action=\"fx-reject-withdrawal\"]",
@@ -3437,7 +3437,7 @@
         "required": true,
         "status": "completed"
       },
-      "updatedAt": "2026-11-02T08:52:48.276Z",
+      "updatedAt": "2026-11-24T10:21:59.989Z",
       "surfaceId": "surface-P10-detail",
       "displayWhenClosed": "on-trigger",
       "fallbackAnchorSelector": "[data-action=\"fx-view-withdrawal\"]",
@@ -3483,7 +3483,7 @@
         "当前实现核对：js/views/business.js",
         "当前实现核对：js/core/enhanced-runtime.js"
       ],
-      "updatedAt": "2026-11-02T08:52:48.276Z",
+      "updatedAt": "2026-11-24T10:21:59.989Z",
       "displayNo": 1,
       "order": 1
     },
@@ -3522,7 +3522,7 @@
         "required": true,
         "status": "completed"
       },
-      "updatedAt": "2026-11-02T08:52:48.276Z",
+      "updatedAt": "2026-11-24T10:21:59.989Z",
       "displayNo": 2,
       "order": 2
     },
@@ -3561,7 +3561,7 @@
         "required": true,
         "status": "completed"
       },
-      "updatedAt": "2026-11-02T08:52:48.276Z",
+      "updatedAt": "2026-11-24T10:21:59.989Z",
       "displayNo": 3,
       "order": 3
     },
@@ -3600,7 +3600,7 @@
         "required": true,
         "status": "completed"
       },
-      "updatedAt": "2026-11-02T08:52:48.276Z",
+      "updatedAt": "2026-11-24T10:21:59.989Z",
       "surfaceId": "surface-P11-new-operator",
       "displayWhenClosed": "on-trigger",
       "fallbackAnchorSelector": "[data-action=\"fx-new-operator\"]",
@@ -3642,7 +3642,7 @@
         "required": true,
         "status": "completed"
       },
-      "updatedAt": "2026-11-02T08:52:48.276Z",
+      "updatedAt": "2026-11-24T10:21:59.989Z",
       "surfaceId": "surface-P11-edit-operator",
       "displayWhenClosed": "on-trigger",
       "fallbackAnchorSelector": "[data-action=\"fx-edit-operator\"]",
@@ -3689,7 +3689,7 @@
         "当前实现核对：js/core/enhanced-runtime.js",
         "当前实现核对：js/views/business.js"
       ],
-      "updatedAt": "2026-11-02T08:52:48.276Z",
+      "updatedAt": "2026-11-24T10:21:59.989Z",
       "displayNo": 1,
       "order": 1
     },
@@ -3729,7 +3729,7 @@
         "required": true,
         "status": "completed"
       },
-      "updatedAt": "2026-11-02T08:52:48.276Z",
+      "updatedAt": "2026-11-24T10:21:59.989Z",
       "displayNo": 2,
       "order": 2
     },
@@ -3769,7 +3769,7 @@
         "required": true,
         "status": "completed"
       },
-      "updatedAt": "2026-11-02T08:52:48.276Z",
+      "updatedAt": "2026-11-24T10:21:59.989Z",
       "displayNo": 3,
       "order": 3
     },
@@ -3809,7 +3809,7 @@
         "required": true,
         "status": "completed"
       },
-      "updatedAt": "2026-11-02T08:52:48.276Z",
+      "updatedAt": "2026-11-24T10:21:59.989Z",
       "surfaceId": "surface-P12-detail",
       "displayWhenClosed": "on-trigger",
       "fallbackAnchorSelector": "[data-action=\"fx-read-message\"]",
@@ -3852,7 +3852,7 @@
         "required": true,
         "status": "completed"
       },
-      "updatedAt": "2026-11-02T08:52:48.276Z",
+      "updatedAt": "2026-11-24T10:21:59.989Z",
       "surfaceId": "surface-P12-delete",
       "displayWhenClosed": "on-trigger",
       "fallbackAnchorSelector": "[data-action=\"fx-delete-selected-messages\"]",
@@ -3898,7 +3898,7 @@
         "当前实现核对：js/views/business.js",
         "当前实现核对：js/core/enhanced-runtime.js"
       ],
-      "updatedAt": "2026-11-02T08:52:48.276Z",
+      "updatedAt": "2026-11-24T10:21:59.989Z",
       "displayNo": 1,
       "order": 1
     },
@@ -3937,7 +3937,7 @@
         "required": true,
         "status": "completed"
       },
-      "updatedAt": "2026-11-02T08:52:48.276Z",
+      "updatedAt": "2026-11-24T10:21:59.989Z",
       "displayNo": 2,
       "order": 2
     },
@@ -3976,7 +3976,7 @@
         "required": true,
         "status": "completed"
       },
-      "updatedAt": "2026-11-02T08:52:48.276Z",
+      "updatedAt": "2026-11-24T10:21:59.989Z",
       "displayNo": 3,
       "order": 3
     },
@@ -4019,7 +4019,7 @@
         "当前实现核对：js/core/order-statistics.js",
         "当前实现核对：js/core/order-management.js"
       ],
-      "updatedAt": "2026-11-02T08:52:48.276Z",
+      "updatedAt": "2026-11-24T10:21:59.989Z",
       "displayNo": 1,
       "order": 1
     },
@@ -4033,7 +4033,7 @@
         "strategy": "path",
         "fallbackText": "统计筛选与视角"
       },
-      "contentMarkdown": "### 筛选规则\n\n统计页以当前占用号码的订单为统计范围，包括有效订单和下载过码包的已撤销订单。每笔订单关联客户、产品大类和版本；公司、产品、版本三个视图共用前方的搜索条件，分别按对应维度汇总命中订单的笔数及明细码量。\n\n两个搜索框同时作用于三个视图。切换标签只改变分组方式，保留已输入条件，不为各标签分别保存搜索条件。\n\n### 搜索条件与生效方式\n\n| 条件 | 匹配规则 | 统计范围 |\n| --- | --- | --- |\n| 客户名称 | 去除首尾空格后，按名称包含关键词匹配，英文字母不区分大小写；关键词为纯数字时，改为按公司号包含匹配。 | 先筛选订单所属客户；同一共享公司号下可命中多个客户，各客户仍分别统计。 |\n| 产品大类 | 去除首尾空格后，按当前产品大类名称包含关键词匹配；区分英文字母大小写，不按具体产品名称、备注或产品号搜索。 | 只保留命中的订单明细；同一订单中的其他产品大类不计入码量。 |\n| 两项同时填写 | 两项条件取交集，必须同时满足；空值表示该项不限。 | 只统计命中客户的订单内、命中产品大类的明细。 |\n\n- 普通输入实时生效；中文输入法在组合输入完成后生效。回车也可应用当前条件，无需点击查询按钮。\n- 每次应用搜索后，各统计列表和明细的分页回到第一页。无匹配记录时，列表显示空状态，四项总览均为 0。\n- 当前不提供日期、订单状态或版本号搜索框。“版本统计”标签用于按版本分组，不是筛选某个版本。\n- 客户名称目前读取订单保存的客户名称，产品大类读取当前名称。客户改名后的目标规则及实现差异见本文“客户改名规则”。\n\n### 三个视图的分组口径\n\n| 视图 | 分组依据 | 筛选后的数量与码量 |\n| --- | --- | --- |\n| 公司统计 | 优先按客户 ID 分组，旧数据缺少 ID 时按现存客户标识兼容；不按公司号合并不同客户。 | 品类数量为该客户命中的不同产品大类数；订单笔数按订单号去重；码量为命中明细数量之和。 |\n| 产品统计 | 按产品号分组，显示当前产品大类名称；不按具体产品资料或 SKU 分组。 | 关联客户数为命中该产品大类的不同客户数；订单笔数按订单号去重；同类多条明细的码量累加。 |\n| 版本统计 | 按订单版本号分组。 | 订单笔数为该版本命中订单的去重数量；码量只累计这些订单内命中的明细。 |\n\n例如，某客户的一笔版本 1 订单包含茶叶 20 个码、腊肉 10 个码。筛选该客户和“茶叶”后，公司视图显示 1 个品类、1 笔订单、20 个码；产品视图显示茶叶、1 个关联客户、1 笔订单、20 个码；版本视图显示版本 1、1 笔订单、20 个码。切换标签时条件不变，腊肉的 10 个码均不计入。\n\n### 总览、切换和重置\n\n- 码总量、公司数、品类数和版本数均从同一份筛选结果计算。仅切换标签时，四项总览不变；修改筛选条件时一起更新。\n- 公司数按客户身份去重，品类数按产品号去重，版本数按版本号去重，码总量为命中明细数量之和。同一订单可在多个产品大类行中出现，不能直接将产品视图各行订单笔数相加作为总订单数。\n- 每个视图及其明细分别保留码量排序方向和分页状态。仅切换标签不会清空这些状态；筛选或重置会清空分页，使列表回到第一页。排序方向仍保留。\n- 点击“重置”同时清空两个搜索框、客户 ID、产品号及入口带入的精确限定，恢复全部符合统计口径的数据。保留当前标签，不自动返回公司统计。\n- 默认进入为公司统计，两个搜索条件为空。当前筛选保存在页面运行状态中；同一页面内切换视图时保留，不承诺刷新页面或新开标签后仍保留。\n\n### 从其他页面进入与后续操作\n\n- 从客户行的统计入口进入时，清空旧条件，默认公司视图，带入客户名称及客户 ID 精确限定；从品类行进入时，默认产品视图，带入产品大类名称及产品号精确限定。精确标识优先于同一项显示的名称文本。\n- 带入的精确限定同样作用于三个视图。仅切换标签不会解除限定；“查看全部”与“重置”均清空全部条件并保留当前标签。\n- 手动修改客户搜索框时清除客户 ID，改用文本匹配；手动修改产品大类框时清除产品号，改用文本匹配。另一项尚未修改的精确标识继续保留。\n- 下级明细使用当前共用筛选结果，不另外提供独立搜索条件。点击订单笔数跳转台账时，带入当前筛选及所点行的客户、产品大类或版本限定。\n- 导出使用当前标签和共用条件，导出全部命中分组，包含其他分页中的记录；不只导出当前页。",
+      "contentMarkdown": "### 筛选规则\n\n统计页以当前占用号码的订单为统计范围，包括有效订单和下载过码包的已撤销订单。每笔订单关联客户、产品大类和版本；公司、产品、版本三个视图共用前方的搜索条件，分别按对应维度汇总命中订单的笔数及明细码量。\n\n两个搜索框同时作用于三个视图。切换标签只改变分组方式，保留已输入条件，不为各标签分别保存搜索条件。\n\n### 搜索条件与生效方式\n\n| 条件 | 匹配规则 | 统计范围 |\n| --- | --- | --- |\n| 客户名称 | 去除首尾空格后，按名称包含关键词匹配，英文字母不区分大小写；关键词为纯数字时，改为按公司号包含匹配。 | 先筛选订单所属客户；同一共享公司号下可命中多个客户，各客户仍分别统计。 |\n| 产品大类 | 去除首尾空格后，按当前产品大类名称包含关键词匹配；区分英文字母大小写，不按具体产品名称、备注或产品号搜索。 | 只保留命中的订单明细；同一订单中的其他产品大类不计入码量。 |\n| 两项同时填写 | 两项条件取交集，必须同时满足；空值表示该项不限。 | 只统计命中客户的订单内、命中产品大类的明细。 |\n\n- 普通输入实时生效；中文输入法在组合输入完成后生效。回车也可应用当前条件，无需点击查询按钮。\n- 每次应用搜索后，各统计列表和明细的分页回到第一页。无匹配记录时，列表显示空状态，四项总览均为 0。\n- 当前不提供日期、订单状态或版本号搜索框。“版本统计”标签用于按版本分组，不是筛选某个版本。\n- 客户名称按客户 ID 读取当前名称，产品大类读取当前名称。三个视图共用筛选条件，客户改名不拆分统计组。\n\n### 三个视图的分组口径\n\n| 视图 | 分组依据 | 筛选后的数量与码量 |\n| --- | --- | --- |\n| 公司统计 | 优先按客户 ID 分组，旧数据缺少 ID 时按现存客户标识兼容；不按公司号合并不同客户。 | 品类数量为该客户命中的不同产品大类数；订单笔数按订单号去重；码量为命中明细数量之和。 |\n| 产品统计 | 按产品号分组，显示当前产品大类名称；不按具体产品资料或 SKU 分组。 | 关联客户数为命中该产品大类的不同客户数；订单笔数按订单号去重；同类多条明细的码量累加。 |\n| 版本统计 | 按订单版本号分组。 | 订单笔数为该版本命中订单的去重数量；码量只累计这些订单内命中的明细。 |\n\n例如，某客户的一笔版本 1 订单包含茶叶 20 个码、腊肉 10 个码。筛选该客户和“茶叶”后，公司视图显示 1 个品类、1 笔订单、20 个码；产品视图显示茶叶、1 个关联客户、1 笔订单、20 个码；版本视图显示版本 1、1 笔订单、20 个码。切换标签时条件不变，腊肉的 10 个码均不计入。\n\n### 总览、切换和重置\n\n- 码总量、公司数、品类数和版本数均从同一份筛选结果计算。仅切换标签时，四项总览不变；修改筛选条件时一起更新。\n- 公司数按客户身份去重，品类数按产品号去重，版本数按版本号去重，码总量为命中明细数量之和。同一订单可在多个产品大类行中出现，不能直接将产品视图各行订单笔数相加作为总订单数。\n- 每个视图及其明细分别保留码量排序方向和分页状态。仅切换标签不会清空这些状态；筛选或重置会清空分页，使列表回到第一页。排序方向仍保留。\n- 点击“重置”同时清空两个搜索框、客户 ID、产品号及入口带入的精确限定，恢复全部符合统计口径的数据。保留当前标签，不自动返回公司统计。\n- 默认进入为公司统计，两个搜索条件为空。当前筛选保存在页面运行状态中；同一页面内切换视图时保留，不承诺刷新页面或新开标签后仍保留。\n\n### 从其他页面进入与后续操作\n\n- 从客户行的统计入口进入时，清空旧条件，默认公司视图，带入客户名称及客户 ID 精确限定；从品类行进入时，默认产品视图，带入产品大类名称及产品号精确限定。精确标识优先于同一项显示的名称文本。\n- 带入的精确限定同样作用于三个视图。仅切换标签不会解除限定；“查看全部”与“重置”均清空全部条件并保留当前标签。\n- 手动修改客户搜索框时清除客户 ID，改用文本匹配；手动修改产品大类框时清除产品号，改用文本匹配。另一项尚未修改的精确标识继续保留。\n- 下级明细使用当前共用筛选结果，不另外提供独立搜索条件。点击订单笔数跳转台账时，带入当前筛选及所点行的客户、产品大类或版本限定。\n- 导出使用当前标签和共用条件，导出全部命中分组，包含其他分页中的记录；不只导出当前页。",
       "maintenancePolicy": "annotation-owned",
       "kind": "interaction",
       "dimension": "Table and list",
@@ -4058,7 +4058,7 @@
         "required": true,
         "status": "completed"
       },
-      "updatedAt": "2026-11-03T10:40:08.215Z",
+      "updatedAt": "2026-11-24T10:21:59.989Z",
       "displayNo": 2,
       "order": 2
     },
@@ -4072,7 +4072,7 @@
         "strategy": "path",
         "fallbackText": "统计口径与总览"
       },
-      "contentMarkdown": "### 业务含义\n\n统计当前占用号码的 random16 订单：有效订单以及下载过码包的撤销订单。\n\n### 交互规则\n\n- 未下载就撤销的订单不计入；下载后撤销仍占池，仍计入码量。\n- 总览包含码总量、公司数、品类数、版本数。码量是生成占用量，不是已绑定量、扫码次数或销售量。\n- 公司按客户身份聚合，不单纯按公司号合并；共享号下的不同客户保持独立。\n- 品类改名前后按固定产品号聚合，不拆组；统计标签及名称筛选使用最新产品大类，码量和订单快照不变。\n\n### 状态与异常\n\n无匹配数据保留当前上下文；资格或数据变化时按当前状态提示，不使用其他对象数据填补。\n\n### 客户改名规则（2026-11-02 确认）\n\n- 统计、下级明细、客户名称搜索及导出采用当前名称，按客户 ID 聚合。\n- 改名前后的订单归为同一客户；共享公司号及相同名称不能作为合并客户的依据。\n- 改名不改变订单数、码量和排序口径，关联订单继续按客户 ID 限定。\n\n本节为 2026-11-02 确认的目标规则，本次仅更新说明。当前台账搜索和统计名称仍有旧名称读取路径，待后续统一。\n",
+      "contentMarkdown": "### 业务含义\n\n统计当前占用号码的 random16 订单：有效订单以及下载过码包的撤销订单。\n\n### 交互规则\n\n- 未下载就撤销的订单不计入；下载后撤销仍占池，仍计入码量。\n- 总览包含码总量、公司数、品类数、版本数。码量是生成占用量，不是已绑定量、扫码次数或销售量。\n- 公司按客户身份聚合，不单纯按公司号合并；共享号下的不同客户保持独立。\n- 品类改名前后按固定产品号聚合，不拆组；统计标签及名称筛选使用最新产品大类，码量和订单快照不变。\n\n### 状态与异常\n\n无匹配数据保留当前上下文；资格或数据变化时按当前状态提示，不使用其他对象数据填补。\n\n### 客户改名规则（2026-11-02 确认）\n\n- 统计、下级明细、客户名称搜索及导出采用当前名称，按客户 ID 聚合。\n- 改名前后的订单归为同一客户；共享公司号及相同名称不能作为合并客户的依据。\n- 改名不改变订单数、码量和排序口径，关联订单继续按客户 ID 限定。\n\n2026-11-24 已同步原型：台账、名称搜索、统计和新导出使用当前客户名称；订单详情及公司名称预填保留订单快照。\n",
       "maintenancePolicy": "annotation-owned",
       "kind": "data",
       "dimension": "Data explanation",
@@ -4098,7 +4098,7 @@
         "required": true,
         "status": "completed"
       },
-      "updatedAt": "2026-11-02T08:52:48.276Z",
+      "updatedAt": "2026-11-24T10:21:59.989Z",
       "displayNo": 3,
       "order": 3
     },
@@ -4137,7 +4137,7 @@
         "required": true,
         "status": "completed"
       },
-      "updatedAt": "2026-11-02T08:52:48.276Z",
+      "updatedAt": "2026-11-24T10:21:59.989Z",
       "displayNo": 4,
       "order": 4
     },
@@ -4176,7 +4176,7 @@
         "required": true,
         "status": "completed"
       },
-      "updatedAt": "2026-11-02T08:52:48.276Z",
+      "updatedAt": "2026-11-24T10:21:59.989Z",
       "displayNo": 5,
       "order": 5
     },
@@ -4215,7 +4215,7 @@
         "required": true,
         "status": "completed"
       },
-      "updatedAt": "2026-11-02T08:52:48.276Z",
+      "updatedAt": "2026-11-24T10:21:59.989Z",
       "surfaceId": "surface-P14-detail",
       "displayWhenClosed": "on-trigger",
       "fallbackAnchorSelector": "[data-action=\"stat-detail\"]",
@@ -4261,7 +4261,7 @@
         "当前实现核对：js/views/business.js",
         "当前实现核对：js/core/order-management.js"
       ],
-      "updatedAt": "2026-11-02T08:52:48.276Z",
+      "updatedAt": "2026-11-24T10:21:59.989Z",
       "displayNo": 1,
       "order": 1
     },
@@ -4300,7 +4300,7 @@
         "required": true,
         "status": "completed"
       },
-      "updatedAt": "2026-11-02T08:52:48.276Z",
+      "updatedAt": "2026-11-24T10:21:59.989Z",
       "displayNo": 2,
       "order": 2
     },
@@ -4339,7 +4339,7 @@
         "required": true,
         "status": "completed"
       },
-      "updatedAt": "2026-11-02T08:52:48.276Z",
+      "updatedAt": "2026-11-24T10:21:59.989Z",
       "displayNo": 3,
       "order": 3
     },
@@ -4378,7 +4378,7 @@
         "required": true,
         "status": "completed"
       },
-      "updatedAt": "2026-11-02T08:52:48.276Z",
+      "updatedAt": "2026-11-24T10:21:59.989Z",
       "displayNo": 4,
       "order": 4
     },
@@ -4420,7 +4420,7 @@
       "evidence": [
         "当前实现核对：js/core/order-management.js"
       ],
-      "updatedAt": "2026-11-02T08:52:48.276Z",
+      "updatedAt": "2026-11-24T10:21:59.989Z",
       "displayNo": 1,
       "order": 1
     },
@@ -4458,7 +4458,7 @@
         "required": true,
         "status": "completed"
       },
-      "updatedAt": "2026-11-02T08:52:48.276Z",
+      "updatedAt": "2026-11-24T10:21:59.989Z",
       "displayNo": 2,
       "order": 2
     },
@@ -4472,7 +4472,7 @@
         "strategy": "path",
         "fallbackText": "客户台账显示与操作"
       },
-      "contentMarkdown": "### 业务含义\n\n保留订单号、品类数量、订单码量、已绑定、绑定申请中、待绑定、订单创建时间、操作。\n\n### 交互规则\n\n- 公司号、版本和订单状态列已移除；版本仍可作为筛选条件。\n- 行操作为订单详情；客户端不提供下载码包、下载记录或撤销订单。\n- 绑定操作移入订单详情的品类明细，不再从整单列表直接选产品跨品类绑定。\n\n### 状态与异常\n\n无匹配数据保留当前上下文；资格或数据变化时按当前状态提示，不使用其他对象数据填补。\n\n### 客户改名规则（2026-11-02 确认）\n\n客户归属及访问权限按固定客户 ID 校验。订单列表、客户名称搜索及新导出的台账使用当前客户名称，覆盖改名前后订单；进入订单详情后使用创建时名称快照。改名不改变订单状态、码量及绑定关系。\n\n本节为 2026-11-02 确认的目标规则，本次仅更新说明。当前订单台账搜索及部分名称读取路径尚待统一，不能视为业务实现已完成。\n",
+      "contentMarkdown": "### 业务含义\n\n保留订单号、品类数量、订单码量、已绑定、绑定申请中、待绑定、订单创建时间、操作。\n\n### 交互规则\n\n- 公司号、版本和订单状态列已移除；版本仍可作为筛选条件。\n- 行操作为订单详情；客户端不提供下载码包、下载记录或撤销订单。\n- 绑定操作移入订单详情的品类明细，不再从整单列表直接选产品跨品类绑定。\n\n### 状态与异常\n\n无匹配数据保留当前上下文；资格或数据变化时按当前状态提示，不使用其他对象数据填补。\n\n### 客户改名规则（2026-11-02 确认）\n\n客户归属及访问权限按固定客户 ID 校验。订单列表、客户名称搜索及新导出的台账使用当前客户名称，覆盖改名前后订单；进入订单详情后使用创建时名称快照。改名不改变订单状态、码量及绑定关系。\n\n2026-11-24 已同步原型：日常列表与查询读取当前客户名称，客户身份及历史订单快照保持不变。\n",
       "maintenancePolicy": "annotation-owned",
       "kind": "permission",
       "dimension": "Primary action",
@@ -4497,7 +4497,7 @@
         "required": true,
         "status": "completed"
       },
-      "updatedAt": "2026-11-02T08:52:48.276Z",
+      "updatedAt": "2026-11-24T10:21:59.989Z",
       "displayNo": 3,
       "order": 3
     },
@@ -4535,7 +4535,7 @@
         "required": true,
         "status": "completed"
       },
-      "updatedAt": "2026-11-02T08:52:48.276Z",
+      "updatedAt": "2026-11-24T10:21:59.989Z",
       "displayNo": 4,
       "order": 4
     },
@@ -4579,7 +4579,7 @@
         "当前实现核对：js/views/business.js",
         "当前实现核对：js/core/enhanced-runtime.js"
       ],
-      "updatedAt": "2026-11-02T08:52:48.276Z",
+      "updatedAt": "2026-11-24T10:21:59.989Z",
       "displayNo": 1,
       "order": 1
     },
@@ -4593,7 +4593,7 @@
         "strategy": "path",
         "fallbackText": "订单及明细码量"
       },
-      "contentMarkdown": "### 业务含义\n\norder 参数定位当前客户订单；不存在或无权查看时提供缺省提示。\n\n### 交互规则\n\n- 订单码量是本订单全部品类明细的数量之和；已绑定是当前有效产品关联覆盖的数量。\n- 绑定申请中只统计待审批申请占用；草稿、已驳回和已撤回申请不占用待审批码量。\n- 有效订单的待绑定 = 订单码量 − 已绑定 − 绑定申请中，最低为 0；撤销订单的待绑定为 0。\n- 品类明细的序号按行数量累计编排，与 8 位随机尾码不是同一字段。\n- 订单信息只展示订单号、订单创建时间、订单码量、已绑定、绑定申请中、待绑定；隐藏客户名称、公司号、版本号、操作人、订单状态和订单备注，也不提供下载码包或下载记录入口。\n\n### 状态与异常\n\n无匹配数据保留当前上下文；资格或数据变化时按当前状态提示，不使用其他对象数据填补。\n\n### 客户改名规则（2026-11-02 确认）\n\n订单客户名称保留创建时快照，不随客户改名覆盖；新订单保存新名称。客户权限、绑定申请、审核及已有产品追加绑定按固定客户 ID 校验，新旧名称不同不阻断同一客户的操作。已发布产品及扫码企业资料独立保存，不因账号改名自动变化。\n\n本节为 2026-11-02 确认的目标规则，本次仅更新说明。当前订单台账搜索及部分名称读取路径尚待统一，不能视为业务实现已完成。\n",
+      "contentMarkdown": "### 业务含义\n\norder 参数定位当前客户订单；不存在或无权查看时提供缺省提示。\n\n### 交互规则\n\n- 订单码量是本订单全部品类明细的数量之和；已绑定是当前有效产品关联覆盖的数量。\n- 绑定申请中只统计待审批申请占用；草稿、已驳回和已撤回申请不占用待审批码量。\n- 有效订单的待绑定 = 订单码量 − 已绑定 − 绑定申请中，最低为 0；撤销订单的待绑定为 0。\n- 品类明细的序号按行数量累计编排，与 8 位随机尾码不是同一字段。\n- 订单信息只展示订单号、订单创建时间、订单码量、已绑定、绑定申请中、待绑定；隐藏客户名称、公司号、版本号、操作人、订单状态和订单备注，也不提供下载码包或下载记录入口。\n\n### 状态与异常\n\n无匹配数据保留当前上下文；资格或数据变化时按当前状态提示，不使用其他对象数据填补。\n\n### 客户改名规则（2026-11-02 确认）\n\n订单客户名称保留创建时快照，不随客户改名覆盖；新订单保存新名称。客户权限、绑定申请、审核及已有产品追加绑定按固定客户 ID 校验，新旧名称不同不阻断同一客户的操作。已发布产品及扫码企业资料独立保存，不因账号改名自动变化。\n\n2026-11-24 已同步原型：日常列表与查询读取当前客户名称，客户身份及历史订单快照保持不变。\n",
       "maintenancePolicy": "annotation-owned",
       "kind": "data",
       "dimension": "Data explanation",
@@ -4620,7 +4620,7 @@
         "required": true,
         "status": "completed"
       },
-      "updatedAt": "2026-11-02T08:52:48.276Z",
+      "updatedAt": "2026-11-24T10:21:59.989Z",
       "displayNo": 2,
       "order": 2
     },
@@ -4660,7 +4660,7 @@
         "required": true,
         "status": "completed"
       },
-      "updatedAt": "2026-11-02T08:52:48.276Z",
+      "updatedAt": "2026-11-24T10:21:59.989Z",
       "displayNo": 3,
       "order": 3
     },
@@ -4700,7 +4700,7 @@
         "required": true,
         "status": "completed"
       },
-      "updatedAt": "2026-11-02T08:52:48.276Z",
+      "updatedAt": "2026-11-24T10:21:59.989Z",
       "surfaceId": "surface-P23-bind-choice",
       "displayWhenClosed": "on-trigger",
       "fallbackAnchorSelector": "[data-action=\"om-bind\"]",
@@ -4743,7 +4743,7 @@
         "required": true,
         "status": "completed"
       },
-      "updatedAt": "2026-11-02T08:52:48.276Z",
+      "updatedAt": "2026-11-24T10:21:59.989Z",
       "surfaceId": "surface-P23-existing-bind",
       "displayWhenClosed": "on-trigger",
       "fallbackAnchorSelector": "[data-action=\"om-bind-existing\"]",
@@ -4788,7 +4788,7 @@
         "required": true,
         "status": "completed"
       },
-      "updatedAt": "2026-11-02T08:52:48.276Z",
+      "updatedAt": "2026-11-24T10:21:59.989Z",
       "surfaceId": "surface-P23-existing-bind",
       "displayWhenClosed": "sidebar-only",
       "fallbackAnchorSelector": "[data-action=\"om-bind-existing\"]",
@@ -4831,7 +4831,7 @@
         "required": true,
         "status": "completed"
       },
-      "updatedAt": "2026-11-02T08:52:48.276Z",
+      "updatedAt": "2026-11-24T10:21:59.989Z",
       "surfaceId": "surface-P23-records",
       "displayWhenClosed": "on-trigger",
       "fallbackAnchorSelector": "[data-action=\"om-open-line-bindings\"]",
@@ -4874,7 +4874,7 @@
         "required": true,
         "status": "completed"
       },
-      "updatedAt": "2026-11-02T08:52:48.276Z",
+      "updatedAt": "2026-11-24T10:21:59.989Z",
       "surfaceId": "surface-P23-withdraw-application",
       "displayWhenClosed": "on-trigger",
       "fallbackAnchorSelector": "[data-action=\"fx-withdraw-binding-application\"]",
@@ -4922,7 +4922,7 @@
         "当前实现核对：js/core/enhanced-runtime.js",
         "当前实现核对：js/core/order-management.js"
       ],
-      "updatedAt": "2026-11-02T08:52:48.276Z",
+      "updatedAt": "2026-11-24T10:21:59.989Z",
       "displayNo": 1,
       "order": 1
     },
@@ -4963,7 +4963,7 @@
         "required": true,
         "status": "completed"
       },
-      "updatedAt": "2026-11-02T08:52:48.276Z",
+      "updatedAt": "2026-11-24T10:21:59.989Z",
       "displayNo": 2,
       "order": 2
     },
@@ -4977,7 +4977,7 @@
         "strategy": "path",
         "fallbackText": "字段及附件编辑"
       },
-      "contentMarkdown": "### 业务含义\n\n标准字段、自定义字段及附件按维护顺序展示，可调整字段和附件顺序；自定义字段先填写名称再上传。\n\n### 交互规则\n\n- 产品名称、品牌、批次、公司名称、生产单位是资料校验涉及的必填项；保存草稿与提交审核校验强度不同。\n- 品牌、商标、营业执照、产品检测报告单字段最多 1 个附件；其余标准媒体及自定义媒体一般最多 10 个。\n- 新建及编辑产品的标准媒体、自定义媒体和模块附件均只接受图片，不接受 PDF；按钮显示选择图片。错误类型、超量或读取失败给出提示；空字段不出现在扫码端。客户账号建档证照仍按客户管理规则接受图片或 PDF。\n- 检测报告标题提示同批次六个月以内，但不能将这行说明等同于自动核验证书真实性或报告时效。\n\n### 状态与异常\n\n无匹配数据保留当前上下文；资格或数据变化时按当前状态提示，不使用其他对象数据填补。\n",
+      "contentMarkdown": "### 业务含义\n\n标准字段按系统固定顺序展示，自定义字段按添加顺序展示，两者均不提供手动调序。附件支持在所属字段内拖拽调整顺序；自定义字段先填写名称再上传。\n\n### 交互规则\n\n- 产品名称、品牌、批次、公司名称、生产单位是资料校验涉及的必填项；保存草稿与提交审核校验强度不同。\n- 品牌、商标、营业执照、产品检测报告单字段最多 1 个附件；其余标准媒体及自定义媒体一般最多 10 个。\n- 新建及编辑产品的标准媒体、自定义媒体和模块附件均只接受图片，不接受 PDF；按钮显示选择图片。错误类型、超量或读取失败给出提示；空字段不出现在扫码端。客户账号建档证照仍按客户管理规则接受图片或 PDF。\n- 检测报告标题提示同批次六个月以内，但不能将这行说明等同于自动核验证书真实性或报告时效。\n\n### 状态与异常\n\n无匹配数据保留当前上下文；资格或数据变化时按当前状态提示，不使用其他对象数据填补。\n\n### 2026-11-24 确认\n\n标准字段按系统固定顺序展示，自定义字段按添加顺序展示，两者均不提供手动调序。附件支持在所属字段内拖拽调整顺序；自定义字段先填写名称再上传。\n\n产品图片与客户建档证照统一使用 10 × 1024 × 1024 = 10,485,760 字节上限。等于上限允许上传，超出 1 字节即拒绝。产品图片超限提示“图片大小不能超过 10 MB：{文件名}”；客户证照超限提示“文件大小不能超过 10 MB：{文件名}”。数量及类型限制保持不变。\n",
       "maintenancePolicy": "annotation-owned",
       "kind": "interaction",
       "dimension": "Primary action",
@@ -5004,7 +5004,7 @@
         "required": true,
         "status": "completed"
       },
-      "updatedAt": "2026-11-02T08:52:48.276Z",
+      "updatedAt": "2026-11-24T10:21:59.989Z",
       "displayNo": 3,
       "order": 3
     },
@@ -5045,7 +5045,7 @@
         "required": true,
         "status": "completed"
       },
-      "updatedAt": "2026-11-02T08:52:48.276Z",
+      "updatedAt": "2026-11-24T10:21:59.989Z",
       "displayNo": 4,
       "order": 4
     },
@@ -5086,7 +5086,7 @@
         "required": true,
         "status": "completed"
       },
-      "updatedAt": "2026-11-02T08:52:48.276Z",
+      "updatedAt": "2026-11-24T10:21:59.989Z",
       "displayNo": 5,
       "order": 5
     },
@@ -5127,7 +5127,7 @@
         "required": true,
         "status": "completed"
       },
-      "updatedAt": "2026-11-02T08:52:48.276Z",
+      "updatedAt": "2026-11-24T10:21:59.989Z",
       "surfaceId": "surface-P25-submit-binding",
       "displayWhenClosed": "on-trigger",
       "fallbackAnchorSelector": "[data-action=\"fx-open-submit\"]",
@@ -5171,7 +5171,7 @@
         "required": true,
         "status": "completed"
       },
-      "updatedAt": "2026-11-02T08:52:48.276Z",
+      "updatedAt": "2026-11-24T10:21:59.989Z",
       "surfaceId": "surface-P25-preview",
       "displayWhenClosed": "on-trigger",
       "fallbackAnchorSelector": "[data-action=\"fx-preview-current\"]",
@@ -5218,7 +5218,7 @@
         "当前实现核对：js/core/enhanced-runtime.js",
         "当前实现核对：js/core/domain.js"
       ],
-      "updatedAt": "2026-11-02T08:52:48.276Z",
+      "updatedAt": "2026-11-24T10:21:59.989Z",
       "displayNo": 1,
       "order": 1
     },
@@ -5258,7 +5258,7 @@
         "required": true,
         "status": "completed"
       },
-      "updatedAt": "2026-11-02T08:52:48.276Z",
+      "updatedAt": "2026-11-24T10:21:59.989Z",
       "displayNo": 2,
       "order": 2
     },
@@ -5298,7 +5298,7 @@
         "required": true,
         "status": "completed"
       },
-      "updatedAt": "2026-11-02T08:52:48.276Z",
+      "updatedAt": "2026-11-24T10:21:59.989Z",
       "displayNo": 3,
       "order": 3
     },
@@ -5338,7 +5338,7 @@
         "required": true,
         "status": "completed"
       },
-      "updatedAt": "2026-11-02T08:52:48.276Z",
+      "updatedAt": "2026-11-24T10:21:59.989Z",
       "surfaceId": "surface-P26-customer-withdraw",
       "displayWhenClosed": "on-trigger",
       "fallbackAnchorSelector": "[data-action=\"fx-open-withdraw\"]",
@@ -5383,7 +5383,7 @@
         "required": true,
         "status": "completed"
       },
-      "updatedAt": "2026-11-02T08:52:48.276Z",
+      "updatedAt": "2026-11-24T10:21:59.989Z",
       "surfaceId": "surface-P26-customer-withdraw",
       "displayWhenClosed": "sidebar-only",
       "fallbackAnchorSelector": "[data-action=\"fx-open-withdraw\"]",
@@ -5430,7 +5430,7 @@
         "当前实现核对：js/core/enhanced-runtime.js",
         "当前实现核对：js/views/business.js"
       ],
-      "updatedAt": "2026-11-02T08:52:48.276Z",
+      "updatedAt": "2026-11-24T10:21:59.989Z",
       "displayNo": 1,
       "order": 1
     },
@@ -5444,7 +5444,7 @@
         "strategy": "path",
         "fallbackText": "消息查询与范围"
       },
-      "contentMarkdown": "### 业务含义\n\n标题和内容摘要分别搜索，展开筛选承载时间、消息类型及已读状态等当前可见条件。\n\n### 交互规则\n\n- 站内信仅通知产品绑定和撤回结果。绑定审核通过、驳回及运营端直接绑定归为绑定审核结果；撤回审核通过和驳回归为撤回审核结果。\n- 创建订单不发送站内信；已有订单创建通知加载时清理，不进入列表、类型筛选和未读计数。提交类待办在对应审核页面处理。\n- 只展示当前客户收件消息，不能通过切换筛选读取其他客户消息。\n- 空列表保留查询和重置；列表字段为消息标题、内容摘要、接收时间和消息类型。\n\n### 状态与异常\n\n无匹配数据保留当前上下文；资格或数据变化时按当前状态提示，不使用其他对象数据填补。\n",
+      "contentMarkdown": "### 业务含义\n\n标题和内容摘要分别搜索，展开筛选承载时间、消息类型及已读状态等当前可见条件。\n\n### 交互规则\n\n- 站内信仅通知产品绑定和撤回结果。绑定审核通过、驳回及运营端直接绑定归为绑定审核结果；撤回审核通过和驳回归为撤回审核结果。\n- 创建订单不发送站内信；已有订单创建通知加载时清理，不进入列表、类型筛选和未读计数。提交类待办在对应审核页面处理。\n- 只展示当前客户收件消息，不能通过切换筛选读取其他客户消息。\n- 空列表保留查询和重置；列表字段为消息标题、内容摘要、接收时间和消息类型。\n\n### 状态与异常\n\n无匹配数据保留当前上下文；资格或数据变化时按当前状态提示，不使用其他对象数据填补。\n\n### 2026-11-24 确认\n\n清理客户端消息删除代码残留。客户端仅提供已读管理，不提供删除入口，也不允许构造调用删除处理；运营端保留其原有消息删除权限。\n",
       "maintenancePolicy": "annotation-owned",
       "kind": "interaction",
       "dimension": "Table and list",
@@ -5470,7 +5470,7 @@
         "required": true,
         "status": "completed"
       },
-      "updatedAt": "2026-11-02T08:52:48.276Z",
+      "updatedAt": "2026-11-24T10:21:59.989Z",
       "displayNo": 2,
       "order": 2
     },
@@ -5484,7 +5484,7 @@
         "strategy": "id",
         "fallbackText": "消息选择与已读"
       },
-      "contentMarkdown": "### 业务含义\n\n表头勾选对应当前筛选消息，支持标记所选已读和全部标为已读。\n\n### 交互规则\n\n- 未选择记录时批量操作不可执行；选择与筛选结果同步。\n\n### 状态与异常\n\n无匹配数据保留当前上下文；资格或数据变化时按当前状态提示，不使用其他对象数据填补。\n",
+      "contentMarkdown": "### 业务含义\n\n表头勾选对应当前筛选消息，支持标记所选已读和全部标为已读。\n\n### 交互规则\n\n- 未选择记录时批量操作不可执行；选择与筛选结果同步。\n\n### 状态与异常\n\n无匹配数据保留当前上下文；资格或数据变化时按当前状态提示，不使用其他对象数据填补。\n\n### 2026-11-24 确认\n\n清理客户端消息删除代码残留。客户端仅提供已读管理，不提供删除入口，也不允许构造调用删除处理；运营端保留其原有消息删除权限。\n",
       "maintenancePolicy": "annotation-owned",
       "kind": "interaction",
       "dimension": "Primary action",
@@ -5510,7 +5510,7 @@
         "required": true,
         "status": "completed"
       },
-      "updatedAt": "2026-11-02T08:52:48.276Z",
+      "updatedAt": "2026-11-24T10:21:59.989Z",
       "displayNo": 3,
       "order": 3
     },
@@ -5524,7 +5524,7 @@
         "strategy": "path",
         "fallbackText": "消息详情"
       },
-      "contentMarkdown": "### 业务含义\n\n消息详情：阅读消息展示完整信件内容并标为已读，关闭后列表同步阅读状态。\n\n### 交互规则\n\n- 弹窗标题使用该消息的真实标题，正文有收件人、通知内容与平台署名，底部为知道了；不提供业务跳转按钮。\n\n### 状态与异常\n\n只有对应业务弹窗打开时展示内部标注；取消或关闭不提交本次操作。\n",
+      "contentMarkdown": "### 业务含义\n\n消息详情：阅读消息展示完整信件内容并标为已读，关闭后列表同步阅读状态。\n\n### 交互规则\n\n- 弹窗标题使用该消息的真实标题，正文有收件人、通知内容与平台署名，底部为知道了；不提供业务跳转按钮。\n\n### 状态与异常\n\n只有对应业务弹窗打开时展示内部标注；取消或关闭不提交本次操作。\n\n### 2026-11-24 确认\n\n清理客户端消息删除代码残留。客户端仅提供已读管理，不提供删除入口，也不允许构造调用删除处理；运营端保留其原有消息删除权限。\n",
       "maintenancePolicy": "annotation-owned",
       "kind": "interaction",
       "dimension": "Surface overview",
@@ -5550,7 +5550,7 @@
         "required": true,
         "status": "completed"
       },
-      "updatedAt": "2026-11-02T08:52:48.276Z",
+      "updatedAt": "2026-11-24T10:21:59.989Z",
       "surfaceId": "surface-P27-detail",
       "displayWhenClosed": "on-trigger",
       "fallbackAnchorSelector": "[data-action=\"fx-read-message\"]",
@@ -5596,7 +5596,7 @@
         "当前实现核对：js/views/business.js",
         "当前实现核对：js/core/enhanced-runtime.js"
       ],
-      "updatedAt": "2026-11-02T08:52:48.276Z",
+      "updatedAt": "2026-11-24T10:21:59.989Z",
       "displayNo": 1,
       "order": 1
     },
@@ -5635,7 +5635,7 @@
         "required": true,
         "status": "completed"
       },
-      "updatedAt": "2026-11-02T08:52:48.276Z",
+      "updatedAt": "2026-11-24T10:21:59.989Z",
       "displayNo": 2,
       "order": 2
     },
@@ -5674,7 +5674,7 @@
         "required": true,
         "status": "completed"
       },
-      "updatedAt": "2026-11-02T08:52:48.276Z",
+      "updatedAt": "2026-11-24T10:21:59.989Z",
       "displayNo": 3,
       "order": 3
     },
@@ -5717,7 +5717,7 @@
         "当前实现核对：js/views/scan.js",
         "当前实现核对：js/core/order-management.js"
       ],
-      "updatedAt": "2026-11-02T08:52:48.276Z",
+      "updatedAt": "2026-11-24T10:21:59.989Z",
       "displayNo": 1,
       "order": 1
     },
@@ -5756,7 +5756,7 @@
         "required": true,
         "status": "completed"
       },
-      "updatedAt": "2026-11-02T08:52:48.276Z",
+      "updatedAt": "2026-11-24T10:21:59.989Z",
       "displayNo": 2,
       "order": 2
     },
@@ -5795,7 +5795,7 @@
         "required": true,
         "status": "completed"
       },
-      "updatedAt": "2026-11-02T08:52:48.276Z",
+      "updatedAt": "2026-11-24T10:21:59.989Z",
       "displayNo": 3,
       "order": 3
     },
@@ -5834,7 +5834,7 @@
         "required": true,
         "status": "completed"
       },
-      "updatedAt": "2026-11-02T08:52:48.276Z",
+      "updatedAt": "2026-11-24T10:21:59.989Z",
       "displayNo": 4,
       "order": 4
     },
@@ -5877,7 +5877,7 @@
         "当前实现核对：js/views/scan.js",
         "当前实现核对：js/views/business.js"
       ],
-      "updatedAt": "2026-11-02T08:52:48.276Z",
+      "updatedAt": "2026-11-24T10:21:59.989Z",
       "displayNo": 1,
       "order": 1
     },
@@ -5916,7 +5916,7 @@
         "required": true,
         "status": "completed"
       },
-      "updatedAt": "2026-11-02T08:52:48.276Z",
+      "updatedAt": "2026-11-24T10:21:59.989Z",
       "displayNo": 2,
       "order": 2
     },
@@ -5955,7 +5955,7 @@
         "required": true,
         "status": "completed"
       },
-      "updatedAt": "2026-11-02T08:52:48.276Z",
+      "updatedAt": "2026-11-24T10:21:59.989Z",
       "displayNo": 3,
       "order": 3
     },
@@ -5998,7 +5998,7 @@
         "当前实现核对：js/views/scan.js",
         "当前实现核对：js/core/order-management.js"
       ],
-      "updatedAt": "2026-11-02T08:52:48.276Z",
+      "updatedAt": "2026-11-24T10:21:59.989Z",
       "displayNo": 1,
       "order": 1
     },
@@ -6037,7 +6037,7 @@
         "required": true,
         "status": "completed"
       },
-      "updatedAt": "2026-11-02T08:52:48.276Z",
+      "updatedAt": "2026-11-24T10:21:59.989Z",
       "displayNo": 2,
       "order": 2
     },
@@ -6080,7 +6080,7 @@
         "当前实现核对：js/views/scan.js",
         "当前实现核对：js/core/order-management.js"
       ],
-      "updatedAt": "2026-11-02T08:52:48.276Z",
+      "updatedAt": "2026-11-24T10:21:59.989Z",
       "displayNo": 1,
       "order": 1
     },
@@ -6119,11 +6119,11 @@
         "required": true,
         "status": "completed"
       },
-      "updatedAt": "2026-11-02T08:52:48.276Z",
+      "updatedAt": "2026-11-24T10:21:59.989Z",
       "displayNo": 2,
       "order": 2
     }
   ],
   "root": "C:\\Users\\钟长鸿\\Documents\\溯源系统\\prototype-multipage",
-  "updatedAt": "2026-11-03T10:46:49.380Z"
+  "updatedAt": "2026-11-24T10:21:59.989Z"
 }

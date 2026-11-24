@@ -1,5 +1,5 @@
 const projectRoot = new URL("../", import.meta.url);
-const assetVersion = "business-catalog-20261102-04";
+const assetVersion = "confirmed-rules-20261124";
 let bootPromise = null;
 
 function assetUrl(relativePath) {
@@ -39,6 +39,7 @@ async function loadClassicScripts(relativePaths) {
         const saved = fxStore.get(fxBusinessStorage[name], null);
         if (Array.isArray(saved)) list.splice(0, list.length, ...saved);
       }
+      fxClearLegacyAccountLocks();
     }
     await loadClassicScript(relativePath);
     if (relativePath === "js/core/demo-fixtures.js") {
@@ -86,6 +87,7 @@ export function bootstrapPage(config) {
   const appScripts = [
     "vendor/lucide.min.js",
     "vendor/qrcode-generator.min.js",
+    "vendor/xlsx.full.min.js",
     "js/core/config.js",
     "js/components/ui.js",
     "js/views/base.js",

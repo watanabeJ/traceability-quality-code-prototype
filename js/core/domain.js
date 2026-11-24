@@ -406,6 +406,21 @@ const fxToday = new Date().toLocaleDateString("sv-SE", { timeZone: "Asia/Shangha
     if (linkedCustomer) return linkedCustomer;
     return customers.find(item => [record.customer, record.company, record.recipient].includes(item.name)) || null;
   }
+  function fxCurrentCustomerName(record) {
+    return fxCustomerForRecord(record)?.name || record?.customer || record?.company || "";
+  }
+  function fxClearLegacyAccountLocks() {
+    for (const list of [customers, fxOperators]) {
+      list.forEach(account => {
+        if (account.status === "锁定") account.status = "禁用";
+        delete account.lockedUntil;
+        delete account.lockedAt;
+        delete account.lockReason;
+      });
+    }
+    fxStore.set(fxBusinessStorage.customers, customers);
+    fxStore.set("trace-operators-v2", fxOperators);
+  }
   function fxProductForRecord(record) {
     if (!record) return null;
     const customer = fxCustomerForRecord(record);
@@ -1438,15 +1453,16 @@ const fxToday = new Date().toLocaleDateString("sv-SE", { timeZone: "Asia/Shangha
   }
   function fxDownloadExcel(filename, headers, rows) {
     const numberedHeaders = ["序号", ...headers];
-    const numberedRows = rows.map((row, index) => [index + 1, ...row]);
-    const head = numberedHeaders.map(value => `<th>${fxEscape(value)}</th>`).join("");
-    const body = numberedRows.map(row => `<tr>${row.map(value => {
-      const text = String(value ?? "");
-      const textFormat = /^0\d+$/.test(text) ? ` style="mso-number-format:'@'"` : "";
-      return `<td${textFormat}>${fxEscape(text)}</td>`;
-    }).join("")}</tr>`).join("");
-    const html = `<!doctype html><meta charset="utf-8"><table border="1"><thead><tr>${head}</tr></thead><tbody>${body}</tbody></table>`;
-    fxDownloadBlob(filename, new Blob(["\ufeff", html], { type: "application/vnd.ms-excel;charset=utf-8" }));
+    const identifierColumn = /公司号|客户号|产品号|溯源码|账号|订单号|联系电话|产品批次|版本/;
+    const numberedRows = rows.map((row, index) => [index + 1, ...row.map((value, column) =>
+      identifierColumn.test(headers[column]) ? String(value ?? "") : value ?? "")]);
+    const workbook = XLSX.utils.book_new();
+    const sheet = XLSX.utils.aoa_to_sheet([numberedHeaders, ...numberedRows]);
+    sheet["!cols"] = numberedHeaders.map(label => ({ wch: /订单号|时间/.test(label) ? 28 : 20 }));
+    XLSX.utils.book_append_sheet(workbook, sheet, "数据");
+    const bytes = XLSX.write(workbook, { bookType: "xlsx", type: "array", compression: true });
+    fxDownloadBlob(filename.replace(/\.xlsx?$/i, "") + ".xlsx",
+      new Blob([bytes], { type: "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet" }));
   }
   function fxSerial(prefix, value) { return `${prefix}${String(value).padStart(8, "0")}`; }
   function fxOrderPrefix(customer) { return customer.account.replace(/[^a-z0-9]/gi, "").slice(0, 2).toUpperCase() || "QR"; }

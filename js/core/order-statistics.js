@@ -25,7 +25,7 @@ function fxStatsCategoryOptions() {
 }
 
 function fxStatsCompanyKey(order) {
-  return String(order.customerId ?? order.customer ?? order.companyNumber);
+  return String(fxCustomerForRecord(order)?.id ?? order.customerId ?? order.customer ?? order.companyNumber);
 }
 
 function fxStatsProductKey(line) {
@@ -46,7 +46,7 @@ function fxStatsOrders() {
   const companyNumberSearch = /^\d+$/.test(keyword);
   return orders.filter(order => omOccupiesNumbers(order)
     && (!filters.customerId || fxStatsCompanyKey(order) === String(filters.customerId))
-    && (filters.customerId || !keyword || String(companyNumberSearch ? order.companyNumber || "" : order.customer || "").toLowerCase().includes(keyword))
+    && (filters.customerId || !keyword || String(companyNumberSearch ? order.companyNumber || "" : fxCurrentCustomerName(order)).toLowerCase().includes(keyword))
     && fxStatsLines(order).length);
 }
 
@@ -103,7 +103,7 @@ function fxStatsRows(dimension) {
     if (dimension === "company") {
       const group = add(rows, fxStatsCompanyKey(order), {
         level: "group",
-        label: order.customer || "未命名客户",
+        label: fxCurrentCustomerName(order) || "未命名客户",
         number: order.companyNumber || "",
       }, 0, order);
       lines.forEach(line => {
@@ -126,7 +126,7 @@ function fxStatsRows(dimension) {
         }, 0, order);
         add(group.children, fxStatsCompanyKey(order), {
           level: "child",
-          label: order.customer || "未命名客户",
+          label: fxCurrentCustomerName(order) || "未命名客户",
           number: order.companyNumber || "",
         }, line.quantity, order);
         group.total += Number(line.quantity) || 0;
@@ -170,7 +170,7 @@ function fxStatsTableContext() {
 
 function fxStatsExportName(dimension) {
   const label = fxStatsDimensions.find(item => item.key === dimension)?.label || "数据统计";
-  return `${label}_${omNow().slice(0, 10)}.xls`;
+  return `${label}_${omNow().slice(0, 10)}.xlsx`;
 }
 
 function fxStatsDetailModal() {

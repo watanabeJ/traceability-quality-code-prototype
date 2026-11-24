@@ -274,7 +274,7 @@ document.addEventListener("click", async event => {
     return;
   }
   if (action === "fx-export-customers") {
-    fxDownloadExcel(`客户列表_${fxToday}.xls`, ["客户名称", "公司号", "号码类型", "账号", "联系电话", "状态", "订单码量", "已绑定", "绑定申请中", "待绑定"], fxFilteredCustomers().map(item => {
+    fxDownloadExcel(`客户列表_${fxToday}.xlsx`, ["客户名称", "公司号", "号码类型", "账号", "联系电话", "状态", "订单码量", "已绑定", "绑定申请中", "待绑定"], fxFilteredCustomers().map(item => {
       const summary = fxCustomerCodeSummary(item);
       return [item.name, item.companyNumber, item.companyNumberType, item.account, item.phone, item.status, summary.total, summary.active, summary.pending, summary.available];
     }));
@@ -290,7 +290,8 @@ document.addEventListener("click", async event => {
   if (!customer && (!licenseFile || !legalFile)) return showToast("请上传营业执照和法人身份证");
   const files = [licenseFile, legalFile].filter(Boolean);
   if (files.some(file => !(file.type.startsWith("image/") || file.type === "application/pdf" || /\.pdf$/i.test(file.name)))) return showToast("证照文件仅支持图片或 PDF");
-  if (files.some(file => file.size > 10 * 1024 * 1024)) return showToast("证照文件不能超过 10 MB");
+  const oversized = files.find(file => file.size > 10 * 1024 * 1024);
+  if (oversized) return showToast(`文件大小不能超过 10 MB：${oversized.name}`);
   const draft = { name: fxRead("fx-customer-name"), account: customer?.account || fxRead("fx-customer-account"), phone: fxRead("fx-customer-phone").replace(/\s+/g, ""), companyNumber: number, companyNumberType: type };
   const password = customer?.password || fxRead("fx-customer-password");
   fxCustomerSaving = true;

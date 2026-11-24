@@ -50,5 +50,5 @@ flowchart LR
 
 - [当前系统基线](../current-system-baseline.md)
 - [页面需求说明](../../prototype-annotator/specs/README.md)
-- [完整产品说明书](../../输出/说明文件包/溯源质控码平台产品说明书_v1.1.md)
+- [完整产品说明书](../../输出/说明文件包/溯源质控码平台产品说明书_v1.3.md)
 - [系统规则说明](../current-system-baseline.md)

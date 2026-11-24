@@ -818,7 +818,6 @@ render = function () {
     "fx-open-binding-review-product", "fx-edit-binding-review-product", "fx-approve-bind-request", "fx-reject-bind-request",
     "fx-confirm-bind-request-reject", "fx-export-products", "fx-ops-edit-product", "fx-open-activation", "fx-confirm-activation",
     "fx-open-reject", "fx-confirm-reject", "fx-approve-withdrawal", "fx-reject-withdrawal", "fx-confirm-withdraw-decision",
-    "fx-sort-customers", "fx-sort-orders", "fx-sort-bindRequests",
   ]);
   const fxCustomerOnlyActions = new Set([
     "fx-focus-customer-order", "fx-withdraw-review-edit", "fx-mark-selected-read", "fx-view-binding-product",
@@ -943,7 +942,6 @@ render = function () {
       const list = entryPortal === "ops" ? fxOperators : customers;
       const user = list.find(item => item.account === account);
       if (!user) return showToast("账号不存在，请检查后重试");
-      if (user.status === "锁定") return showToast("当前账号已被锁定，请联系管理员");
       if (user.status !== "启用") return showToast("当前账号已被禁用，请联系管理员");
       if (user.password !== password) return showToast("账号或密码错误");
       state.authenticated = true; state.currentAccount = user.account; fxStore.sessionSet(`trace-auth-${entryPortal}`, "1"); fxStore.sessionSet(`trace-account-${entryPortal}`, user.account); state.modal = null; state.modalData = null; state.selectedOrderNo = null; state.selectedBindRequestId = null; state.selectedWithdrawalIndex = null; state.drawerProductId = null; state.editorProductId = null; state.editorDraft = null; fxClearEditorBinding(); restoreFromLocation(); render(); return showToast("登录成功");
@@ -1019,7 +1017,6 @@ render = function () {
     if (action === "fx-view-customer-products") { const item = customers.find(row => row.name === target.dataset.customer); if (!item) return showToast("客户账号不存在"); state.modal = null; state.bindRequestCustomerFilter = item.name; state.bindRequestOrderFilter = ""; state.bindRequestProductFilter = ""; state.bindRequestBatchFilter = ""; state.bindRequestStatus = "全部状态"; state.opsPage = "bind-requests"; render(); return showToast(`正在查看 ${item.name} 的绑定申请`); }
     if (action === "fx-find-customer-account") { const item = customers.find(row => row.name === target.dataset.customer); if (!item) return showToast("客户账号不存在"); state.customerNameFilter = item.name; state.customerAccountFilter = ""; state.customerPhoneFilter = ""; state.opsPage = "customers"; render(); return; }
     if (["fx-confirm-customer", "fx-reset-customer-password", "fx-toggle-customer"].includes(action) && !fxEnabledOperatorSession()) return showToast("当前账号无权执行此操作");
-    if (action === "fx-confirm-customer") { const submissionError = fxCustomerAccountSubmissionError(); if (submissionError) return showToast(submissionError); const name = fxRead("fx-customer-name"), phone = fxRead("fx-customer-phone").replace(/\s+/g, ""); let item = customers.find(row => row.id === state.selectedCustomerId); const account = item?.account || fxRead("fx-customer-account"); const password = item ? item.password : fxRead("fx-customer-password"); const licenseFile = document.getElementById("fx-customer-license")?.files?.[0]; const legalFile = document.getElementById("fx-customer-legal")?.files?.[0]; const selectedFiles = [licenseFile, legalFile].filter(Boolean); const invalid = selectedFiles.find(file => !(file.type.startsWith("image/") || file.type === "application/pdf" || /\.pdf$/i.test(file.name))); if (invalid) return showToast(`不支持证照文件：${invalid.name}`); const oversized = selectedFiles.find(file => file.size > 10 * 1024 * 1024); if (oversized) return showToast(`证照文件超过 10 MB：${oversized.name}`); if (!item && (!licenseFile || !legalFile)) return showToast("请上传营业执照和法人身份证"); try { const toAttachment = async file => file ? { name: file.name, type: file.type || fxFileType(file.name), size: file.size, src: await fxReadFileData(file) } : null; const license = await toAttachment(licenseFile); const legal = await toAttachment(legalFile); if (item) { const previousName = item.name; Object.assign(item, { name, phone, license: license || item.license, legalId: legal || item.legalId }); if (previousName !== name) { orders.forEach(record => { if (fxRecordBelongsToCustomer(record, item) || record.customer === previousName) Object.assign(record, { customerId: item.id, customer: name }); }); products.forEach(record => { if (fxRecordBelongsToCustomer(record, item) || record.company === previousName) Object.assign(record, { customerId: item.id, company: name }); }); bindRequests.forEach(record => { if (fxRecordBelongsToCustomer(record, item) || record.customer === previousName) Object.assign(record, { customerId: item.id, customer: name }); }); withdrawals.forEach(record => { if (fxRecordBelongsToCustomer(record, item) || record.customer === previousName) Object.assign(record, { customerId: item.id, customer: name }); }); messages.forEach(record => { if (fxRecordBelongsToCustomer(record, item) || record.recipient === previousName || record.customer === previousName) Object.assign(record, { customerId: item.id, recipient: record.recipient === previousName ? name : record.recipient, customer: record.customer === previousName ? name : record.customer }); }); } } else { item = { id: Date.now(), name, account, phone, password, status: "启用", total: 0, active: 0, license, legalId: legal }; customers.unshift(item); } state.modal = null; render(); return showToast("客户账号与真实证照附件已保存"); } catch (_) { return showToast("证照文件读取失败，请重新选择"); } }
     if (action === "fx-reset-customer-password") { const item = customers.find(row => row.id === Number(target.dataset.id)); state.modalData = { kind: "reset-customer", id: item.id, title: "重置客户账号密码", subject: `${item.name}（${item.account}）`, operation: "重置为初始密码 Trace@2026", danger: true }; state.modal = "fx-confirm"; return render(); }
     if (action === "fx-toggle-customer") { const item = customers.find(row => row.id === Number(target.dataset.id)); state.modalData = { kind: "toggle-customer", id: item.id, title: `${item.status === "启用" ? "禁用" : "启用"}客户账号`, subject: item.name, operation: item.status === "启用" ? "禁用后客户无法登录" : "恢复客户后台登录权限", danger: item.status === "启用" }; state.modal = "fx-confirm"; return render(); }
     if (action === "fx-open-operator-calendar") {
@@ -1121,14 +1118,6 @@ render = function () {
       if (!state.messageDateDraftFrom) return;
       state.messageDateFrom = state.messageDateDraftFrom; state.messageDateTo = state.messageDateDraftTo || state.messageDateDraftFrom; state.messageCalendarOpen = false; return render();
     }
-    if (action === "fx-sort-customers") { fxToggleSort("customer", target.dataset.sort); return render(); }
-    if (action === "fx-sort-customerDetailOrders") { fxToggleSort("customerDetailOrder", target.dataset.sort); return render(); }
-    if (action === "fx-sort-orders") { fxToggleSort("order", target.dataset.sort); return render(); }
-    if (action === "fx-sort-inventoryAllocations") { fxToggleSort("inventoryAllocation", target.dataset.sort); return render(); }
-    if (action === "fx-sort-bindRequests") { fxToggleSort("bindRequest", target.dataset.sort); return render(); }
-    if (action === "fx-sort-orderBindings") { fxToggleSort("orderBinding", target.dataset.sort); return render(); }
-    if (action === "fx-sort-customerOrders") { fxToggleSort("customerOrder", target.dataset.sort); return render(); }
-    if (action === "fx-sort-customerProducts") { fxToggleSort("customerProduct", target.dataset.sort); return render(); }
     if (action === "fx-withdraw-review-edit") {
       if (state.portal !== "customer") return showToast("当前账号无权执行此操作");
       const product = products.find(item => item.id === Number(target.dataset.id) && fxRecordBelongsToCustomer(item, fxCurrentCustomer()));
@@ -1138,6 +1127,7 @@ render = function () {
       return render();
     }
     if (action === "fx-delete-selected-messages") {
+      if (entryPortal !== "ops" || !fxEnabledOperatorSession()) return showToast("当前账号无权执行此操作");
       if (!state.selectedMessageIds.length) return showToast("请先勾选需要删除的消息");
       state.modalData = { kind: "delete-messages", title: "删除站内信", subject: `已选择 ${state.selectedMessageIds.length} 条消息`, operation: "删除后无法恢复", danger: true };
       state.modal = "fx-confirm";
@@ -1216,17 +1206,16 @@ render = function () {
         item.status = item.status === "启用" ? "禁用" : "启用";
       }
       if (data.kind === "delete-messages") {
-        if (entryPortal === "ops" ? !fxEnabledOperatorSession() : !fxEnabledCustomerSession()) return showToast("当前账号无权执行此操作");
+        if (entryPortal !== "ops" || !fxEnabledOperatorSession()) return showToast("当前账号无权执行此操作");
         const ids = new Set(state.selectedMessageIds.map(Number));
         for (let index = messages.length - 1; index >= 0; index -= 1) {
-          const allowed = state.portal === "customer" ? fxRecordBelongsToCustomer(messages[index], fxCurrentCustomer()) : fxIsCustomerMessage(messages[index]);
+          const allowed = fxIsCustomerMessage(messages[index]);
           if (ids.has(Number(messages[index].id)) && allowed) messages.splice(index, 1);
         }
         state.selectedMessageIds = [];
       }
       fxSaveOperators(); fxSaveBusiness(); state.modal = null; render(); return showToast("操作已完成");
     }
-    if (action === "fx-export-customers") { fxDownloadExcel(`客户列表_${fxToday}.xls`, ["客户名称", "账号", "联系电话", "状态", "订单码量", "已绑定", "绑定申请中", "待绑定"], customers.map(item => { const summary = fxCustomerCodeSummary(item.name); return [item.name, item.account, item.phone, item.status, summary.total, summary.active, summary.pending, summary.available]; })); return showToast("客户列表已导出"); }
     if (action === "fx-new-qr") {
       if (!fxEnabledOperatorSession()) return showToast("仅运营端可以生成码段");
       state.modal = null;
@@ -1315,13 +1304,13 @@ render = function () {
         const created = item.created || String(item.createdAt || "").slice(0, 10);
         return (state.inventoryStatus === "全部状态" || fxCodeBatchStatus(item) === state.inventoryStatus) && (!state.orderFrom || created >= state.orderFrom) && (!state.orderTo || created <= state.orderTo);
       }), "order", item => item.createdAt || item.created);
-      fxDownloadExcel(`码段库存_${fxToday}.xls`, ["生成时间", "序列号范围", "备注", "生成数量", "已分配", "剩余库存", "分配状态"], rows.map(item => [item.createdAt || item.created || "", item.range, item.note || "", item.total, fxCodeBatchAllocatedAmount(item), fxCodeBatchAvailableAmount(item), fxCodeBatchAllocationStatus(item)]));
+      fxDownloadExcel(`码段库存_${fxToday}.xlsx`, ["生成时间", "序列号范围", "备注", "生成数量", "已分配", "剩余库存", "分配状态"], rows.map(item => [item.createdAt || item.created || "", item.range, item.note || "", item.total, fxCodeBatchAllocatedAmount(item), fxCodeBatchAvailableAmount(item), fxCodeBatchAllocationStatus(item)]));
       return showToast(`已导出当前筛选结果，共 ${rows.length} 条`);
     }
     if (action === "fx-export-order-ledger") {
       const customerTerm = state.orderCustomerFilter.trim().toLowerCase(); const numberTerm = state.orderNumberFilter.trim().toLowerCase();
-      const rows = orders.filter(item => item.allocationStatus !== "已撤销" && (!customerTerm || String(item.customer || "").toLowerCase().includes(customerTerm)) && (!numberTerm || String(item.no || "").toLowerCase().includes(numberTerm)));
-      fxDownloadExcel(`订单台账_${fxToday}.xls`, ["订单号", "客户名称", "分配时间", "序列号范围", "订单码量", "已绑定", "绑定申请中", "待绑定"], rows.map(item => [item.no, item.customer || "", item.allocatedAt || item.createdAt || item.created || "", fxAllocationSegmentsText(fxOrderAllocationSegments(item)) || fxAllocationRangeLabel(item), item.total, item.active, fxOrderPendingAmount(item), fxOrderAvailableAmount(item)]));
+      const rows = orders.filter(item => item.allocationStatus !== "已撤销" && (!customerTerm || fxCurrentCustomerName(item).toLowerCase().includes(customerTerm)) && (!numberTerm || String(item.no || "").toLowerCase().includes(numberTerm)));
+      fxDownloadExcel(`订单台账_${fxToday}.xlsx`, ["订单号", "客户名称", "分配时间", "序列号范围", "订单码量", "已绑定", "绑定申请中", "待绑定"], rows.map(item => [item.no, fxCurrentCustomerName(item), item.allocatedAt || item.createdAt || item.created || "", fxAllocationSegmentsText(fxOrderAllocationSegments(item)) || fxAllocationRangeLabel(item), item.total, item.active, fxOrderPendingAmount(item), fxOrderAvailableAmount(item)]));
       return showToast(`已导出当前订单台账，共 ${rows.length} 条`);
     }
     if (action === "fx-open-code-allocation") {
@@ -1655,7 +1644,7 @@ render = function () {
     if (action === "fx-open-activation-product") { const order = orders.find(item => item.no === state.selectedOrderNo && item.allocationStatus !== "已撤销" && (fxEnabledOperatorSession() || (fxEnabledCustomerSession() && fxRecordBelongsToCustomer(item, fxCurrentCustomer())))); const orderCustomer = fxCustomerForRecord(order); const product = fxProductForRecord({ product: target.dataset.product, batch: target.dataset.batch, customerId: orderCustomer?.id, customer: orderCustomer?.name }); if (!order || !product || (fxEnabledCustomerSession() && !fxRecordBelongsToCustomer(product, fxCurrentCustomer()))) return showToast("关联产品不存在或无权查看"); state.modal = null; if (state.portal === "customer") return fxOpenEditor(product, "customer", order.no, 0, true); state.drawerProductId = product.id; state.reviewEditing = false; state.editorProductId = null; state.editorDraft = null; state.opsPage = "review-detail"; return render(); }
     if (action === "fx-view-activation-withdrawal") { const item = withdrawals.find(row => row.no === target.dataset.withdrawalNo && (fxEnabledOperatorSession() || (fxEnabledCustomerSession() && fxRecordBelongsToCustomer(row, fxCurrentCustomer())))); if (!item) return showToast("撤回记录不存在或无权查看"); state.modalData = { withdrawalNo: item.no }; state.modal = "fx-reset-history"; return render(); }
     if (action === "fx-back-order-detail") { state.modal = null; if (state.portal === "customer") state.customerPage = "order-detail"; else state.opsPage = "order-detail"; return render(); }
-    if (action === "fx-export-products") { fxDownloadExcel(`产品信息_${fxToday}.xls`, ["产品名称", "产品批次", "产品大类", "客户名称", "产品提交时间", "审核状态"], fxFilteredReviews().map(item => [item.name, item.batch, item.category, item.company, item.submitted || "", item.status])); return showToast("产品信息已导出"); }
+    if (action === "fx-export-products") { fxDownloadExcel(`产品信息_${fxToday}.xlsx`, ["产品名称", "产品批次", "产品大类", "客户名称", "产品提交时间", "审核状态"], fxFilteredReviews().map(item => [item.name, item.batch, item.category, item.company, item.submitted || "", item.status])); return showToast("产品信息已导出"); }
     if (action === "fx-ops-edit-product") { if (!fxEnabledOperatorSession()) return showToast("当前账号无权编辑产品资料"); const product = products.find(item => item.id === Number(target.dataset.id)); const bindingRequest = bindRequests.find(item => fxSameId(item.id, state.selectedBindRequestId) && Number(item.productId) === Number(product?.id)); const reviewStatus = bindingRequest ? fxBindingReviewStatus(bindingRequest.status) : product?.status; if (!product || !["待审核", "已通过", "已激活"].includes(reviewStatus)) return showToast("当前状态不支持编辑产品资料"); const initialStep = state.opsPage === "review-detail" && state.drawerProductId === product.id ? state.productStep : 0; return fxOpenEditor(product, "ops", product.requestedOrderNo || null, initialStep, true); }
     if (action === "fx-open-activation") { if (!fxEnabledOperatorSession()) return showToast("当前账号无权处理绑定审核"); const product = products.find(item => item.id === Number(target.dataset.id) && item.status === "待审核"); if (!product) return showToast("绑定审核状态已发生变化，请刷新后重试"); state.drawerProductId = product.id; state.modal = "fx-activation"; return render(); }
     if (action === "fx-confirm-activation") {
@@ -1773,7 +1762,7 @@ render = function () {
       if (next !== confirm) return showToast("两次输入的密码不一致");
       account.password = next; fxSaveOperators(); fxSaveBusiness(); state.modal = null; render(); return showToast("登录密码已更新");
     }
-    if (action === "fx-export-customer-orders") { const rows = fxCustomerOrders(); fxDownloadExcel(`订单台账_${fxToday}.xls`, ["订单号", "分配时间", "序列号范围", "订单码量", "已绑定", "绑定申请中", "待绑定"], rows.map(item => [item.no, item.allocatedAt || item.createdAt || item.created || "", fxAllocationSegmentsText(fxOrderAllocationSegments(item)) || fxAllocationRangeLabel(item), item.total, item.active, fxOrderPendingAmount(item), fxOrderAvailableAmount(item)])); return showToast("订单台账已导出"); }
+    if (action === "fx-export-customer-orders") { const rows = fxCustomerOrders(); fxDownloadExcel(`订单台账_${fxToday}.xlsx`, ["订单号", "分配时间", "序列号范围", "订单码量", "已绑定", "绑定申请中", "待绑定"], rows.map(item => [item.no, item.allocatedAt || item.createdAt || item.created || "", fxAllocationSegmentsText(fxOrderAllocationSegments(item)) || fxAllocationRangeLabel(item), item.total, item.active, fxOrderPendingAmount(item), fxOrderAvailableAmount(item)])); return showToast("订单台账已导出"); }
     if (action === "fx-customer-product-status") { state.customerPage = "orders"; return render(); }
     if (action === "fx-new-product") return showToast("请从订单台账选择订单后发起新建产品绑定申请");
     if (action === "fx-submit-product-row") {
@@ -2129,7 +2118,7 @@ render = function () {
       const mediaKey = target.dataset.fxStandardUpload; const selected = [...target.files];
       const limit = fxStandardMediaLimit(mediaKey); const limitMessage = `该字段最多上传 ${limit} 张图片`;
       const invalid = selected.find(file => !(file.type.startsWith("image/") || (!file.type && /\.(png|jpe?g|webp|gif|bmp|avif|svg)$/i.test(file.name)))); if (invalid) { target.value = ""; return showToast(`该字段仅支持图片：${invalid.name}`); }
-      const oversized = selected.find(file => file.size > 2 * 1024 * 1024); if (oversized) { target.value = ""; return showToast(`文件超过 2 MB：${oversized.name}`); }
+      const oversized = selected.find(file => file.size > 10 * 1024 * 1024); if (oversized) { target.value = ""; return showToast(`图片大小不能超过 10 MB：${oversized.name}`); }
       try {
         const saved = []; for (const file of selected) saved.push({ name: file.name, type: file.type || fxFileType(file.name), size: file.size, src: await fxReadFileData(file) });
         state.editorDraft.fieldMedia ||= {}; const merged = fxUniqueFiles([...(state.editorDraft.fieldMedia[mediaKey] || []), ...saved]);
@@ -2143,7 +2132,7 @@ render = function () {
       const [module, indexText] = target.dataset.fxCustomUpload.split(":"); const row = state.editorDraft.custom[module]?.[Number(indexText)]; const selected = [...target.files];
       if (!String(row?.name || "").trim()) { target.value = ""; return showToast("请先填写字段名称"); }
       const invalid = selected.find(file => !(file.type.startsWith("image/") || (!file.type && /\.(png|jpe?g|webp|gif|bmp|avif|svg)$/i.test(file.name)))); if (invalid) { target.value = ""; return showToast(`该字段仅支持图片：${invalid.name}`); }
-      const oversized = selected.find(file => file.size > 2 * 1024 * 1024); if (oversized) { target.value = ""; return showToast(`文件超过 2 MB：${oversized.name}`); }
+      const oversized = selected.find(file => file.size > 10 * 1024 * 1024); if (oversized) { target.value = ""; return showToast(`图片大小不能超过 10 MB：${oversized.name}`); }
       try {
         const saved = []; for (const file of selected) saved.push({ name: file.name, type: file.type || fxFileType(file.name), size: file.size, src: await fxReadFileData(file) });
         const merged = fxUniqueFiles([...(row.files || []), ...saved]);

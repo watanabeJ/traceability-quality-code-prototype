@@ -149,27 +149,7 @@ function fxLoginPage(portal) {
     return rows.map((item, index) => ({ item, index, time: /^\d{4}-\d{2}-\d{2}/.test(String(getTime(item) || "")) ? String(getTime(item)) : "" })).sort((left, right) => right.time.localeCompare(left.time) || left.index - right.index).map(entry => entry.item);
   }
   function fxSortedRows(rows, scope, defaultTime) {
-    const key = state[`${scope}SortKey`]; const direction = state[`${scope}SortDirection`];
-    if (!key) return defaultTime ? fxNewestRows(rows, defaultTime) : rows;
-    return [...rows].sort((left, right) => {
-      const leftValue = fxSortValue(left, key); const rightValue = fxSortValue(right, key);
-      const comparison = typeof leftValue === "number" && typeof rightValue === "number"
-        ? leftValue - rightValue
-        : String(leftValue).localeCompare(String(rightValue), "zh-CN", { numeric: true });
-      return comparison * (direction === "desc" ? -1 : 1);
-    });
-  }
-  function fxSortHeader(label, scope, key, options = {}) {
-    const active = state[`${scope}SortKey`] === key; const direction = state[`${scope}SortDirection`];
-    const iconName = active ? direction === "desc" ? "arrow-down" : "arrow-up" : "arrow-up-down";
-    const directionText = active ? direction === "desc" ? "倒序" : "正序" : "未排序";
-    return `<div class="table-heading ${options.className || ""}"><span>${options.labelMarkup || label}</span><button type="button" class="header-filter-control header-sort-button ${active ? "active" : ""}" data-action="fx-sort-${scope}s" data-sort="${key}" aria-label="${label}${directionText}" aria-pressed="${active}" title="${label}：${directionText}">${icon(iconName, active ? direction === "desc" ? "↓" : "↑" : "↕")}</button></div>`;
-  }
-  function fxToggleSort(scope, key) {
-    const sortKey = `${scope}SortKey`; const directionKey = `${scope}SortDirection`;
-    if (state[sortKey] !== key) { state[sortKey] = key; state[directionKey] = "asc"; return; }
-    if (state[directionKey] === "asc") { state[directionKey] = "desc"; return; }
-    state[sortKey] = ""; state[directionKey] = "asc";
+    return defaultTime ? fxNewestRows(rows, defaultTime) : rows;
   }
 
   function fxOperatorStatusHeader() {
