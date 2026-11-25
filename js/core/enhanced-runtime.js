@@ -941,9 +941,8 @@ render = function () {
       const passwordError = fxLoginPasswordError(password); if (passwordError) return showToast(passwordError);
       const list = entryPortal === "ops" ? fxOperators : customers;
       const user = list.find(item => item.account === account);
-      if (!user) return showToast("账号不存在，请检查后重试");
+      if (!user || user.password !== password) return showToast("账号或密码错误");
       if (user.status !== "启用") return showToast("当前账号已被禁用，请联系管理员");
-      if (user.password !== password) return showToast("账号或密码错误");
       state.authenticated = true; state.currentAccount = user.account; fxStore.sessionSet(`trace-auth-${entryPortal}`, "1"); fxStore.sessionSet(`trace-account-${entryPortal}`, user.account); state.modal = null; state.modalData = null; state.selectedOrderNo = null; state.selectedBindRequestId = null; state.selectedWithdrawalIndex = null; state.drawerProductId = null; state.editorProductId = null; state.editorDraft = null; fxClearEditorBinding(); restoreFromLocation(); render(); return showToast("登录成功");
     }
     if (action === "fx-logout") { state.authenticated = false; fxStore.sessionSet(`trace-auth-${entryPortal}`, "0"); state.modal = null; state.modalData = null; state.selectedOrderNo = null; state.selectedBindRequestId = null; state.selectedWithdrawalIndex = null; state.drawerProductId = null; state.editorProductId = null; state.editorDraft = null; fxClearEditorBinding(); render(); return; }
