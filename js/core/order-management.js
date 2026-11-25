@@ -112,20 +112,28 @@ function omCategoryCount(order) {
     .map(line => String(line.productNumber || line.categoryId || line.category || ""))
     .filter(Boolean)).size;
 }
+class OmFieldError extends Error {
+  constructor(fields) {
+    super(fields[0].message);
+    this.fields = fields;
+  }
+}
 function omValidateDraft(draft) {
   const customer = customers.find(row => fxSameId(row.id, draft.customerId));
-  if (!customer || customer.status !== "启用") throw new Error("请选择启用的客户");
-  if (!/^\d{5}$/.test(customer.companyNumber || "")) throw new Error("客户尚未设置有效的五位公司号");
-  if (!/^[1-9]$/.test(String(draft.version))) throw new Error("请选择 1 至 9 的版本号");
-  if (!draft.lines?.length) throw new Error("请至少添加一条生成明细");
+  const fields = [];
+  if (!customer || customer.status !== "启用") fields.push({selector:"#om-customer-search", message:"请选择启用的客户"});
+  else if (!/^\d{5}$/.test(customer.companyNumber || "")) fields.push({selector:"#om-customer-search", message:"客户尚未设置有效的五位公司号"});
+  if (!/^[1-9]$/.test(String(draft.version))) fields.push({selector:"#om-version", message:"请选择 1 至 9 的版本号"});
   const categories = fxCategories();
   let first = 1;
-  const lines = draft.lines.map((row, index) => {
+  const lines = (draft.lines || []).map((row, index) => {
     const category = categories.find(item => fxSameId(item.id, row.categoryId) && item.status === "启用");
-    if (!category) throw new Error(`第 ${index + 1} 行：请选择启用的产品大类`);
+    const rowSelector = `#om-draft-lines tr:nth-child(${index + 1})`;
+    if (!category) fields.push({selector:`${rowSelector} [data-om-category-search]`, message:"请选择启用的产品大类"});
     const quantity = Number(row.quantity);
-    if (!Number.isSafeInteger(quantity) || quantity < 1) throw new Error(`第 ${index + 1} 行：数量须为正整数`);
-    if (String(row.remark || "").length > 20) throw new Error(`第 ${index + 1} 行：备注最多 20 个字符`);
+    if (!Number.isSafeInteger(quantity) || quantity < 1) fields.push({selector:`${rowSelector} [data-om-field="quantity"]`, message:"数量须为正整数"});
+    if (String(row.remark || "").length > 20) fields.push({selector:`${rowSelector} [data-om-field="remark"]`, message:"备注最多 20 个字符"});
+    if (!category || !Number.isSafeInteger(quantity) || quantity < 1) return null;
     const line = { id: crypto.randomUUID(), categoryId: category.id, category: category.name,
       categorySnapshot: { name: category.name, productNumber: category.productNumber }, productNumber: category.productNumber,
       quantity, remark: String(row.remark || "").trim(), first, last: first + quantity - 1 };
@@ -133,14 +141,20 @@ function omValidateDraft(draft) {
     if (!Number.isSafeInteger(first)) throw new Error("订单总量超出支持范围");
     return line;
   });
+  if (fields.length) throw new OmFieldError(fields);
+  if (!lines.length) throw new Error("请至少添加一条生成明细");
   const amounts = new Map();
   lines.forEach(line => amounts.set(line.productNumber, (amounts.get(line.productNumber) || 0) + line.quantity));
-  if ([...amounts.values()].some(amount => amount > omCategoryPoolSize)) throw new Error("同一产品号的总数量不得超过 99,999,999");
   for (const [productNumber, amount] of amounts) {
     const category = categories.find(row => row.productNumber === productNumber);
     const remaining = category ? fxCategoryUsage(category).remaining : 0;
-    if (amount > remaining) throw new Error(`产品号 ${productNumber} 超出剩余可用码量 ${formatNumber(remaining)}`);
+    if (amount <= Math.min(remaining, omCategoryPoolSize)) continue;
+    const message = amount > omCategoryPoolSize ? "同一产品号的总数量不得超过 99,999,999" : `超出剩余可用码量 ${formatNumber(remaining)}`;
+    lines.forEach((line, index) => {
+      if (line.productNumber === productNumber) fields.push({selector:`#om-draft-lines tr:nth-child(${index + 1}) [data-om-field="quantity"]`, message});
+    });
   }
+  if (fields.length) throw new OmFieldError(fields);
   return { customer, lines, total: first - 1 };
 }
 async function omGenerate(draft, progress = () => {}) {
@@ -245,7 +259,7 @@ function omDownloadBounds(order, scope, value) {
   }
   if (scope === "first") {
     const amount = Number(value);
-    if (!Number.isSafeInteger(amount) || amount < 1 || amount > order.total) throw new Error("请输入订单总量范围内的正整数");
+    if (!Number.isSafeInteger(amount) || amount < 1 || amount > order.total) throw new OmFieldError([{selector:"#om-first", message:"请输入订单总量范围内的正整数"}]);
     return { first: 1, last: amount, label: `前 ${amount} 个码` };
   }
   return { first: 1, last: order.total, label: "整单" };
@@ -345,7 +359,7 @@ async function omCancel(no, reason) {
     }
     const order = orders.find(row => row.no === no);
     if (!fxEnabledOperatorSession() || !omIsOrder(order)) throw new Error("当前账号无权撤销此订单");
-    if (!reason?.trim()) throw new Error("请填写撤销原因");
+    if (!reason?.trim()) throw new OmFieldError([{selector:"#om-cancel-reason", message:"请填写撤销原因"}]);
     const blocked = omCancelReason(order);
     if (blocked) throw new Error(blocked);
     const retained = Boolean(order.downloads?.length);
@@ -468,9 +482,13 @@ function omSyncDraftCategory(input, showError = false) {
   if (value) value.value = row.categoryId;
   const number = tr?.querySelector(".om-product-number");
   if (number) number.textContent = category?.productNumber || "—";
-  const invalid = showError && Boolean(input.value.trim()) && !category;
+  const invalid = !category && (input.hasAttribute("data-submit-invalid") || (showError && Boolean(input.value.trim())));
   const error = document.getElementById(`om-category-error-${row.id}`);
-  if (error) error.hidden = !invalid;
+  if (error) {
+    error.textContent = input.value.trim() ? "请选择已有产品大类，或点击“新建产品类别”" : "请选择启用的产品大类";
+    error.classList.add("danger-text");
+    error.hidden = !invalid;
+  }
   input.setAttribute("aria-invalid", String(invalid));
   omSyncDraftQuantityLimits();
   return category;
@@ -490,6 +508,7 @@ function omSyncDraftQuantityLimits() {
     const input = document.querySelector(`[data-om-line="${line.id}"] [data-om-field="quantity"]`);
     const error = document.getElementById(`om-quantity-error-${line.id}`);
     if (!input) return;
+    if (input.hasAttribute("data-submit-invalid") && (!Number.isSafeInteger(Number(line.quantity)) || Number(line.quantity) < 1)) return;
     const category = fxCategories().find(row => fxSameId(row.id, line.categoryId));
     if (!category) {
       input.max = "99999999";
@@ -508,6 +527,7 @@ function omSyncDraftQuantityLimits() {
     input.setAttribute("aria-invalid", String(invalid));
     if (error) {
       error.textContent = "超出剩余可用量";
+      error.classList.add("danger-text");
       error.hidden = !invalid;
     }
   });
@@ -1003,6 +1023,7 @@ document.addEventListener("click", async event => {
       const company = document.getElementById("om-company");
       if (search) {
         search.value = customer.name;
+        fxFieldMessage(search, "");
         search.setAttribute("aria-expanded", "false");
         search.blur();
       }
@@ -1021,6 +1042,7 @@ document.addEventListener("click", async event => {
       const number = document.querySelector(`[data-om-line="${line.id}"] .om-product-number`);
       if (input) {
         input.value = category.name;
+        if (input.hasAttribute("data-submit-invalid")) fxFieldMessage(input, "");
         input.setAttribute("aria-invalid", "false");
         input.blur();
       }
@@ -1110,12 +1132,15 @@ document.addEventListener("click", async event => {
     }
     if (action === "om-bind-confirm") {
       if (!omCanAccess(order) || omCancelled(order)) throw new Error("订单不可用");
-      if (!omValidateBindAmount(true)) return;
       const line = omLine(order, state.omLineId), amount = Number(fxRead("om-bind-amount"));
-      const proposed = omProposedBinding(order, line, amount);
-      if (!proposed) throw new Error("没有可容纳该数量的连续码段，请减少绑定数量");
       const product = products.find(row => fxSameId(row.id, fxRead("om-bind-product")));
-      if (!product || product.status !== "已激活" || !fxRecordBelongsToCustomer(product, fxCustomerForRecord(order)) || !omProductMatches(product, line)) throw new Error("请选择该客户同一大类的已激活产品");
+      const validProduct = product?.status === "已激活" && fxRecordBelongsToCustomer(product, fxCustomerForRecord(order)) && omProductMatches(product, line);
+      fxFieldMessage(document.getElementById("om-bind-product-search"), validProduct ? "" : "请选择该客户同一大类的已激活产品");
+      omValidateBindAmount(true);
+      document.getElementById("om-modal-error").textContent = "";
+      if (fxFocusInvalid(target.closest(".modal"))) return;
+      const proposed = omProposedBinding(order, line, amount);
+      if (!proposed) throw new OmFieldError([{selector:"#om-bind-amount", message:"没有可容纳该数量的连续码段，请减少绑定数量"}]);
       if (fxPendingBindRequest(order.no, product.id, product.batch)) throw new Error("该产品在本订单已有待审核的绑定申请");
       const range = proposed.range;
       bindRequests.unshift({ id: Date.now(), no: fxNextBindRequestNo(), orderNo: order.no, orderLineId: line.id, categoryId: line.categoryId,
@@ -1158,13 +1183,24 @@ document.addEventListener("click", async event => {
       return showToast("当前筛选结果已导出");
     }
   } catch (error) {
-    const area = document.getElementById("om-modal-error") || document.getElementById("om-create-error");
-    if (area) area.textContent = error.message;
-    showToast(error.message || "操作失败，请重试");
     if (action === "om-generate") {
       document.querySelectorAll(".om-create-page button, .om-create-page input, .om-create-page select, .om-create-page textarea").forEach(control => { control.disabled = false; });
       target.innerHTML = `${icon("qr-code", "")}创建订单并生成码包`;
     }
     if (action === "om-download-confirm") { target.disabled = false; target.textContent = "确认下载"; }
+    const form = target.closest(".modal, .om-create-page");
+    const area = form?.querySelector("#om-modal-error, #om-create-error");
+    if (area && error instanceof OmFieldError && error.fields.every(field => form.querySelector(field.selector))) {
+      area.textContent = "";
+      for (const {selector, message} of error.fields) {
+        const input = form.querySelector(selector);
+        fxFieldMessage(input, message, document.getElementById(`${input.id}-error`));
+      }
+      fxFocusInvalid(form);
+    } else if (area) {
+      area.textContent = error.message || "操作失败，请重试";
+    } else {
+      showToast(error.message || "操作失败，请重试");
+    }
   } finally { omBusy = false; }
 }, true);

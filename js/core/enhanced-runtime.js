@@ -455,24 +455,12 @@ render = function () {
     input.style.borderColor = error ? "var(--danger)" : "";
     input.setCustomValidity(error);
   }
-  function fxCustomerAccountSubmissionError() {
-    document.querySelectorAll("[data-customer-validation]").forEach(input => fxSyncCustomerValidation(input, true));
-    const item = customers.find(row => row.id === state.selectedCustomerId);
-    const name = fxRead("fx-customer-name"), account = item?.account || fxRead("fx-customer-account"), phone = fxRead("fx-customer-phone");
-    const nameError = fxOperatorNameError(name);
-    if (nameError) return nameError.replace(/用户名/g, "客户名称");
-    if (!item) {
-      const accountError = fxRegistrationAccountError(account); if (accountError) return accountError;
-      if (fxAccountExists(account)) return "该账号已存在，请更换其他账号";
-    }
-    const phoneError = fxMobileError(phone); if (phoneError) return phoneError;
-    if (!item) {
-      const password = fxRead("fx-customer-password"), confirmPassword = fxRead("fx-customer-confirm-password");
-      const passwordError = fxRegistrationPasswordError(password); if (passwordError) return passwordError;
-      if (!confirmPassword) return "请再次输入密码";
-      if (password !== confirmPassword) return "两次输入的密码不一致";
-    }
-    return "";
+  function fxValidateAccountPasswords(prefix) {
+    const password = document.getElementById(`${prefix}-password`);
+    const confirmation = document.getElementById(`${prefix}-confirm-password`);
+    fxFieldMessage(password, fxRegistrationPasswordError(password.value.trim()));
+    const value = confirmation.value.trim();
+    fxFieldMessage(confirmation, !value ? "请再次输入密码" : value !== password.value.trim() ? "两次输入的密码不一致" : "");
   }
   function fxOpenConfirm(data) { state.modalData = data; state.modal = "fx-confirm"; render(); }
   function fxGeneratedBatchNo() { return state.generatedCodeBatchNo || state.generatedOrderNo || ""; }
@@ -884,6 +872,7 @@ render = function () {
       const value = document.getElementById(prefix);
       const batch = document.getElementById(`${prefix}-batch`);
       if (search) search.value = target.dataset.name || "";
+      if (search?.hasAttribute("data-submit-invalid")) fxFieldMessage(search, "");
       if (search) search.setAttribute("aria-expanded", "false");
       if (value) value.value = target.dataset.id || "";
       if (batch) batch.value = target.dataset.batch || "—";
@@ -951,16 +940,10 @@ render = function () {
     if (action === "fx-confirm-operator") {
       if (!fxEnabledOperatorSession()) return showToast("当前账号无权执行此操作");
       const name = fxRead("fx-operator-name"); let item = fxOperators.find(row => row.id === state.selectedOperatorId); const account = item?.account || fxRead("fx-operator-account");
-      const nameInput = document.getElementById("fx-operator-name");
-      const nameError = fxOperatorNameError(name);
-      if (nameInput) fxSyncOperatorValidation(nameInput, true);
-      if (nameError) { nameInput?.focus(); return showToast(nameError); }
-      if (!item) {
-        const accountInput = document.getElementById("fx-operator-account");
-        const accountError = fxOperatorAccountError(account);
-        if (accountInput) fxSyncOperatorValidation(accountInput, true);
-        if (accountError) { accountInput?.focus(); return showToast(accountError); }
-      }
+      const form = target.closest(".modal");
+      form.querySelectorAll("[data-operator-validation]").forEach(input => fxSyncOperatorValidation(input, true));
+      if (!item) fxValidateAccountPasswords("fx-operator");
+      if (fxFocusInvalid(form)) return;
       if (item) {
         if (fxIsCurrentOperator(item)) {
           item.name = name;
@@ -974,9 +957,7 @@ render = function () {
           item.name = name;
         }
       } else {
-        if (fxAccountExists(account)) return showToast("该账号已存在，请更换其他账号");
-        const password = fxRead("fx-operator-password"); const passwordError = fxRegistrationPasswordError(password); if (passwordError) return showToast(passwordError);
-        const confirmPassword = fxRead("fx-operator-confirm-password"); if (!confirmPassword) return showToast("请再次输入密码"); if (password !== confirmPassword) return showToast("两次输入的密码不一致");
+        const password = fxRead("fx-operator-password");
         fxOperators.unshift({ id: Date.now(), name, account, password, status: "启用", lastLogin: "尚未登录" });
       }
       fxSaveOperators(); state.modal = null; render(); return showToast("运营账号已保存");

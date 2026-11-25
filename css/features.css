@@ -312,6 +312,9 @@
 .om-order-customer-picker .customer-picker-control,
 .om-order-customer-picker #om-customer-search { width: 100%; }
 .om-order-customer-picker .customer-picker-options { max-height: 300px; }
+[data-validation-focus] ~ .customer-picker-options,
+[data-validation-focus] ~ .bind-product-options { display: none !important; }
+[data-submit-invalid] { border-color: var(--danger); }
 .customer-picker-option.create-option { display: flex; justify-content: flex-start; gap: 6px; color: var(--primary); }
 .om-category-options-portal { position: fixed; right: auto; display: grid; z-index: 80; max-height: 300px; overflow-y: auto; }
 .om-category-options-portal[hidden] { display: none; }

@@ -283,15 +283,25 @@ document.addEventListener("click", async event => {
   if (fxCustomerSaving) return;
   let customer = customers.find(item => item.id === state.selectedCustomerId);
   const number = fxRead("fx-company-number"), type = fxRead("fx-company-mode");
-  const error = fxCustomerAccountSubmissionError() || fxCompanyNumberError(number, type, customer);
-  if (error) return showToast(error);
-  const licenseFile = document.getElementById("fx-customer-license")?.files?.[0];
-  const legalFile = document.getElementById("fx-customer-legal")?.files?.[0];
-  if (!customer && (!licenseFile || !legalFile)) return showToast("请上传营业执照和法人身份证");
-  const files = [licenseFile, legalFile].filter(Boolean);
-  if (files.some(file => !(file.type.startsWith("image/") || file.type === "application/pdf" || /\.pdf$/i.test(file.name)))) return showToast("证照文件仅支持图片或 PDF");
-  const oversized = files.find(file => file.size > 10 * 1024 * 1024);
-  if (oversized) return showToast(`文件大小不能超过 10 MB：${oversized.name}`);
+  const form = target.closest(".modal");
+  form.querySelector("[data-save-error]")?.remove();
+  form.querySelectorAll("[data-customer-validation]").forEach(input => fxSyncCustomerValidation(input, true));
+  fxFieldMessage(form.querySelector("#fx-customer-name"), fxOperatorNameError(fxRead("fx-customer-name")).replace(/用户名/g, "客户名称"));
+  const numberInput = form.querySelector("#fx-company-number");
+  const numberError = fxCompanyNumberError(number, type, customer);
+  fxFieldMessage(numberInput, numberError);
+  if (!customer) fxValidateAccountPasswords("fx-customer");
+  const license = form.querySelector("#fx-customer-license"), legal = form.querySelector("#fx-customer-legal");
+  const licenseFile = license.files[0], legalFile = legal.files[0];
+  for (const [input, label] of [[license, "营业执照"], [legal, "法人身份证"]]) {
+    const file = input.files[0];
+    let error = "";
+    if (!file && !customer) error = `请上传${label}`;
+    else if (file && !(file.type.startsWith("image/") || file.type === "application/pdf" || /\.pdf$/i.test(file.name))) error = "证照文件仅支持图片或 PDF";
+    else if (file && file.size > 10 * 1024 * 1024) error = `文件大小不能超过 10 MB：${file.name}`;
+    fxFieldMessage(input, error);
+  }
+  if (fxFocusInvalid(form) || numberError) return;
   const draft = { name: fxRead("fx-customer-name"), account: customer?.account || fxRead("fx-customer-account"), phone: fxRead("fx-customer-phone").replace(/\s+/g, ""), companyNumber: number, companyNumberType: type };
   const password = customer?.password || fxRead("fx-customer-password");
   fxCustomerSaving = true;
@@ -305,7 +315,11 @@ document.addEventListener("click", async event => {
     const latestOrders = fxStore.get(fxBusinessStorage.orders, orders);
     orders.splice(0, orders.length, ...latestOrders);
     const conflict = fxCompanyNumberError(number, type, customer);
-    if (conflict) return showToast(conflict);
+    if (conflict) {
+      fxFieldMessage(numberInput, conflict);
+      fxFocusInvalid(form);
+      return;
+    }
     if (customer) {
       const previousName = customer.name;
       orders.forEach(order => {
@@ -319,7 +333,11 @@ document.addEventListener("click", async event => {
         list.forEach(record => { if (fxSameId(record.customerId, customer.id) || (!record.customerId && record[field] === previousName)) Object.assign(record, { customerId: customer.id, [field]: customer.name }); });
       }
     } else {
-      if (customers.some(item => item.account === draft.account)) return showToast("该账号已存在");
+      if (customers.some(item => item.account === draft.account)) {
+        fxSyncCustomerValidation(form.querySelector("#fx-customer-account"), true);
+        fxFocusInvalid(form);
+        return;
+      }
       const created = { ...draft, id: Date.now(), password, status: "启用", total: 0, active: 0, changeHistory: [] };
       customers.unshift(created);
       if (state.omCustomerCreateFromOrder && state.omDraft) {
@@ -332,6 +350,11 @@ document.addEventListener("click", async event => {
     render();
     showToast("客户资料已保存");
   } catch (_) {
-    showToast("客户资料保存失败，请重新尝试");
+    const error = document.createElement("div");
+    error.dataset.saveError = "";
+    error.className = "danger-text";
+    error.setAttribute("role", "alert");
+    error.textContent = "客户资料保存失败，请重新尝试";
+    form.querySelector(".modal-body").append(error);
   } finally { fxCustomerSaving = false; }
 }, true);

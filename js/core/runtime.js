@@ -166,6 +166,54 @@ function syncCurrentRoute() {
   if (window.location.search !== target.search || window.location.hash) window.history.replaceState(routeState, "", target.href);
 }
 
+function fxFieldMessage(input, message, hint = null) {
+  const field = input.closest(".field, td");
+  hint ||= field.querySelector("[data-submit-hint]") || field.querySelector(".field-help");
+  if (!hint && !message) return;
+  if (!hint) {
+    hint = document.createElement("span");
+    hint.className = "field-help";
+    hint.hidden = true;
+    field.append(hint);
+  }
+  if (!hint.hasAttribute("data-submit-hint")) {
+    hint.dataset.submitHint = hint.hidden || hint.classList.contains("danger-text") ? "" : hint.textContent;
+    hint.id ||= `${input.id || crypto.randomUUID()}-validation`;
+    hint.setAttribute("aria-live", "polite");
+    const described = new Set((input.getAttribute("aria-describedby") || "").split(/\s+/).filter(Boolean));
+    input.setAttribute("aria-describedby", [...described.add(hint.id)].join(" "));
+  }
+  hint.textContent = message || hint.dataset.submitHint;
+  hint.hidden = !hint.textContent;
+  hint.classList.toggle("danger-text", Boolean(message));
+  input.setAttribute("aria-invalid", String(Boolean(message)));
+  input.toggleAttribute("data-submit-invalid", Boolean(message));
+}
+
+function fxFocusInvalid(form) {
+  const input = form.querySelector('[aria-invalid="true"]:not(:disabled):not([readonly])');
+  if (!input) return false;
+  const control = input.type === "file" ? form.querySelector(`[data-target="${input.id}"]`) || input : input;
+  control.focus();
+  if (control.getAttribute("role") === "combobox") {
+    control.setAttribute("aria-expanded", "false");
+    control.dataset.validationFocus = "";
+  }
+  control.scrollIntoView({block:"nearest"});
+  return true;
+}
+
+document.addEventListener("input", event => {
+  if (event.target.hasAttribute("data-submit-invalid")) fxFieldMessage(event.target, "");
+}, true);
+for (const type of ["pointerdown", "keydown", "focusout"]) {
+  document.addEventListener(type, event => {
+    if (!event.target.hasAttribute("data-validation-focus")) return;
+    delete event.target.dataset.validationFocus;
+    if (type !== "focusout") event.target.setAttribute("aria-expanded", "true");
+  }, true);
+}
+
 function showToast(message) {
   const root = document.getElementById("toast-root");
   if (!root) return;
