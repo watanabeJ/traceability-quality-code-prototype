@@ -172,8 +172,9 @@ function fxLoginPage(portal) {
 
   function fxCustomerCodeSummary(customerOrName) {
     const customer = typeof customerOrName === "object" ? customerOrName : customers.find(item => item.name === customerOrName);
-    const customerOrders = customer ? orders.filter(order => fxRecordBelongsToCustomer(order, customer) && order.allocationStatus !== "已撤销") : [];
+    const customerOrders = customer ? fxCustomerOrders(customer) : [];
     return {
+      orderCount: customerOrders.length,
       total: customerOrders.reduce((sum, order) => sum + Number(order.total || 0), 0),
       active: customerOrders.reduce((sum, order) => sum + Number(order.active || 0), 0),
       pending: customerOrders.reduce((sum, order) => sum + fxOrderPendingAmount(order), 0),
@@ -807,7 +808,9 @@ function fxLoginPage(portal) {
     return `<div class="page">${pageHeader("修改登录密码", isCustomer ? "客户账号安全设置" : "运营账号安全设置")}<div class="section-row"><section class="panel"><div class="panel-header"><h2>修改登录密码</h2></div><div class="panel-body"><div class="form-grid"><div class="field full"><label class="required">当前密码</label><input id="fx-current-password" type="password" maxlength="20" placeholder="请输入当前密码"></div><div class="field"><label class="required">新密码</label><input id="fx-new-password" type="password" minlength="8" maxlength="20" placeholder="请输入新密码"><span class="field-help">密码长度为8～20位，需包含字母和数字</span></div><div class="field"><label class="required">确认新密码</label><input id="fx-confirm-password" type="password" minlength="8" maxlength="20" placeholder="请再次输入密码"></div><div class="field full"><button class="button primary" data-action="fx-save-password">保存密码</button></div></div></div></section><aside class="panel"><div class="panel-header"><h2>当前账号</h2></div><div class="panel-body"><div class="list-item"><span class="avatar">${fxEscape(user.name.slice(0, 2))}</span><div class="list-content"><div class="list-title">${fxEscape(user.name)}</div><div class="list-meta">${fxEscape(user.account)} · ${fxEscape(user.status)}</div></div></div><p class="field-help">通常从右上角头像直接打开修改密码弹窗。</p></div></aside></div></div>`;
   };
 
-  function fxCustomerOrders() { return orders.filter(item => fxRecordBelongsToCustomer(item, fxCurrentCustomer()) && item.allocationStatus !== "已撤销"); }
+  function fxCustomerOrders(customer = fxCurrentCustomer()) {
+    return orders.filter(item => fxRecordBelongsToCustomer(item, customer) && item.allocationStatus !== "已撤销");
+  }
   const fxBindRequests = bindRequests;
   function fxPendingBindRequest(orderNo, productId, batch) {
     return bindRequests.find(item => item.status === "待审批" && item.orderNo === orderNo && Number(item.productId) === Number(productId) && item.batch === batch);

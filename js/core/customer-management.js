@@ -161,10 +161,18 @@ function fxInstallCustomerManagement() {
       summary.insertAdjacentHTML("beforeend", `<div class="detail-item"><dt>公司号</dt><dd class="mono">${fxEscape(customer.companyNumber)}</dd></div><div class="detail-item"><dt>公司号类型</dt><dd>${fxEscape(customer.companyNumberType)}</dd></div>`);
       const companyNumber = summary.children[7];
       const companyNumberType = summary.children[8];
-      for (const item of [account, companyNumber, license, activeProducts]) item.classList.add("customer-profile-row-start");
+      for (const item of [account, companyNumber, license]) item.classList.add("customer-profile-row-start");
       license.classList.add("customer-profile-document");
       legalId.classList.add("customer-profile-document");
-      summary.replaceChildren(name, phone, account, accountStatus, companyNumber, companyNumberType, license, legalId, activeProducts);
+      summary.replaceChildren(name, phone, account, accountStatus, companyNumber, companyNumberType, license, legalId);
+      const totals = fxCustomerCodeSummary(customer);
+      const metric = (label, value) => `<div class="detail-item"><dt>${label}</dt><dd>${formatNumber(value)}</dd></div>`;
+      summary.closest("section").insertAdjacentHTML("afterend", `<section class="detail-section customer-business-summary"><h3>客户业务汇总</h3>
+        <dl class="detail-grid customer-business-grid">
+          ${metric("订单数量", totals.orderCount)}${activeProducts.outerHTML}
+          ${metric("订单码量", totals.total)}${metric("已绑定", totals.active)}
+          ${metric("绑定申请中", totals.pending)}${metric("待绑定", totals.available)}
+        </dl></section>`);
       const summaryHeading = root.querySelector(".detail-section > h3");
       summaryHeading.outerHTML = `<div class="detail-title-row"><h3>客户完整资料</h3><button type="button" class="button small" data-action="cm-open-history">${icon("history", "")}修改记录</button></div>`;
       const orderSection = [...root.querySelectorAll(".detail-section")].find(section => section.querySelector("h3")?.textContent.trim() === "客户订单记录");
@@ -274,10 +282,10 @@ document.addEventListener("click", async event => {
     return;
   }
   if (action === "fx-export-customers") {
-    fxDownloadExcel(`客户列表_${fxToday}.xlsx`, ["客户名称", "公司号", "号码类型", "账号", "联系电话", "状态", "订单码量", "已绑定", "绑定申请中", "待绑定"], fxFilteredCustomers().map(item => {
+    fxDownloadExcel(`客户列表_${fxToday}.xlsx`, ["客户名称", "账号", "联系电话", "公司号", "号码类型", "状态", "订单码量", "已绑定", "绑定申请中", "待绑定"], fxFilteredCustomers().map(item => {
       const summary = fxCustomerCodeSummary(item);
-      return [item.name, item.companyNumber, item.companyNumberType, item.account, item.phone, item.status, summary.total, summary.active, summary.pending, summary.available];
-    }));
+      return [item.name, item.account, item.phone, item.companyNumber, item.companyNumberType, item.status, summary.total, summary.active, summary.pending, summary.available];
+    }), "客户列表");
     return showToast("客户列表已导出");
   }
   if (fxCustomerSaving) return;

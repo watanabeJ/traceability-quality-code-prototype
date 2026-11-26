@@ -1451,7 +1451,7 @@ const fxToday = new Date().toLocaleDateString("sv-SE", { timeZone: "Asia/Shangha
     link.href = url; link.download = filename; document.body.appendChild(link); link.click(); link.remove();
     setTimeout(() => URL.revokeObjectURL(url), 1500);
   }
-  function fxDownloadExcel(filename, headers, rows) {
+  function fxDownloadExcel(filename, headers, rows, sheetName = "数据") {
     const numberedHeaders = ["序号", ...headers];
     const identifierColumn = /公司号|客户号|产品号|溯源码|账号|订单号|联系电话|产品批次|版本/;
     const numberedRows = rows.map((row, index) => [index + 1, ...row.map((value, column) =>
@@ -1459,7 +1459,7 @@ const fxToday = new Date().toLocaleDateString("sv-SE", { timeZone: "Asia/Shangha
     const workbook = XLSX.utils.book_new();
     const sheet = XLSX.utils.aoa_to_sheet([numberedHeaders, ...numberedRows]);
     sheet["!cols"] = numberedHeaders.map(label => ({ wch: /订单号|时间/.test(label) ? 28 : 20 }));
-    XLSX.utils.book_append_sheet(workbook, sheet, "数据");
+    XLSX.utils.book_append_sheet(workbook, sheet, sheetName);
     const bytes = XLSX.write(workbook, { bookType: "xlsx", type: "array", compression: true });
     fxDownloadBlob(filename.replace(/\.xlsx?$/i, "") + ".xlsx",
       new Blob([bytes], { type: "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet" }));

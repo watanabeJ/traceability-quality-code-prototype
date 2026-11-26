@@ -3,6 +3,9 @@
 .customer-profile-grid > .detail-item { min-width: 0; overflow-wrap: anywhere; }
 .customer-profile-grid > .customer-profile-row-start { grid-column-start: 1; }
 .customer-profile-grid > .customer-profile-document { padding-top: 8px; }
+.detail-grid.customer-business-grid { grid-template-columns: repeat(4, minmax(0, 1fr)); }
+.customer-business-grid > :nth-child(3) { grid-column-start: 1; }
+.customer-business-grid dd { overflow-wrap: anywhere; font-variant-numeric: tabular-nums; }
 @media (max-width: 760px) {
   .detail-grid.customer-profile-grid { grid-template-columns: minmax(0, 1fr); }
   .customer-profile-grid > .detail-item { grid-column: 1 / -1; }

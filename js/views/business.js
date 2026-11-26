@@ -268,7 +268,7 @@ function customerOrders() {
     if (!item) {
       return `<div class="page">${pageHeader("客户详情", "", `<button class="button" data-action="fx-back-customers">${icon("arrow-left", "←")}返回客户管理</button>`)}<div class="empty"><div><div class="empty-icon">${icon("user-round-x", "×")}</div><h3>客户账号不存在</h3></div></div></div>`;
     }
-    let ownOrders = orders.filter(order => fxRecordBelongsToCustomer(order, item) && order.allocationStatus !== "已撤销");
+    let ownOrders = fxCustomerOrders(item);
     ownOrders = fxSortedRows(ownOrders, "customerDetailOrder", order => order.allocatedAt || order.createdAt || order.created);
     const activeProducts = products.filter(product => fxRecordBelongsToCustomer(product, item) && product.status === "已激活");
     const orderRows = ownOrders.map(order => {
