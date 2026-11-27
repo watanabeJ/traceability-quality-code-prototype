@@ -712,6 +712,61 @@ render = function () {
     const text = String(value ?? "").trim().replace(/\r\n?/g, "\n");
     return limit && Array.from(text).length > limit ? `${label}最多 ${limit} 个字符` : "";
   }
+  const fxEditorCompositions = new WeakMap();
+  const fxEditorSelections = new WeakMap();
+  const fxEditorRejectedValues = new WeakMap();
+  let fxEditorHintId = 0;
+  function fxEditorSelection(target) {
+    return {
+      prefix: target.value.slice(0, target.selectionStart),
+      suffix: target.value.slice(target.selectionEnd)
+    };
+  }
+  function fxEditorLengthHint(target, message) {
+    let hint = target.nextElementSibling;
+    if (!hint?.classList.contains("editor-length-hint")) {
+      if (!message) return;
+      hint = document.createElement("div");
+      hint.className = "editor-length-hint";
+      hint.id = `editor-length-hint-${++fxEditorHintId}`;
+      hint.setAttribute("role", "status");
+      target.after(hint);
+      target.setAttribute("aria-describedby", hint.id);
+    }
+    if (hint.textContent !== message) hint.textContent = message;
+  }
+  function fxLimitEditorInput(target, selection) {
+    const value = target.value;
+    // A single multiline paste or IME commit may emit extra input events for the same value.
+    if (!selection && fxEditorRejectedValues.get(target) === value) return;
+    const limit = Number(target.dataset.characterLimit);
+    const label = target.getAttribute("aria-label");
+    const message = fxTextLimitError(value, limit, label);
+    fxEditorLengthHint(target, message);
+    if (!message) {
+      fxEditorRejectedValues.delete(target);
+      return;
+    }
+
+    // Preserve both sides of the selection, including when an IME replaces its composition.
+    let { prefix = "", suffix = "" } = selection || {};
+    if (prefix.length + suffix.length > value.length || !value.startsWith(prefix) || !value.endsWith(suffix)) {
+      prefix = "";
+      suffix = "";
+    }
+    const end = value.length - suffix.length;
+    const inserted = Array.from(value.slice(prefix.length, end));
+    let low = 0;
+    let high = inserted.length;
+    while (low < high) {
+      const mid = Math.ceil((low + high) / 2);
+      if (fxTextLimitError(prefix + inserted.slice(0, mid).join("") + suffix, limit, label)) high = mid - 1;
+      else low = mid;
+    }
+    const caret = prefix.length + inserted.slice(0, low).join("").length;
+    target.setRangeText("", caret, end, "start");
+    fxEditorRejectedValues.set(target, target.value);
+  }
   function fxProductModuleError(draft, module, submit) {
     for (const field of fxStandardFieldDefs[module]) {
       const value = String(draft[field.key] ?? "").trim();
@@ -1987,10 +2042,23 @@ render = function () {
     const empty = fieldRow.querySelector(".custom-field-file-empty");
     if (empty) empty.textContent = nameReady ? "尚未添加图片" : "填写字段名称后可添加图片";
   }
+  document.addEventListener("beforeinput", event => {
+    const target = event.target;
+    if (!target.dataset.characterLimit || event.isComposing || fxEditorCompositions.has(target)) return;
+    fxEditorSelections.set(target, fxEditorSelection(target));
+  });
   document.addEventListener("compositionstart", event => {
+    if (event.target.dataset.characterLimit) fxEditorCompositions.set(event.target, fxEditorSelection(event.target));
     if (fxSearchFilters[event.target.id] || event.target.classList.contains("customer-picker-search") || event.target.classList.contains("bind-product-search")) fxComposingSearchInputs.add(event.target);
   });
   document.addEventListener("compositionend", event => {
+    const target = event.target;
+    if (fxEditorCompositions.has(target)) {
+      fxEditorSelections.set(target, fxEditorCompositions.get(target));
+      fxEditorCompositions.delete(target);
+      target.dispatchEvent(new Event("input", { bubbles: true }));
+      return;
+    }
     if (event.target.matches("[data-customer-validation]")) {
       fxSyncCustomerValidation(event.target, true);
       return;
@@ -2041,11 +2109,10 @@ render = function () {
       fxCommitSearchInput(target);
       return;
     }
-    if (target.dataset.characterLimit && !event.isComposing) {
-      const error = fxTextLimitError(target.value, Number(target.dataset.characterLimit), target.getAttribute("aria-label") || "字段内容");
-      target.setCustomValidity(error);
-      target.setAttribute("aria-invalid", String(Boolean(error)));
-      if (error) target.reportValidity();
+    if (target.dataset.characterLimit) {
+      if (event.isComposing || fxEditorCompositions.has(target)) return;
+      fxLimitEditorInput(target, fxEditorSelections.get(target));
+      fxEditorSelections.delete(target);
     }
     if (target.dataset.fxField && state.editorDraft) state.editorDraft[target.dataset.fxField] = target.value;
     if (target.dataset.fxCustomName) { const [module, index] = target.dataset.fxCustomName.split(":"); state.editorDraft.custom[module][Number(index)].name = target.value; fxSyncCustomFieldNameState(target, Boolean(target.value.trim())); }

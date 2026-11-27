@@ -75,6 +75,9 @@
 .custom-field-name { position: relative; }
 .editor-field-name.custom-field-name.required::after { position: absolute; top: 50%; right: 9px; transform: translateY(-50%); }
 .custom-field-name input { padding-right: 24px; }
+.editor-length-hint { margin-top: 4px; color: var(--danger); font-size: 12px; }
+.editor-length-hint:empty { display: none; }
+.custom-field-name.required:has(.editor-length-hint:not(:empty))::after { top: 16px; }
 .editor-field-row.needs-name .editor-field-content { opacity: .68; }
 .trace-field-content { display: grid; gap: 10px; }
 .trace-node-list { display: grid; gap: 8px; }
