@@ -142,31 +142,34 @@ function customerOrders() {
     const files = state.editorDraft?.fieldMedia?.[field.mediaKey] || [];
     const previews = files.map((file, fileIndex) => `<div class="editor-inline-media-item" ${state.editorReadonly ? "" : `draggable="true"`} data-fx-media-module="${module}" data-fx-media-field="${field.mediaKey}" data-fx-media-index="${fileIndex}">${fxScanMediaItem(file, module)}${state.editorReadonly ? "" : `<button type="button" class="icon-button custom-field-file-remove" data-action="fx-remove-standard-file" data-media-key="${field.mediaKey}" data-file-index="${fileIndex}" aria-label="删除${fxEscape(fxFileName(file))}" title="删除图片">${icon("x", "×")}</button>`}</div>`).join("");
     const accept = "image/*"; const noun = "图片";
-    const limit = fxStandardMediaLimit(field.mediaKey); const limitReached = files.length >= limit; const disabled = limitReached ? "disabled" : ""; const disabledClass = limitReached ? " is-disabled" : ""; const multiple = limit > 1 ? "multiple" : "";
+    const total = fxDetailFiles(state.editorDraft).length;
+    const limit = fxStandardMediaLimit(field.mediaKey); const limitReached = files.length >= limit || total >= fxProductImageLimit; const disabled = limitReached ? "disabled" : ""; const disabledClass = limitReached ? " is-disabled" : ""; const multiple = limit > 1 ? "multiple" : "";
     const upload = state.editorReadonly ? "" : `<label class="button custom-field-upload${disabledClass}" aria-disabled="${limitReached}">${icon("image-plus", "+")}${limitReached ? "已达上传上限" : `选择${noun}`}<input type="file" data-fx-standard-upload="${field.mediaKey}" data-fx-standard-types="image" accept="${accept}" ${multiple} ${disabled}></label>`;
     const append = state.editorReadonly ? "" : `<label class="editor-inline-media-add${disabledClass}" aria-disabled="${limitReached}">${icon("plus", "+")}<span>${limitReached ? "已达上限" : "添加"}</span><input type="file" data-fx-standard-upload="${field.mediaKey}" data-fx-standard-types="image" accept="${accept}" ${multiple} ${disabled}></label>`;
-    const limitText = `最多上传 ${limit} 张图片`;
     if (state.editorReadonly && !files.length) return "";
-    return `<div class="custom-field-files standard-field-media" aria-label="${fxEscape(field.mediaLabel || `${field.label}${noun}`)}">${files.length ? `<div class="scan-media-list editor-inline-media-list">${previews}${append}</div>` : `${upload}<div class="custom-field-file-empty">尚未添加${noun}</div>`}${state.editorReadonly ? "" : `<div class="field-help custom-field-file-limit">${limitText}，已上传 ${files.length} 个</div>`}</div>`;
+    return `<div class="custom-field-files standard-field-media" aria-label="${fxEscape(field.mediaLabel || `${field.label}${noun}`)}">${files.length ? `<div class="scan-media-list editor-inline-media-list">${previews}${append}</div>` : `${upload}<div class="custom-field-file-empty">尚未添加${noun}</div>`}</div>`;
   }
   function fxStandardFieldControl(field, module) {
     const value = state.editorDraft?.[field.key] || ""; const disabled = state.editorReadonly ? "disabled" : "";
+    const limit = fxProductTextLimits[field.key];
+    const attributes = limit && !state.editorReadonly ? `data-character-limit="${limit}" aria-label="${field.label}"` : "";
     const control = field.type === "select"
       ? `<select data-fx-field="${field.key}" ${disabled}>${field.options.map(option => `<option ${value === option ? "selected" : ""}>${option}</option>`).join("")}</select>`
       : field.type === "textarea"
-        ? `<textarea data-fx-field="${field.key}" ${disabled}>${fxEscape(value)}</textarea>`
-        : `<input data-fx-field="${field.key}" type="${field.type || "text"}" value="${fxEscape(value)}" ${disabled}>`;
+        ? `<textarea data-fx-field="${field.key}" ${attributes} ${disabled}>${fxEscape(value)}</textarea>`
+        : `<input data-fx-field="${field.key}" type="${field.type || "text"}" value="${fxEscape(value)}" ${attributes} ${disabled}>`;
     const textControl = field.mediaOnly || (state.editorReadonly && !value) ? "" : `<div class="standard-field-text">${control}</div>`;
     return field.mediaKey ? `<div class="standard-field-mixed">${textControl}${fxStandardFieldMediaRows(module, field)}</div>` : control;
   }
   function fxCustomFileRows(module, row, rowIndex, nameReady = true) {
     const files = row.files || [];
     const previews = files.map((file, fileIndex) => `<div class="editor-inline-media-item" ${state.editorReadonly ? "" : `draggable="true"`} data-fx-media-module="${module}" data-fx-media-row="${rowIndex}" data-fx-media-index="${fileIndex}">${fxScanMediaItem(file, module)}${state.editorReadonly ? "" : `<button type="button" class="icon-button custom-field-file-remove" data-action="fx-remove-custom-file" data-module="${module}" data-index="${rowIndex}" data-file-index="${fileIndex}" aria-label="删除${fxEscape(fxFileName(file))}" title="删除附件">${icon("x", "×")}</button>`}</div>`).join("");
-    const limitReached = files.length >= fxCustomMediaLimit; const uploadDisabled = !nameReady || limitReached; const disabled = uploadDisabled ? "disabled" : ""; const disabledClass = uploadDisabled ? " is-disabled" : "";
+    const total = fxDetailFiles(state.editorDraft).length;
+    const limitReached = files.length >= fxCustomMediaLimit || total >= fxProductImageLimit; const uploadDisabled = !nameReady || limitReached; const disabled = uploadDisabled ? "disabled" : ""; const disabledClass = uploadDisabled ? " is-disabled" : "";
     const upload = state.editorReadonly ? "" : `<label class="button custom-field-upload${disabledClass}" aria-disabled="${uploadDisabled}">${icon("image-plus", "+")}${limitReached ? "已达上传上限" : "选择图片"}<input type="file" data-fx-custom-upload="${module}:${rowIndex}" accept="image/*" multiple ${disabled}></label>`;
     const append = state.editorReadonly ? "" : `<label class="editor-inline-media-add${disabledClass}" aria-disabled="${uploadDisabled}">${icon("plus", "+")}<span>${limitReached ? "已达上限" : "添加"}</span><input type="file" data-fx-custom-upload="${module}:${rowIndex}" accept="image/*" multiple ${disabled}></label>`;
     if (state.editorReadonly && !files.length) return "";
-    return `<div class="custom-field-files">${files.length ? `<div class="scan-media-list editor-inline-media-list">${previews}${append}</div>` : `${upload}<div class="custom-field-file-empty">${nameReady ? "尚未添加图片" : "填写字段名称后可添加图片"}</div>`}${state.editorReadonly ? "" : `<div class="field-help custom-field-file-limit">最多上传 ${fxCustomMediaLimit} 张图片，已上传 ${files.length} 个</div>`}</div>`;
+    return `<div class="custom-field-files">${files.length ? `<div class="scan-media-list editor-inline-media-list">${previews}${append}</div>` : `${upload}<div class="custom-field-file-empty">${nameReady ? "尚未添加图片" : "填写字段名称后可添加图片"}</div>`}</div>`;
   }
   function fxCustomFieldType(row) {
     return row?.type === "file" ? "file" : row?.type === "mixed" ? "mixed" : "text";
@@ -184,20 +187,20 @@ function customerOrders() {
     if (token.startsWith("custom:")) {
       const index = state.editorDraft.custom[module].findIndex(item => item.id === token.slice(7)); const row = state.editorDraft.custom[module][index]; if (!row) return "";
       const type = fxCustomFieldType(row); const nameReady = Boolean(String(row.name || "").trim()); const contentDisabled = readonly || !nameReady ? "disabled" : "";
-      const textControl = type === "file" || (readonly && !String(row.value || "").trim()) ? "" : `<div class="custom-field-text"><input data-fx-custom-value="${module}:${index}" value="${fxEscape(row.value)}" placeholder="${nameReady ? "字段文字内容" : "请先填写字段名称"}" ${contentDisabled}></div>`;
+      const textControl = type === "file" || (readonly && !String(row.value || "").trim()) ? "" : `<div class="custom-field-text"><textarea data-fx-custom-value="${module}:${index}" data-character-limit="${fxCustomTextLimit}" aria-label="自定义字段内容" placeholder="${nameReady ? "填写字段内容" : "请先填写字段名称"}" ${contentDisabled}>${fxEscape(row.value)}</textarea></div>`;
       const fileControl = type === "text" ? "" : fxCustomFileRows(module, row, index, nameReady);
       const content = type === "mixed" ? `<div class="custom-field-mixed">${textControl}${fileControl}</div>` : textControl || fileControl;
-      const typeLabel = type === "file" ? "图片/附件字段" : type === "mixed" ? "文字与附件字段" : "文字字段";
-      return `<div class="editor-field-row is-custom ${type !== "text" ? "is-file-field" : ""} is-${type}-custom-field ${nameReady ? "" : "needs-name"}" data-fx-field-row="${token}" data-module="${module}"><div class="editor-field-name custom-field-name required"><input data-fx-custom-name="${module}:${index}" value="${fxEscape(row.name)}" placeholder="字段名称" aria-label="${typeLabel}名称（必填）" required ${readonly ? "disabled" : ""}></div><div class="editor-field-content">${content}</div>${readonly ? "<span></span>" : `<button class="icon-button" data-action="fx-remove-custom" data-module="${module}" data-index="${index}" title="删除字段">${icon("trash-2", "×")}</button>`}</div>`;
+      const typeLabel = type === "file" ? "图片字段" : type === "mixed" ? "图文字段" : "文字字段";
+      return `<div class="editor-field-row is-custom ${type !== "text" ? "is-file-field" : ""} is-${type}-custom-field ${nameReady ? "" : "needs-name"}" data-fx-field-row="${token}" data-module="${module}"><div class="editor-field-name custom-field-name required"><input data-fx-custom-name="${module}:${index}" data-character-limit="${fxCustomNameLimit}" value="${fxEscape(row.name)}" placeholder="字段名称" aria-label="${typeLabel}名称（必填）" required ${readonly ? "disabled" : ""}></div><div class="editor-field-content">${content}</div>${readonly ? "<span></span>" : `<button class="icon-button" data-action="fx-remove-custom" data-module="${module}" data-index="${index}" title="删除字段">${icon("trash-2", "×")}</button>`}</div>`;
     }
     if (token === "trace:timeline") {
       const traceRows = state.editorDraft.trace.map((row, index) => ({ row, index })).filter(({ row }) => !readonly || String(row.date || "").trim() || String(row.content || "").trim()).sort((a, b) => String(a.row.date || "").localeCompare(String(b.row.date || "")));
       const nodes = traceRows.map(({ row, index }, displayIndex) => {
         const dateControl = !readonly || String(row.date || "").trim() ? `<input type="datetime-local" data-fx-trace-date="${index}" value="${fxEscape(fxDateTimeInputValue(row.date))}" aria-label="时间节点 ${displayIndex + 1}" ${readonly ? "disabled" : ""}>` : "";
-        const contentControl = !readonly || String(row.content || "").trim() ? `<input data-fx-trace-content="${index}" value="${fxEscape(row.content)}" placeholder="填写该时间节点的追溯内容" aria-label="节点内容 ${displayIndex + 1}" ${readonly ? "disabled" : ""}>` : "";
+        const contentControl = !readonly || String(row.content || "").trim() ? `<input data-fx-trace-content="${index}" data-character-limit="${fxTraceTextLimit}" value="${fxEscape(row.content)}" placeholder="填写追溯内容" aria-label="节点内容 ${displayIndex + 1}" ${readonly ? "disabled" : ""}>` : "";
         return `<div class="trace-edit-row">${dateControl}${contentControl}${readonly ? "<span></span>" : `<button type="button" class="icon-button" data-action="fx-remove-trace" data-index="${index}" aria-label="删除时间节点 ${displayIndex + 1}" title="删除时间节点">${icon("trash-2", "×")}</button>`}</div>`;
       }).join("");
-      const addNode = readonly ? "" : `<button type="button" class="button small trace-node-add" data-action="fx-add-trace">${icon("plus", "+")}添加时间节点</button>`;
+      const addNode = readonly ? "" : `<button type="button" class="button small trace-node-add" data-action="fx-add-trace" ${traceRows.length >= fxTraceNodeLimit ? "disabled" : ""}>${icon("plus", "+")}添加时间节点</button>`;
       return `<div class="editor-field-row is-trace" data-fx-field-row="${token}" data-module="${module}"><div class="editor-field-name">追溯记录</div><div class="editor-field-content trace-field-content"><div class="trace-node-list">${nodes || `<div class="trace-node-empty">暂未添加时间节点</div>`}</div>${addNode}</div><span></span></div>`;
     }
     return "";
@@ -222,7 +225,8 @@ function customerOrders() {
     if (state.editorTargetOrderNo && state.productStep === fxEditorSteps().length - 1) return fxBindingSettingsPanel();
     const module = fxStepKeys[state.productStep]; const order = state.editorDraft.fieldOrder[module] || [];
     const visibleOrder = state.editorReadonly ? order.filter(token => fxEditorTokenHasContent(module, token)) : order;
-    const addField = state.editorReadonly ? "" : `<div class="editor-add-field-footer"><button type="button" class="editor-add-field-trigger" data-action="fx-open-add-field" data-module="${module}">${icon("plus", "+")}新增字段</button></div>`;
+    const count = state.editorDraft.custom[module].length;
+    const addField = state.editorReadonly ? "" : `<div class="editor-add-field-footer"><button type="button" class="editor-add-field-trigger" data-action="fx-open-add-field" data-module="${module}" ${count >= fxCustomRowLimit ? "disabled" : ""}>${icon("plus", "+")}新增字段（${count}/${fxCustomRowLimit}）</button></div>`;
     return `<div class="editor-fields"><div class="editor-fields-toolbar"><div><strong>字段内容</strong></div></div><div class="editor-fields-head"><span>字段名</span><span>字段内容</span><span></span></div><div class="editor-field-list" data-module="${module}">${visibleOrder.map(token => fxEditorFieldRow(module, token)).join("") || `<div class="editor-fields-empty">当前模块暂无已填写字段</div>`}</div>${addField}</div>`;
   };
 
@@ -533,7 +537,7 @@ function customerOrders() {
     }
     if (state.modal === "fx-add-custom-field") {
       const module = state.editorAddingField || fxStepKeys[state.productStep] || "product";
-      const body = `<div class="bind-choice-grid editor-add-field-choice-grid"><button type="button" class="bind-choice-card" data-action="fx-add-custom" data-module="${fxEscape(module)}" data-field-type="text"><span class="bind-choice-icon">${icon("type", "T")}</span><strong>文字字段</strong><span>用于填写文本内容，例如规格说明、补充描述、人工记录等。</span></button><button type="button" class="bind-choice-card" data-action="fx-add-custom" data-module="${fxEscape(module)}" data-field-type="file"><span class="bind-choice-icon">${icon("image-plus", "□")}</span><strong>图片/附件字段</strong><span>用于上传图片或 PDF，适合证照、检测报告、现场照片等内容。</span></button></div>`;
+      const body = `<div class="bind-choice-grid editor-add-field-choice-grid"><button type="button" class="bind-choice-card" data-action="fx-add-custom" data-module="${fxEscape(module)}" data-field-type="text"><span class="bind-choice-icon">${icon("type", "T")}</span><strong>文字字段</strong><span>用于填写规格说明、补充描述或人工记录。</span></button><button type="button" class="bind-choice-card" data-action="fx-add-custom" data-module="${fxEscape(module)}" data-field-type="file"><span class="bind-choice-icon">${icon("image-plus", "□")}</span><strong>图片字段</strong><span>用于上传证照、检测报告或现场照片。</span></button></div>`;
       return fxModalShell("选择新增字段类型", "先选择字段内容形式，再填写字段名称和对应内容。", body, `<button class="button" data-action="fx-cancel-add-field">取消</button>`, true);
     }
     if (state.modal === "fx-qr-download") {

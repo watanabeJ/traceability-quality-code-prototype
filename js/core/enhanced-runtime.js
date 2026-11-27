@@ -19,6 +19,7 @@ render = function () {
     }
     if (entryPortal !== "scan" && !state.authenticated) app.innerHTML = fxLoginPage(entryPortal);
     else app.innerHTML = state.portal === "ops" ? renderOps() : state.portal === "customer" ? renderCustomer() : renderScan();
+    fxHydrateProductImages(app);
     fxEnhanceCustomerDocumentLinks();
     fxEnhanceAccountForms(app);
     if ((state.portal === "ops" && state.opsPage === "messages") || (state.portal === "customer" && state.customerPage === "messages")) app.insertAdjacentHTML("beforeend", fxMessageCalendar());
@@ -706,18 +707,64 @@ render = function () {
     state.modal = options.openSubmit ? "fx-submit" : null;
     render();
   }
-  function fxCheckProductFields(draft, submit) {
-    for (const [index, module] of fxEditorModules.entries()) {
-      const missing = fxStandardFieldDefs[module].find(field =>
-        (submit ? field.required : field.key === "productName") && !String(draft?.[field.key] ?? "").trim());
-      if (missing) {
-        state.productStep = index;
-        if (state.modal === "fx-submit") state.modal = null;
-        render();
-        showToast(`请填写${missing.label}`);
-        return false;
+  const fxPendingImageDrafts = new WeakSet();
+  function fxTextLimitError(value, limit, label) {
+    const text = String(value ?? "").trim().replace(/\r\n?/g, "\n");
+    return limit && Array.from(text).length > limit ? `${label}最多 ${limit} 个字符` : "";
+  }
+  function fxProductModuleError(draft, module, submit) {
+    for (const field of fxStandardFieldDefs[module]) {
+      const value = String(draft[field.key] ?? "").trim();
+      if (!value && (submit ? field.required : field.key === "productName")) return `请填写${field.label}`;
+      const error = fxTextLimitError(value, fxProductTextLimits[field.key], field.label);
+      if (error) return error;
+      if (field.key === "companyName" && value) {
+        const companyError = fxOperatorNameError(value).replace(/用户名/g, "公司名称");
+        if (companyError) return companyError;
+      }
+      if (field.mediaKey && draft.fieldMedia?.[field.mediaKey]?.length > fxStandardMediaLimit(field.mediaKey))
+        return `${field.label}最多上传 ${fxStandardMediaLimit(field.mediaKey)} 张图片`;
+    }
+    const rows = draft.custom?.[module] || [];
+    if (rows.length > fxCustomRowLimit) return `每个资料模块最多新增 ${fxCustomRowLimit} 个字段`;
+    for (const [index, row] of rows.entries()) {
+      const label = `第 ${index + 1} 个自定义字段`;
+      if (!row.name?.trim() && (row.value?.trim() || row.files?.length)) return `${label}请先填写名称`;
+      const error = fxTextLimitError(row.name, fxCustomNameLimit, `${label}名称`) ||
+        fxTextLimitError(row.value, fxCustomTextLimit, `“${row.name}”的文字内容`);
+      if (error) return error;
+      if (row.files?.length > fxCustomMediaLimit) return `“${row.name}”最多上传 ${fxCustomMediaLimit} 张图片`;
+    }
+    if (module === "trace") {
+      if (draft.trace.length > fxTraceNodeLimit) return `每个产品最多添加 ${fxTraceNodeLimit} 个追溯节点`;
+      for (const row of draft.trace) {
+        const error = fxTextLimitError(row.content, fxTraceTextLimit, "单个节点的追溯内容");
+        if (error) return error;
       }
     }
+    return "";
+  }
+  function fxCheckProductFields(draft, submit) {
+    if (fxPendingImageDrafts.has(draft)) { showToast("图片正在读取，请稍后保存或提交"); return false; }
+    for (const [index, module] of fxEditorModules.entries()) {
+      const error = fxProductModuleError(draft, module, submit);
+      if (!error) continue;
+      state.productStep = index;
+      if (state.modal === "fx-submit") state.modal = null;
+      render();
+      showToast(error);
+      return false;
+    }
+    if (fxDetailFiles(draft).length > fxProductImageLimit) {
+      showToast(`每个产品最多上传 ${fxProductImageLimit} 张图片`);
+      return false;
+    }
+    for (const key of Object.keys(fxProductTextLimits)) if (typeof draft[key] === "string") draft[key] = draft[key].trim();
+    for (const rows of Object.values(draft.custom || {})) for (const row of rows) {
+      row.name = (row.name || "").trim();
+      row.value = (row.value || "").trim();
+    }
+    for (const node of draft.trace || []) node.content = (node.content || "").trim();
     return true;
   }
   function fxPersistDraft(submit = false) {
@@ -727,8 +774,6 @@ render = function () {
     if (state.editorOwner === "ops" && !fxEnabledOperatorSession()) return showToast("当前运营账号状态异常，请重新登录"), false;
     if (!fxCheckProductFields(draft, submit)) return false;
     if (state.editorOwner === "ops" && !draft.batch?.trim()) return showToast("请填写产品批次"), false;
-    const unnamedContent = fxEditorModules.flatMap((module, moduleIndex) => (draft.custom?.[module] || []).map(row => ({ module, moduleIndex, row }))).find(({ row }) => !String(row.name || "").trim() && (String(row.value || "").trim() || row.files?.length));
-    if (unnamedContent) { state.productStep = unnamedContent.moduleIndex; render(); showToast("新增字段必须先填写字段名称"); return false; }
     let product = products.find(item => item.id === state.editorProductId);
     if (state.editorOwner === "ops" && (!product || !["待审核", "已激活"].includes(product.status))) { showToast("运营端只能修改待审核或已激活的已有产品资料"); return false; }
     if (state.editorOwner === "customer" && product && !fxRecordBelongsToCustomer(product, fxCurrentCustomer())) { showToast("无权修改其他客户的产品资料"); return false; }
@@ -782,10 +827,8 @@ render = function () {
     const order = request && orders.find(item => item.no === state.editorTargetOrderNo && item.allocationStatus !== "已撤销" && fxRecordBelongsToCustomer(item, fxCurrentCustomer()));
     const draft = state.editorDraft;
     if (!request || !product || !order || !draft) return showToast("绑定申请上下文已失效"), false;
-    if (submit && !fxCheckProductFields(draft, true)) return false;
+    if (!fxCheckProductFields(draft, submit)) return false;
     if (!submit && (!draft.productName.trim() || !draft.batch.trim())) return showToast("请先填写产品名称和产品批次"), false;
-    const unnamedContent = fxEditorModules.flatMap((module, moduleIndex) => (draft.custom?.[module] || []).map(row => ({ module, moduleIndex, row }))).find(({ row }) => !String(row.name || "").trim() && (String(row.value || "").trim() || row.files?.length));
-    if (unnamedContent) { state.productStep = unnamedContent.moduleIndex; render(); showToast("新增字段必须先填写字段名称"); return false; }
     const amount = Number(state.editorRequestedAmount || 0);
     if (submit && (!state.editorRequestedSourceRange || !Number.isSafeInteger(amount) || amount < 1 || !fxRequestedRangeIsAvailable(order, state.editorRequestedSourceRange, state.editorRequestedRange, amount, product.id, request.id))) {
       state.productStep = fxEditorSteps().length - 1;
@@ -1812,9 +1855,24 @@ render = function () {
     if (action === "fx-preview-current") { state.modal = "fx-preview"; return render(); }
     if (action === "fx-open-add-field") { const module = target.dataset.module; if (!state.editorDraft?.custom?.[module]) return showToast("当前模块不可新增字段"); state.editorAddingField = module; state.modal = "fx-add-custom-field"; return render(); }
     if (action === "fx-cancel-add-field") { state.editorAddingField = null; state.modal = null; return render(); }
-    if (action === "fx-add-custom") { const module = target.dataset.module || state.editorAddingField; if (!state.editorDraft?.custom?.[module]) return showToast("当前模块不可新增字段"); const type = target.dataset.fieldType === "file" ? "file" : target.dataset.fieldType === "mixed" ? "mixed" : "text"; const row = { id: `custom-${Date.now()}-${state.editorDraft.custom[module].length + 1}`, name: "", type, value: "", files: [] }; state.editorDraft.custom[module].push(row); state.editorDraft.fieldOrder[module].push(`custom:${row.id}`); state.editorAddingField = null; state.modal = null; return render(); }
+    if (action === "fx-add-custom") {
+      const module = target.dataset.module || state.editorAddingField;
+      const rows = state.editorDraft?.custom?.[module];
+      if (!rows) return showToast("当前模块不可新增字段");
+      if (rows.length >= fxCustomRowLimit) return showToast(`每个资料模块最多新增 ${fxCustomRowLimit} 个字段`);
+      const row = { id: `custom-${Date.now()}-${rows.length + 1}`, name: "", type: target.dataset.fieldType === "file" ? "file" : "text", value: "", files: [] };
+      rows.push(row);
+      state.editorDraft.fieldOrder[module].push(`custom:${row.id}`);
+      state.editorAddingField = null;
+      state.modal = null;
+      return render();
+    }
     if (action === "fx-remove-custom") { const module = target.dataset.module; const row = state.editorDraft.custom[module][Number(target.dataset.index)]; state.editorDraft.custom[module].splice(Number(target.dataset.index), 1); state.editorDraft.fieldOrder[module] = state.editorDraft.fieldOrder[module].filter(token => token !== `custom:${row.id}`); return render(); }
-    if (action === "fx-add-trace") { state.editorDraft.trace.push({ id: `trace-${Date.now()}-${state.editorDraft.trace.length + 1}`, date: fxToday, content: "" }); return render(); }
+    if (action === "fx-add-trace") {
+      if (state.editorDraft.trace.length >= fxTraceNodeLimit) return showToast(`每个产品最多添加 ${fxTraceNodeLimit} 个追溯节点`);
+      state.editorDraft.trace.push({ id: `trace-${Date.now()}-${state.editorDraft.trace.length + 1}`, date: fxToday, content: "" });
+      return render();
+    }
     if (action === "fx-remove-trace") { state.editorDraft.trace.splice(Number(target.dataset.index), 1); return render(); }
     if (action === "fx-remove-standard-file") { state.editorDraft.fieldMedia?.[target.dataset.mediaKey]?.splice(Number(target.dataset.fileIndex), 1); return render(); }
     if (action === "fx-preview-custom-file") { const file = state.editorDraft.custom[target.dataset.module][Number(target.dataset.index)]?.files?.[Number(target.dataset.fileIndex)]; if (!file) return; state.modalData = { name: fxFileName(file), type: fxFileType(file), src: fxFileSrc(file, /\.(png|jpe?g|webp)$/i.test(fxFileName(file)) ? "assets/tea-field.jpg" : "") }; state.modal = "fx-file"; return render(); }
@@ -1919,10 +1977,15 @@ render = function () {
     const fieldRow = target.closest(".editor-field-row.is-custom"); if (!fieldRow) return;
     fieldRow.classList.toggle("needs-name", !nameReady);
     const valueInput = fieldRow.querySelector("[data-fx-custom-value]");
-    if (valueInput) { valueInput.disabled = !nameReady; valueInput.placeholder = nameReady ? "字段文字内容" : "请先填写字段名称"; }
-    fieldRow.querySelectorAll("[data-fx-custom-upload]").forEach(input => { input.disabled = !nameReady; input.closest("label")?.classList.toggle("is-disabled", !nameReady); input.closest("label")?.setAttribute("aria-disabled", String(!nameReady)); });
+    if (valueInput) { valueInput.disabled = !nameReady; valueInput.placeholder = nameReady ? "填写字段内容" : "请先填写字段名称"; }
+    fieldRow.querySelectorAll("[data-fx-custom-upload]").forEach(input => {
+      const [module, index] = input.dataset.fxCustomUpload.split(":");
+      input.disabled = !nameReady || state.editorDraft.custom[module][index].files.length >= fxCustomMediaLimit || fxDetailFiles(state.editorDraft).length >= fxProductImageLimit;
+      input.closest("label")?.classList.toggle("is-disabled", input.disabled);
+      input.closest("label")?.setAttribute("aria-disabled", String(input.disabled));
+    });
     const empty = fieldRow.querySelector(".custom-field-file-empty");
-    if (empty) empty.textContent = nameReady ? "尚未添加图片或附件" : "填写字段名称后可添加图片或附件";
+    if (empty) empty.textContent = nameReady ? "尚未添加图片" : "填写字段名称后可添加图片";
   }
   document.addEventListener("compositionstart", event => {
     if (fxSearchFilters[event.target.id] || event.target.classList.contains("customer-picker-search") || event.target.classList.contains("bind-product-search")) fxComposingSearchInputs.add(event.target);
@@ -1977,6 +2040,12 @@ render = function () {
       if (event.isComposing || fxComposingSearchInputs.has(target)) return;
       fxCommitSearchInput(target);
       return;
+    }
+    if (target.dataset.characterLimit && !event.isComposing) {
+      const error = fxTextLimitError(target.value, Number(target.dataset.characterLimit), target.getAttribute("aria-label") || "字段内容");
+      target.setCustomValidity(error);
+      target.setAttribute("aria-invalid", String(Boolean(error)));
+      if (error) target.reportValidity();
     }
     if (target.dataset.fxField && state.editorDraft) state.editorDraft[target.dataset.fxField] = target.value;
     if (target.dataset.fxCustomName) { const [module, index] = target.dataset.fxCustomName.split(":"); state.editorDraft.custom[module][Number(index)].name = target.value; fxSyncCustomFieldNameState(target, Boolean(target.value.trim())); }
@@ -2133,35 +2202,49 @@ render = function () {
       return render();
     }
     if (target.dataset.fxField && state.editorDraft) state.editorDraft[target.dataset.fxField] = target.value;
-    if (target.dataset.fxStandardUpload && target.files?.length) {
-      const mediaKey = target.dataset.fxStandardUpload; const selected = [...target.files];
-      const limit = fxStandardMediaLimit(mediaKey); const limitMessage = `该字段最多上传 ${limit} 张图片`;
-      const invalid = selected.find(file => !(file.type.startsWith("image/") || (!file.type && /\.(png|jpe?g|webp|gif|bmp|avif|svg)$/i.test(file.name)))); if (invalid) { target.value = ""; return showToast(`该字段仅支持图片：${invalid.name}`); }
-      const oversized = selected.find(file => file.size > 10 * 1024 * 1024); if (oversized) { target.value = ""; return showToast(`图片大小不能超过 10 MB：${oversized.name}`); }
-      try {
-        const saved = []; for (const file of selected) saved.push({ name: file.name, type: file.type || fxFileType(file.name), size: file.size, src: await fxReadFileData(file) });
-        state.editorDraft.fieldMedia ||= {}; const merged = fxUniqueFiles([...(state.editorDraft.fieldMedia[mediaKey] || []), ...saved]);
-        if (merged.length > limit) { target.value = ""; return showToast(limitMessage); }
-        const addedCount = merged.length - (state.editorDraft.fieldMedia[mediaKey] || []).length;
-        state.editorDraft.fieldMedia[mediaKey] = merged; render(); showToast(addedCount ? `字段文件已保存 ${addedCount} 项` : "所选文件已存在");
-      } catch (_) { target.value = ""; showToast("文件读取失败，请重新选择"); }
-      return;
-    }
-    if (target.dataset.fxCustomUpload && target.files?.length) {
-      const [module, indexText] = target.dataset.fxCustomUpload.split(":"); const row = state.editorDraft.custom[module]?.[Number(indexText)]; const selected = [...target.files];
-      if (!String(row?.name || "").trim()) { target.value = ""; return showToast("请先填写字段名称"); }
-      const invalid = selected.find(file => !(file.type.startsWith("image/") || (!file.type && /\.(png|jpe?g|webp|gif|bmp|avif|svg)$/i.test(file.name)))); if (invalid) { target.value = ""; return showToast(`该字段仅支持图片：${invalid.name}`); }
-      const oversized = selected.find(file => file.size > 10 * 1024 * 1024); if (oversized) { target.value = ""; return showToast(`图片大小不能超过 10 MB：${oversized.name}`); }
-      try {
-        const saved = []; for (const file of selected) saved.push({ name: file.name, type: file.type || fxFileType(file.name), size: file.size, src: await fxReadFileData(file) });
-        const merged = fxUniqueFiles([...(row.files || []), ...saved]);
-        if (merged.length > fxCustomMediaLimit) { target.value = ""; return showToast(`该字段最多上传 ${fxCustomMediaLimit} 张图片`); }
-        const addedCount = merged.length - (row.files || []).length;
-        row.files = merged; render(); showToast(addedCount ? `字段附件已保存 ${addedCount} 项` : "所选文件已存在");
-      } catch (_) { target.value = ""; showToast("附件读取失败，请重新选择"); }
-      return;
-    }
+    if ((target.dataset.fxStandardUpload || target.dataset.fxCustomUpload) && target.files?.length)
+      await fxUploadProductImages(target);
   });
+
+  async function fxUploadProductImages(target) {
+    const draft = state.editorDraft;
+    const selected = [...target.files];
+    target.value = "";
+    if (!draft || state.editorReadonly) return;
+    if (fxPendingImageDrafts.has(draft)) return showToast("上一批图片正在读取，请稍后再添加");
+    const key = target.dataset.fxStandardUpload;
+    const [module, index] = (target.dataset.fxCustomUpload || "").split(":");
+    const rowId = key ? null : draft.custom[module]?.[index]?.id;
+    const customRow = () => draft.custom[module]?.find(row => row.id === rowId);
+    if (!key && !customRow()?.name?.trim()) return showToast("请先填写字段名称");
+    const limit = key ? fxStandardMediaLimit(key) : fxCustomMediaLimit;
+    const invalid = selected.find(file => !(file.type.startsWith("image/") || (!file.type && /\.(png|jpe?g|webp|gif|bmp|avif|svg)$/i.test(file.name))));
+    if (invalid) return showToast(`该字段仅支持图片：${invalid.name}`);
+    const oversized = selected.find(file => file.size > 10 * 1024 * 1024);
+    if (oversized) return showToast(`图片大小不能超过 10 MB：${oversized.name}`);
+    if (selected.length > limit) return showToast(`该字段最多上传 ${limit} 张图片`);
+    fxPendingImageDrafts.add(draft);
+    try {
+      const saved = [];
+      for (const file of selected) saved.push(await fxProductImageRecord(file));
+      if (state.editorDraft !== draft || (!key && !customRow()?.name?.trim())) return;
+      const currentFiles = () => key ? draft.fieldMedia[key] : customRow().files;
+      const previous = currentFiles();
+      const added = fxUniqueFiles([...previous, ...saved]).length - previous.length;
+      const remaining = Math.max(0, fxProductImageLimit - fxDetailFiles(draft).length);
+      if (added > remaining) return showToast(`该产品最多上传 ${fxProductImageLimit} 张图片，还可添加 ${remaining} 张`);
+      if (previous.length + added > limit) return showToast(`该字段最多上传 ${limit} 张图片`);
+      if (!added) return showToast("所选图片已存在");
+      await fxStoreProductImages(saved, selected);
+      if (state.editorDraft !== draft || (!key && !customRow()?.name?.trim())) return;
+      const merged = fxUniqueFiles([...currentFiles(), ...saved]);
+      if (key) draft.fieldMedia[key] = merged;
+      else customRow().files = merged;
+      render();
+      showToast(`已添加 ${added} 张图片`);
+    } catch (_) { showToast("图片保存失败，请检查浏览器存储空间后重试"); }
+    finally { fxPendingImageDrafts.delete(draft); }
+  }
 
   let fxDraggedCustomFile = null;
   function fxSameMediaField(item, dragged) {

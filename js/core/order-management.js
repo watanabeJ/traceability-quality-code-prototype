@@ -783,6 +783,11 @@ function fxInstallOrderManagement() {
     const product = products.find(row => row.id === state.editorProductId);
     const order = orders.find(row => row.no === (state.editorTargetOrderNo || product?.requestedOrderNo));
     if (field.key === "category" && omIsOrder(order)) return `<input value="${fxEscape(product?.category || fxCurrentCategoryName(omEditorLine(order, product)) || state.editorDraft?.category || "")}" readonly aria-label="产品大类">`;
+    if (field.key === "subcategory" && omIsOrder(order)) {
+      const line = omEditorLine(order, product);
+      const value = line && !state.editorReadonly ? line.remark : state.editorDraft?.subcategory;
+      return `<input value="${fxEscape(value || "")}" readonly aria-label="产品子类">`;
+    }
     return originalEditorControl(field, module);
   };
   const originalRanges = fxReviewActivationRange;
@@ -808,13 +813,14 @@ function fxInstallOrderManagement() {
     if (error || !omCanAccess(order)) return showToast(error || "产品大类与订单明细不一致或订单无权访问"), false;
     const bound = product && (product.status === "已激活" || orders.some(row =>
       (row.activations || []).some(activation => fxActivationBelongsToProduct(activation, product))));
-    if (state.editorDraft) state.editorDraft.category = bound ? product.category : fxCurrentCategoryName(line);
+    if (state.editorDraft) {
+      state.editorDraft.category = bound ? product.category : fxCurrentCategoryName(line);
+      state.editorDraft.subcategory = line.remark || "";
+    }
     if (state.omNewProduct && state.editorOwner === "ops") {
       const draft = state.editorDraft;
       if (!fxCheckProductFields(draft, submit)) return false;
       if (submit && !fxRequestedRangeIsAvailable(order, state.editorRequestedSourceRange, state.editorRequestedRange, state.editorRequestedAmount, product?.id)) return showToast("绑定范围已改变，请重新选择"), false;
-      const unnamed = fxEditorModules.some(module => (draft.custom?.[module] || []).some(row => !row.name?.trim() && (row.value?.trim() || row.files?.length)));
-      if (unnamed) return showToast("新增字段必须填写字段名称"), false;
       const item = product || { id: Math.max(0, ...products.map(row => row.id)) + 1, amount: 0 };
       Object.assign(item, { customerId: order.customerId, company: fxCurrentCustomerName(order), name: draft.productName.trim(), batch: draft.batch.trim(),
         category: line.category, categoryId: line.categoryId, orderLineId: line.id, productNumber: line.productNumber, details: fxClone(draft), omCreatedByOps: true,
@@ -840,7 +846,10 @@ function fxInstallOrderManagement() {
       const line = omEditorLine(order, product);
       const error = omValidateBinding(order, line, { ...product, category: state.editorDraft?.category }, state.editorRequestedRange);
       if (error) return showToast(error), false;
-      if (state.editorDraft) state.editorDraft.category = product.category;
+      if (state.editorDraft) {
+        state.editorDraft.category = product.category;
+        state.editorDraft.subcategory = line.remark || "";
+      }
     }
     return originalPersistExisting(submit, asDraft);
   };

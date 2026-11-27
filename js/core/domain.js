@@ -66,7 +66,18 @@ const fxToday = new Date().toLocaleDateString("sv-SE", { timeZone: "Asia/Shangha
     ],
     trace: [],
   };
-  const fxSingleMediaKeys = new Set(["brand", "trademark", "businessLicense", "productInspectionReport"]);
+  const fxProductTextLimits = {
+    productName: 20, brand: 20, trademark: 20, productImages: 200, intro: 1000,
+    specification: 50, origin: 100, batch: 50, shelfLife: 50, storage: 200, standard: 50,
+    companyName: 20, companyAddress: 100, companyIntro: 1000, companyPhone: 30,
+    qualificationProof: 200, productionEnvironment: 200, productionUnit: 100, productionAddress: 100,
+    productionSiteEnvironment: 200, qualificationDocuments: 200, process: 1000, equipment: 200,
+    productionLicense: 200, productHonorCertificate: 200, productCertificationCertificate: 200,
+    onSiteVerificationCertificate: 200, productInspectionReport: 1000,
+  };
+  const fxCustomNameLimit = 20, fxCustomTextLimit = 1000, fxTraceTextLimit = 50;
+  const fxCustomRowLimit = 10, fxTraceNodeLimit = 30, fxProductImageLimit = 50;
+  const fxSingleMediaKeys = new Set(["brand", "trademark", "businessLicense"]);
   const fxCustomMediaLimit = 10;
   function fxStandardMediaLimit(mediaKey) { return fxSingleMediaKeys.has(mediaKey) ? 1 : 10; }
 
@@ -1941,6 +1952,50 @@ const fxToday = new Date().toLocaleDateString("sv-SE", { timeZone: "Asia/Shangha
     return details;
   }
   function fxDetailFiles(details) { return [...Object.values(details?.fieldMedia || {}).flatMap(files => files || []), ...Object.values(details?.custom || {}).flatMap(rows => (rows || []).flatMap(row => row.files || []))]; }
+  // Keep the original image bytes outside the JSON business records.
+  let fxImageDatabase;
+  function fxOpenImageDatabase() {
+    if (!fxImageDatabase) fxImageDatabase = new Promise((resolve, reject) => {
+      const request = indexedDB.open("trace-copy-20261022-product-images", 1);
+      request.onupgradeneeded = () => request.result.createObjectStore("images");
+      request.onsuccess = () => resolve(request.result);
+      request.onerror = () => { fxImageDatabase = null; reject(request.error); };
+    });
+    return fxImageDatabase;
+  }
+  async function fxProductImageRecord(file) {
+    const digest = await crypto.subtle.digest("SHA-256", await file.arrayBuffer());
+    const hash = Array.from(new Uint8Array(digest), byte => byte.toString(16).padStart(2, "0")).join("");
+    return { name: file.name, type: file.type || fxFileType(file.name), size: file.size, src: `product-image:${hash}` };
+  }
+  async function fxStoreProductImages(records, files) {
+    const db = await fxOpenImageDatabase();
+    await new Promise((resolve, reject) => {
+      const tx = db.transaction("images", "readwrite");
+      tx.oncomplete = resolve;
+      tx.onabort = () => reject(tx.error);
+      records.forEach((record, i) => tx.objectStore("images").put(files[i], record.src));
+    });
+  }
+  const fxProductImageUrls = new Map();
+  function fxHydrateProductImages(root) {
+    for (const button of root.querySelectorAll("[data-product-image]")) {
+      const key = button.dataset.productImage;
+      if (!fxProductImageUrls.has(key)) {
+        const load = fxOpenImageDatabase().then(db => new Promise((resolve, reject) => {
+          const request = db.transaction("images").objectStore("images").get(key);
+          request.onsuccess = () => request.result ? resolve(URL.createObjectURL(request.result)) : reject();
+          request.onerror = () => reject(request.error);
+        }));
+        fxProductImageUrls.set(key, load);
+      }
+      fxProductImageUrls.get(key).then(url => {
+        button.dataset.src = url;
+        button.querySelector("img").src = url;
+        button.disabled = false;
+      }).catch(() => { fxProductImageUrls.delete(key); button.title = "未能读取本地图片"; });
+    }
+  }
   function fxReadFileData(file) { return new Promise((resolve, reject) => { const reader = new FileReader(); reader.onload = () => resolve(String(reader.result || "")); reader.onerror = () => reject(reader.error || new Error("文件读取失败")); reader.readAsDataURL(file); }); }
 
   let fxCrcTable;

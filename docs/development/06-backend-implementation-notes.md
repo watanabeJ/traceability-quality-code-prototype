@@ -6,6 +6,7 @@
 
 - HTML 多页面入口，原生 JavaScript，ES module 启动器按顺序装载经典脚本；没有把 React/Vue 或微服务写作已使用技术。
 - 业务记录保存在浏览器 localStorage；会话涉及 sessionStorage，页面间共享及刷新依赖同源浏览器存储。
+- 原型将新上传的产品图片原文件保存在同源浏览器的 IndexedDB 中，产品记录保存图片引用。正式系统按文件存储规则支持跨设备访问。
 - 随机码载荷存于 IndexedDB：数据库 trace-copy-20261022-order-codes，codes 存储，主键 no。
 - 生成使用 crypto.getRandomValues 和浏览器 navigator.locks 同源互斥；保存码载荷后登记订单，失败尝试清理未提交载荷。
 - 码包 TXT / Excel 由前端生成；Excel 使用本地 XLSX 组件生成标准 .xlsx 工作簿，16 位码按文本保存。
