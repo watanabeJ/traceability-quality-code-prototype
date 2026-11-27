@@ -359,7 +359,8 @@ async function omCancel(no, reason) {
     }
     const order = orders.find(row => row.no === no);
     if (!fxEnabledOperatorSession() || !omIsOrder(order)) throw new Error("当前账号无权撤销此订单");
-    if (!reason?.trim()) throw new OmFieldError([{selector:"#om-cancel-reason", message:"请填写撤销原因"}]);
+    const reasonError = fxDecisionReasonError(reason, "撤销原因");
+    if (reasonError) throw new OmFieldError([{selector:"#om-cancel-reason", message:reasonError}]);
     const blocked = omCancelReason(order);
     if (blocked) throw new Error(blocked);
     const retained = Boolean(order.downloads?.length);
@@ -661,7 +662,7 @@ function omModal() {
   if (state.modal === "om-cancel") {
     const downloaded = Boolean(order.downloads?.length);
     const warning = downloaded ? `<div class="om-download-warning"><div class="om-download-warning-head">${icon("triangle-alert", "!")}<strong>注意</strong></div><p>该订单已下载，整单号码已锁定。撤销后二维码会失效，但号码不能重新分配；已流出的二维码无法收回，订单不可恢复。</p></div>` : "";
-    return fxModalShell("撤销订单", order.no, `${warning}<p>本次将撤销整张订单，共 ${formatNumber(order.total)} 个码。</p><div class="field"><label class="required" for="om-cancel-reason">撤销原因</label><textarea id="om-cancel-reason" maxlength="500"></textarea></div><div id="om-modal-error" class="danger-text" role="alert"></div>`, `<button class="button" data-action="close-modal">取消</button><button class="button danger" data-action="om-cancel-confirm">${downloaded ? "确认撤销并作废二维码" : "确认撤销订单"}</button>`);
+    return fxModalShell("撤销订单", order.no, `${warning}<p>本次将撤销整张订单，共 ${formatNumber(order.total)} 个码。</p><div class="field"><label class="required" for="om-cancel-reason">撤销原因</label><textarea id="om-cancel-reason" placeholder="必填，允许换行，去除首尾空白后最多 500 个字符"></textarea></div><div id="om-modal-error" class="danger-text" role="alert"></div>`, `<button class="button" data-action="close-modal">取消</button><button class="button danger" data-action="om-cancel-confirm">${downloaded ? "确认撤销并作废二维码" : "确认撤销订单"}</button>`);
   }
   if (state.modal === "om-cancel-info") {
     if (!omCancelled(order)) return fxModalShell("撤销信息", order.no, "<p>该订单尚未撤销，暂无撤销信息。</p>", '<button class="button" data-action="close-modal">关闭</button>');
@@ -810,7 +811,7 @@ function fxInstallOrderManagement() {
     if (state.editorDraft) state.editorDraft.category = bound ? product.category : fxCurrentCategoryName(line);
     if (state.omNewProduct && state.editorOwner === "ops") {
       const draft = state.editorDraft;
-      if (!draft?.productName?.trim() || !draft?.batch?.trim()) return showToast("请先填写产品名称和产品批次"), false;
+      if (!fxCheckProductFields(draft, submit)) return false;
       if (submit && !fxRequestedRangeIsAvailable(order, state.editorRequestedSourceRange, state.editorRequestedRange, state.editorRequestedAmount, product?.id)) return showToast("绑定范围已改变，请重新选择"), false;
       const unnamed = fxEditorModules.some(module => (draft.custom?.[module] || []).some(row => !row.name?.trim() && (row.value?.trim() || row.files?.length)));
       if (unnamed) return showToast("新增字段必须填写字段名称"), false;

@@ -36,7 +36,7 @@ stateDiagram-v2
   pending --> rejected: 运营驳回并释放占用
   pending --> approved: 通过并激活
   pending --> draft: 客户确认撤回，释放占用并保留产品资料
-  rejected --> draft: 编辑保存
+  rejected --> draft: 成功保存草稿
   rejected --> pending: 编辑后重提
 ```
 
@@ -49,6 +49,9 @@ stateDiagram-v2
   state "待审批" as pending
   state "已驳回" as rejected
   state "已通过" as approved
+  state "待提交 / 草稿" as draft
+  rejected --> draft: 成功保存草稿
+  draft --> pending: 重新提交
   [*] --> pending: 提交追加绑定并占用申请范围
   pending --> rejected: 运营驳回并释放占用
   pending --> approved: 通过并新增有效绑定

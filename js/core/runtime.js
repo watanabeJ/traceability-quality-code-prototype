@@ -498,7 +498,9 @@ function restoreFromLocation() {
     state.selectedOrderNo = targetOrderNo || state.selectedOrderNo;
     state.editorBindRequestId = bindRequestId;
     state.editorRequestedSourceRange = routeRange || (targetOrderNo ? product?.requestedSourceRange || "" : "");
-    state.editorRequestedRange = routeRange || (targetOrderNo ? product?.requestedRange || "" : "");
+    state.editorRequestedRange = bindRequest && params.get("readonly") === "1"
+      ? bindRequest.range || routeRange
+      : routeRange || (params.get("readonly") !== "1" && targetOrderNo ? product?.requestedRange || "" : "");
     state.editorRequestedAmount = routeAmount || (targetOrderNo ? Number(product?.requestedAmount || 0) : 0);
     if (product) {
       state.editorDraft = fxNormalizeDetails(fxClone(product.details || fxDefaultDetails(product)));
